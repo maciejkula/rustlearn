@@ -1,6 +1,10 @@
 # rustlearn
 
+[![Circle CI](https://circleci.com/gh/maciejkula/rustlearn.svg?style=svg)](https://circleci.com/gh/maciejkula/rustlearn)
+
 A Rust machine learning crate.
+
+For full usage details, see the [API documentation](https://maciejkula.github.io/rustlearn/doc/rustlearn/).
 
 ## Introduction
 

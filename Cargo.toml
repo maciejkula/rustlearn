@@ -1,0 +1,12 @@
+[package]
+name = "rustlearn"
+version = "0.1.0"
+authors = ["maciejkula <maciej.kula@gmail.com>"]
+
+[dependencies]
+rand = "0.3"
+csv = "0.14"
+time = "0.1"
+
+[features]
+all_tests = []

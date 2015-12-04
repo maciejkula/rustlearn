@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["OneVsRest",""],["OneVsRestWrapper","Wraps simple two-class classifiers to implement one-vs-rest strategies."]]});

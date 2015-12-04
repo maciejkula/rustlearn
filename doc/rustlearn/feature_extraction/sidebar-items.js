@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["dict_vectorizer","`DictVectorizer` vectorizers a set of named features into a sparse array via one-hot encoding."]]});

@@ -874,9 +874,7 @@ mod tests {
     use super::*;
     use super::FeatureValues;
 
-    use rand::{Rng, StdRng, SeedableRng};
-
-    use test::Bencher;
+    use rand::{StdRng, SeedableRng};
 
     extern crate time;
 
@@ -1139,6 +1137,94 @@ mod tests {
         assert!(test_accuracy > 0.96);
     }
 
+    #[test]
+    #[cfg(feature = "all_tests")]
+    fn test_decision_tree_newsgroups() {
+
+        extern crate csv;
+        use feature_extraction::dict_vectorizer::*;
+
+        let mut rdr = csv::Reader::from_file("./test_data/newsgroups/data.csv")
+            .unwrap()
+            .has_headers(false);
+
+        let mut vectorizer = DictVectorizer::new();
+        let mut target = Vec::new();
+
+        for (row, record) in rdr.decode().enumerate() {
+            let (y, data): (f32, String) = record.unwrap();
+
+            for token in data.split_whitespace() {
+                vectorizer.partial_fit(row, token, 1.0);
+            }
+
+            target.push(y);
+        }
+
+        let target = Array::from(target);
+
+        let X = vectorizer.transform();
+
+        let no_splits = 2;
+
+        let mut test_accuracy = 0.0;
+        let mut train_accuracy = 0.0;
+
+        let mut cv = CrossValidation::new(X.rows(),
+                                          no_splits);
+        cv.set_rng(StdRng::from_seed(&[100]));
+
+        for (train_idx, test_idx) in cv {
+
+            let x_train = SparseColumnArray::from(&X.get_rows(&train_idx));
+            
+            let x_test = SparseColumnArray::from(&X.get_rows(&test_idx));
+            let y_train = target.get_rows(&train_idx);
+
+            let mut model = Hyperparameters::new(X.cols())
+                .min_samples_split(5)
+                .rng(StdRng::from_seed(&[100]))
+                .one_vs_rest();
+
+            let start = time::precise_time_ns();
+            model.fit(&x_train, &y_train).unwrap();
+            println!("Elapsed {}", time::precise_time_ns() - start);
+
+            let y_hat = model.predict(&x_test).unwrap();
+            let y_hat_train = model.predict(&x_train).unwrap();
+
+            test_accuracy += accuracy_score(
+                &target.get_rows(&test_idx),
+                &y_hat);
+
+            train_accuracy += accuracy_score(
+                &target.get_rows(&train_idx),
+                &y_hat_train);
+        }
+
+        test_accuracy /= no_splits as f32;
+        train_accuracy /= no_splits as f32;
+        println!("{}", test_accuracy);
+        println!("train accuracy {}", train_accuracy);
+
+        assert!(train_accuracy > 0.95);
+    }
+}
+
+
+#[cfg(feature = "bench")]
+#[allow(unused_imports)]
+mod bench {
+
+    use prelude::*;
+
+    use datasets::iris::load_data;
+    use super::Hyperparameters;
+
+    use rand::{Rng, StdRng, SeedableRng};
+
+    use test::Bencher;
+
     #[bench]
     fn bench_wide(b: &mut Bencher) {
 
@@ -1313,79 +1399,5 @@ mod tests {
         b.iter(|| {
             model.fit(&x_train, &target).unwrap();
         });
-    }
-
-
-    #[test]
-    #[cfg(feature = "all_tests")]
-    fn test_decision_tree_newsgroups() {
-
-        extern crate csv;
-        use feature_extraction::dict_vectorizer::*;
-
-        let mut rdr = csv::Reader::from_file("./test_data/newsgroups/data.csv")
-            .unwrap()
-            .has_headers(false);
-
-        let mut vectorizer = DictVectorizer::new();
-        let mut target = Vec::new();
-
-        for (row, record) in rdr.decode().enumerate() {
-            let (y, data): (f32, String) = record.unwrap();
-
-            for token in data.split_whitespace() {
-                vectorizer.partial_fit(row, token, 1.0);
-            }
-
-            target.push(y);
-        }
-
-        let target = Array::from(target);
-
-        let X = vectorizer.transform();
-
-        let no_splits = 2;
-
-        let mut test_accuracy = 0.0;
-        let mut train_accuracy = 0.0;
-
-        let mut cv = CrossValidation::new(X.rows(),
-                                          no_splits);
-        cv.set_rng(StdRng::from_seed(&[100]));
-
-        for (train_idx, test_idx) in cv {
-
-            let x_train = SparseColumnArray::from(&X.get_rows(&train_idx));
-            
-            let x_test = SparseColumnArray::from(&X.get_rows(&test_idx));
-            let y_train = target.get_rows(&train_idx);
-
-            let mut model = Hyperparameters::new(X.cols())
-                .min_samples_split(5)
-                .rng(StdRng::from_seed(&[100]))
-                .one_vs_rest();
-
-            let start = time::precise_time_ns();
-            model.fit(&x_train, &y_train).unwrap();
-            println!("Elapsed {}", time::precise_time_ns() - start);
-
-            let y_hat = model.predict(&x_test).unwrap();
-            let y_hat_train = model.predict(&x_train).unwrap();
-
-            test_accuracy += accuracy_score(
-                &target.get_rows(&test_idx),
-                &y_hat);
-
-            train_accuracy += accuracy_score(
-                &target.get_rows(&train_idx),
-                &y_hat_train);
-        }
-
-        test_accuracy /= no_splits as f32;
-        train_accuracy /= no_splits as f32;
-        println!("{}", test_accuracy);
-        println!("train accuracy {}", train_accuracy);
-
-        assert!(train_accuracy > 0.95);
     }
 }

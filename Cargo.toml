@@ -10,3 +10,4 @@ time = "0.1"
 
 [features]
 all_tests = []
+bench = []

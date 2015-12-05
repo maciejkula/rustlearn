@@ -28,6 +28,7 @@ use std::collections::HashMap;
 use prelude::*;
 
 
+#[derive(RustcEncodable, RustcDecodable)]
 pub struct DictVectorizer {
     dictionary: HashMap<String, (usize, usize)>,
     data: Vec<(usize, usize, f32)>

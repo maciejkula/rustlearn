@@ -63,6 +63,7 @@ use multiclass::OneVsRestWrapper;
 
 
 /// Hyperparameters for a SGDClassifier model.
+#[derive(RustcEncodable, RustcDecodable)]
 pub struct Hyperparameters {
     dim: usize,
 
@@ -142,6 +143,7 @@ impl Hyperparameters {
 }
 
 /// A two-class linear regression classifier implemented using stochastic gradient descent.
+#[derive(RustcEncodable, RustcDecodable)]
 #[derive(Clone)]
 pub struct SGDClassifier {
     dim: usize,
@@ -357,8 +359,11 @@ mod tests {
     use cross_validation::cross_validation::CrossValidation;
     use datasets::iris::load_data;
     use metrics::accuracy_score;
+    use multiclass::OneVsRestWrapper;
 
     use super::*;
+
+    use bincode;
 
     #[test]
     fn basic_updating() {
@@ -487,6 +492,53 @@ mod tests {
             }
 
             let y_hat = model.predict(&x_test).unwrap();
+
+            test_accuracy += accuracy_score(
+                &target.get_rows(&test_idx),
+                &y_hat);
+        }
+
+        test_accuracy /= no_splits as f32;
+
+        println!("Accuracy {}", test_accuracy);
+
+        assert!(test_accuracy > 0.9);
+    }
+
+    #[test]
+    fn serialization() {
+        let (data, target) = load_data();
+
+        let mut test_accuracy = 0.0;
+
+        let no_splits = 10;
+
+        let mut cv = CrossValidation::new(data.rows(),
+                                          no_splits);
+        cv.set_rng(StdRng::from_seed(&[100]));
+
+        for (train_idx, test_idx) in cv {
+
+            let x_train = data.get_rows(&train_idx);
+            let x_test = data.get_rows(&test_idx);
+
+            let y_train = target.get_rows(&train_idx);
+
+            let mut model = Hyperparameters::new(data.cols())
+                .learning_rate(0.5)
+                .l2_penalty(0.0)
+                .l1_penalty(0.0)
+                .one_vs_rest();
+
+            for _ in 0..20 {
+                model.fit(&x_train, &y_train).unwrap();
+            }
+
+            let encoded = bincode::rustc_serialize::encode(&model,
+                                                           bincode::SizeLimit::Infinite).unwrap();
+            let decoded: OneVsRestWrapper<SGDClassifier> = bincode::rustc_serialize::decode(&encoded).unwrap();
+
+            let y_hat = decoded.predict(&x_test).unwrap();
 
             test_accuracy += accuracy_score(
                 &target.get_rows(&test_idx),

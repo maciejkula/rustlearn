@@ -38,6 +38,7 @@ use std::usize;
 use prelude::*;
 
 use multiclass::OneVsRestWrapper;
+use utils::EncodableRng;
 
 extern crate rand;
 
@@ -193,6 +194,7 @@ impl FeatureValues {
 
 
 #[derive(Clone)]
+#[derive(RustcEncodable, RustcDecodable)]
 enum FeatureType {
     Constant,
     Binary,
@@ -201,6 +203,7 @@ enum FeatureType {
 
 
 /// Hyperparameters for a DecisionTree model.
+#[derive(RustcEncodable, RustcDecodable)]
 #[derive(Clone)]
 pub struct Hyperparameters {
     dim: usize,
@@ -209,7 +212,7 @@ pub struct Hyperparameters {
     min_samples_split: usize,
     max_depth: usize,
 
-    rng: rand::StdRng,
+    rng: EncodableRng
 }
 
 
@@ -231,7 +234,7 @@ impl Hyperparameters {
                          max_features: (dim as f32).sqrt() as usize,
                          min_samples_split: 2,
                          max_depth: usize::MAX,
-                         rng: rand::StdRng::new().unwrap()}
+                         rng: EncodableRng::new()}
     }
 
     /// Set the maximum number of features to be considered when
@@ -260,7 +263,7 @@ impl Hyperparameters {
     /// Set the random number generator used for sampling features
     /// to consider at each split.
     pub fn rng(&mut self, rng: rand::StdRng) -> &mut Hyperparameters {
-        self.rng = rng;
+        self.rng.rng = rng;
         self
     }
     /// Build a binary decision tree model.
@@ -271,7 +274,7 @@ impl Hyperparameters {
                       min_samples_split: self.min_samples_split,
                       root: None,
                       feature_types: Vec::new(),
-                      rng: self.rng}
+                      rng: self.rng.clone()}
     }
     /// Build a one-vs-rest multi-class decision tree model.
     pub fn one_vs_rest(&self) -> OneVsRestWrapper<DecisionTree> {
@@ -282,6 +285,7 @@ impl Hyperparameters {
 }
 
 
+#[derive(RustcEncodable, RustcDecodable)]
 #[derive(Clone)]
 enum Node {
     Interior {feature: usize,
@@ -290,7 +294,9 @@ enum Node {
     Leaf {probability: f32}
 }
 
+
 /// A two-class decision tree.
+#[derive(RustcEncodable, RustcDecodable)]
 #[derive(Clone)]
 pub struct DecisionTree {
     dim: usize,
@@ -301,7 +307,7 @@ pub struct DecisionTree {
 
     root: Option<Node>,
     feature_types: Vec<FeatureType>,
-    rng: rand::StdRng,
+    rng: EncodableRng
 }
 
 
@@ -414,7 +420,7 @@ macro_rules! build_tree {
 
                 feature_indices.sample_indices(candidate_features,
                                                self.max_features,
-                                               &mut self.rng);
+                                               &mut self.rng.rng);
 
                 let mut best_feature_position = 0;
                 let mut best_feature_idx = 0;
@@ -854,14 +860,7 @@ impl DecisionTree {
             &Node::Leaf {probability} => probability,
         }
     }
-
-
-
-
 }
-
-
-
 
 
 #[cfg(test)]
@@ -871,10 +870,13 @@ mod tests {
     use cross_validation::cross_validation::CrossValidation;
     use datasets::iris::load_data;
     use metrics::accuracy_score;
+    use multiclass::OneVsRestWrapper;
     use super::*;
     use super::FeatureValues;
 
     use rand::{StdRng, SeedableRng};
+
+    use bincode;
 
     extern crate time;
 
@@ -1124,6 +1126,51 @@ mod tests {
             model.fit(&x_train, &y_train).unwrap();
             
             let test_prediction = model.predict(&x_test).unwrap();
+
+            test_accuracy += accuracy_score(
+                &target.get_rows(&test_idx),
+                &test_prediction);
+        }
+
+        test_accuracy /= no_splits as f32;
+
+        println!("Accuracy {}", test_accuracy);
+
+        assert!(test_accuracy > 0.96);
+    }
+
+    #[test]
+    fn serialization() {
+        let (data, target) = load_data();
+
+        let mut test_accuracy = 0.0;
+
+        let no_splits = 10;
+
+        let mut cv = CrossValidation::new(data.rows(),
+                                          no_splits);
+        cv.set_rng(StdRng::from_seed(&[100]));
+
+        for (train_idx, test_idx) in cv {
+
+            let x_train = data.get_rows(&train_idx);
+            let x_test = data.get_rows(&test_idx);
+
+            let y_train = target.get_rows(&train_idx);
+
+            let mut model = Hyperparameters::new(data.cols())
+                .min_samples_split(5)
+                .max_features(4)
+                .rng(StdRng::from_seed(&[100]))
+                .one_vs_rest();
+
+            model.fit(&x_train, &y_train).unwrap();
+
+            let encoded = bincode::rustc_serialize::encode(&model,
+                                                           bincode::SizeLimit::Infinite).unwrap();
+            let decoded: OneVsRestWrapper<DecisionTree> = bincode::rustc_serialize::decode(&encoded).unwrap();
+
+            let test_prediction = decoded.predict(&x_test).unwrap();
 
             test_accuracy += accuracy_score(
                 &target.get_rows(&test_idx),

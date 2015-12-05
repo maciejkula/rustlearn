@@ -37,6 +37,7 @@ use prelude::*;
 use trees::decision_tree;
 
 use multiclass::OneVsRestWrapper;
+use utils::EncodableRng;
 
 extern crate rand;
 
@@ -44,10 +45,11 @@ use rand::{SeedableRng, StdRng};
 use rand::distributions::{IndependentSample, Range};
 
 
+#[derive(RustcEncodable, RustcDecodable)]
 pub struct Hyperparameters {
     tree_hyperparameters: decision_tree::Hyperparameters,
     num_trees: usize,
-    rng: rand::StdRng,
+    rng: EncodableRng
 }
 
 
@@ -59,12 +61,12 @@ impl Hyperparameters {
 
         Hyperparameters {tree_hyperparameters: tree_hyperparameters,
                          num_trees: num_trees,
-                         rng: rand::StdRng::new().unwrap()}
+                         rng: EncodableRng::new()}
     }
 
     /// Set the random number generator.
     pub fn rng(&mut self, rng: rand::StdRng) -> &mut Hyperparameters {
-        self.rng = rng;
+        self.rng.rng = rng;
         self
     }
 
@@ -83,7 +85,7 @@ impl Hyperparameters {
             let mut hyperparams = self.tree_hyperparameters.clone();
             hyperparams.rng(
                 SeedableRng::from_seed(&(0..10)
-                                       .map(|_| range.ind_sample(&mut rng))
+                                       .map(|_| range.ind_sample(&mut rng.rng))
                                        .collect::<Vec<_>>()[..])
                     );
             
@@ -91,7 +93,7 @@ impl Hyperparameters {
         }
 
         RandomForest {trees: trees,
-                      rng: self.rng}
+                      rng: self.rng.clone()}
     }
 
     /// Build a one-vs-rest multiclass random forest.
@@ -103,10 +105,11 @@ impl Hyperparameters {
 }
 
 
+#[derive(RustcEncodable, RustcDecodable)]
 #[derive(Clone)]
 pub struct RandomForest {
     trees: Vec<decision_tree::DecisionTree>,
-    rng: rand::StdRng
+    rng: EncodableRng
 }
 
 
@@ -116,7 +119,7 @@ impl SupervisedModel<Array> for RandomForest {
         let mut rng = self.rng.clone();
 
         for tree in self.trees.iter_mut() {
-            let indices = RandomForest::bootstrap_indices(X.rows(), &mut rng);
+            let indices = RandomForest::bootstrap_indices(X.rows(), &mut rng.rng);
             try!(tree.fit(&X.get_rows(&indices), &y.get_rows(&indices)));
         }
 
@@ -147,7 +150,7 @@ impl SupervisedModel<SparseRowArray> for RandomForest {
         let mut rng = self.rng.clone();
 
         for tree in self.trees.iter_mut() {
-            let indices = RandomForest::bootstrap_indices(X.rows(), &mut rng);
+            let indices = RandomForest::bootstrap_indices(X.rows(), &mut rng.rng);
             let x = SparseColumnArray::from(&X.get_rows(&indices));
             try!(tree.fit(&x, &y.get_rows(&indices)));
         }
@@ -198,9 +201,12 @@ mod tests {
     use cross_validation::cross_validation::CrossValidation;
     use datasets::iris::load_data;
     use metrics::accuracy_score;
+    use multiclass::OneVsRestWrapper;
     use super::*;
 
     use rand::{StdRng, SeedableRng};
+
+    use bincode;
 
     #[test]
     fn test_random_forest_iris() {
@@ -298,7 +304,6 @@ mod tests {
         extern crate time;
         use feature_extraction::dict_vectorizer::*;
         
-
         let mut rdr = csv::Reader::from_file("./test_data/newsgroups/data.csv")
             .unwrap()
             .has_headers(false);
@@ -367,6 +372,54 @@ mod tests {
         println!("train accuracy {}", train_accuracy);
 
         assert!(train_accuracy > 0.95);
+    }
+
+    #[test]
+    fn serialization() {
+        let (data, target) = load_data();
+
+        let mut test_accuracy = 0.0;
+
+        let no_splits = 10;
+
+        let mut cv = CrossValidation::new(data.rows(),
+                                          no_splits);
+        cv.set_rng(StdRng::from_seed(&[100]));
+
+        for (train_idx, test_idx) in cv {
+
+            let x_train = data.get_rows(&train_idx);
+            let x_test = data.get_rows(&test_idx);
+
+            let y_train = target.get_rows(&train_idx);
+
+            let mut tree_params = decision_tree::Hyperparameters::new(data.cols());
+            tree_params.min_samples_split(10)
+                .max_features(4)
+                .rng(StdRng::from_seed(&[100]));
+
+            let mut model = Hyperparameters::new(tree_params, 10)
+                .rng(StdRng::from_seed(&[100]))
+                .one_vs_rest();
+
+            model.fit(&x_train, &y_train).unwrap();
+
+            let encoded = bincode::rustc_serialize::encode(&model,
+                                                           bincode::SizeLimit::Infinite).unwrap();
+            let decoded: OneVsRestWrapper<RandomForest> = bincode::rustc_serialize::decode(&encoded).unwrap();
+
+            let test_prediction = decoded.predict(&x_test).unwrap();
+
+            test_accuracy += accuracy_score(
+                &target.get_rows(&test_idx),
+                &test_prediction);
+        }
+
+        test_accuracy /= no_splits as f32;
+
+        println!("Accuracy {}", test_accuracy);
+
+        assert!(test_accuracy > 0.96);
     }
 
 }

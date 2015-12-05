@@ -1,16 +1,25 @@
 [package]
 name = "rustlearn"
 version = "0.1.0"
-authors = ["maciejkula <maciej.kula@gmail.com>"]
+description = "A machine learning package for Rust."
+documentation = "https://maciejkula.github.io/rustlearn/doc/rustlearn/"
+homepage = "https://github.com/maciejkula/rustlearn"
+repository = "https://github.com/maciejkula/rustlearn"
+readme = "readme.md"
+license = "Apache-2.0"
+keywords = ["machine-learning"]
+authors = ["Maciej Kula <maciej.kula@gmail.com>"]
+exclude = [
+	"scripts/*",
+	"test_data/*",
+]
 
 [dependencies]
-
-bincode = "*"
+bincode = "0.4.0"
 csv = "0.14"
 rand = "0.3"
 rustc-serialize = "0.3"
 time = "0.1"
-
 
 [features]
 all_tests = []

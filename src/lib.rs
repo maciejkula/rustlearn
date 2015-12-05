@@ -111,12 +111,15 @@
 //! ```
 //!
 
-
-#![feature(test)]
+// Only use unstable features when we are benchmarking
+#![cfg_attr(feature="bench", feature(test))]
+// Allow conventional capital X for feature arrays.
 #![allow(non_snake_case)]
 
-extern crate rand;
+#[cfg(feature = "bench")]
 extern crate test;
+
+extern crate rand;
 
 pub mod array;
 pub mod cross_validation;
@@ -128,6 +131,9 @@ pub mod multiclass;
 pub mod feature_extraction;
 pub mod trees;
 pub mod traits;
+
+
+
 
 
 #[allow(unused_imports)]

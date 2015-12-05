@@ -4,7 +4,7 @@ dependencies:
     - touch ~/.gitconfig
     - git config --global user.email maciej.kula@gmail.com
     - git config --global user.name "Maciej Kula"
-    - curl -sf -L https://static.rust-lang.org/rustup.sh | sh /dev/stdin --channel=nightly --yes
+    - curl -sf -L https://static.rust-lang.org/rustup.sh | sh /dev/stdin --yes
 test:
   override:
     - cargo test --features "all_tests" --release

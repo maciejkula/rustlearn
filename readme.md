@@ -114,3 +114,11 @@ model.fit(&data, &target).unwrap();
 
 let prediction = model.predict(&data).unwrap();
 ```
+
+## Contributing
+Pull requests are welcome.
+
+To run basic tests, run `cargo test`.
+
+Running `cargo test --features "all_tests" --release` runs all tests, including generated and slow tests.
+Running `cargo bench --features bench` (only on the nightly branch) runs benchmarks.

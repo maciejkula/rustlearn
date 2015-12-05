@@ -210,12 +210,14 @@
 <span id="168">168</span>
 <span id="169">169</span>
 <span id="170">170</span>
+<span id="171">171</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Basic traits applying to all types of matrices.</span>
 
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ops</span>::{<span class='ident'>Range</span>, <span class='ident'>RangeFrom</span>, <span class='ident'>RangeTo</span>, <span class='ident'>RangeFull</span>};
 
 
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>RustcEncodable</span>, <span class='ident'>RustcDecodable</span>)]</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Debug</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>enum</span> <span class='ident'>MatrixOrder</span> {
     <span class='ident'>RowMajor</span>,

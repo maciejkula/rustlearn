@@ -45,7 +45,7 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-0' class='srclink' href='../src/rustlearn/lib.rs.html#1-138' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-0' class='srclink' href='../src/rustlearn/lib.rs.html#1-157' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'><p>A machine learning crate for Rust.</p>
 
 <h1 id='introduction' class='section-header'><a href='#introduction'>Introduction</a></h1>
@@ -71,6 +71,10 @@ to use something more robust once a clear winner in that space emerges.</p>
 
 <p>All the models support fitting and prediction on both dense and sparse data, and the implementations
 should be roughly competitive with Python <code>sklearn</code> implementations, both in accuracy and performance.</p>
+
+<h2 id='model-serialization' class='section-header'><a href='#model-serialization'>Model serialization</a></h2>
+<p>Model serialization is supported via <code>rustc_serialize</code>. This will probably change to <code>serde</code> once
+compiler plugins land in stable.</p>
 
 <h1 id='using-rustlearn' class='section-header'><a href='#using-rustlearn'>Using <code>rustlearn</code></a></h1>
 <p>Usage should be straightforward.</p>
@@ -147,6 +151,12 @@ should be roughly competitive with Python <code>sklearn</code> implementations, 
     .<span class='ident'>one_vs_rest</span>();
  
 <span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>data</span>, <span class='kw-2'>&amp;</span><span class='ident'>target</span>).<span class='ident'>unwrap</span>();
+
+<span class='comment'>// Optionally serialize and deserialize the model</span>
+
+<span class='comment'>// let encoded = bincode::rustc_serialize::encode(&amp;model,</span>
+<span class='comment'>//                                               bincode::SizeLimit::Infinite).unwrap();</span>
+<span class='comment'>// let decoded: OneVsRestWrapper&lt;RandomForest&gt; = bincode::rustc_serialize::decode(&amp;encoded).unwrap();</span>
  
 <span class='kw'>let</span> <span class='ident'>prediction</span> <span class='op'>=</span> <span class='ident'>model</span>.<span class='ident'>predict</span>(<span class='kw-2'>&amp;</span><span class='ident'>data</span>).<span class='ident'>unwrap</span>();</pre>
 </div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>

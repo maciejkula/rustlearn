@@ -1,0 +1,1 @@
+initSidebarItems({"trait":[["BorrowBytes","A trait that permits borrowing byte vectors."]]});

@@ -124,6 +124,7 @@
 <span id="82">82</span>
 <span id="83">83</span>
 <span id="84">84</span>
+<span id="85">85</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! `DictVectorizer` vectorizers a set of named features into a sparse array</span>
 <span class='doccomment'>//! via one-hot encoding.</span>
@@ -155,6 +156,7 @@
 <span class='kw'>use</span> <span class='ident'>prelude</span>::<span class='op'>*</span>;
 
 
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>RustcEncodable</span>, <span class='ident'>RustcDecodable</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>DictVectorizer</span> {
     <span class='ident'>dictionary</span>: <span class='ident'>HashMap</span><span class='op'>&lt;</span><span class='ident'>String</span>, (<span class='ident'>usize</span>, <span class='ident'>usize</span>)<span class='op'>&gt;</span>,
     <span class='ident'>data</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>usize</span>, <span class='ident'>f32</span>)<span class='op'>&gt;</span>

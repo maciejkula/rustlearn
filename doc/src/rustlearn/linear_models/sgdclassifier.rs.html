@@ -653,6 +653,58 @@
 <span id="611">611</span>
 <span id="612">612</span>
 <span id="613">613</span>
+<span id="614">614</span>
+<span id="615">615</span>
+<span id="616">616</span>
+<span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
+<span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
+<span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
+<span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
+<span id="656">656</span>
+<span id="657">657</span>
+<span id="658">658</span>
+<span id="659">659</span>
+<span id="660">660</span>
+<span id="661">661</span>
+<span id="662">662</span>
+<span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! A two-class logistic regression classifier implemented using stochastic gradient descent.</span>
 <span class='doccomment'>//!</span>
@@ -719,6 +771,7 @@
 
 
 <span class='doccomment'>/// Hyperparameters for a SGDClassifier model.</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>RustcEncodable</span>, <span class='ident'>RustcDecodable</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Hyperparameters</span> {
     <span class='ident'>dim</span>: <span class='ident'>usize</span>,
 
@@ -798,6 +851,7 @@
 }
 
 <span class='doccomment'>/// A two-class linear regression classifier implemented using stochastic gradient descent.</span>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>RustcEncodable</span>, <span class='ident'>RustcDecodable</span>)]</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>SGDClassifier</span> {
     <span class='ident'>dim</span>: <span class='ident'>usize</span>,
@@ -1013,8 +1067,11 @@
     <span class='kw'>use</span> <span class='ident'>cross_validation</span>::<span class='ident'>cross_validation</span>::<span class='ident'>CrossValidation</span>;
     <span class='kw'>use</span> <span class='ident'>datasets</span>::<span class='ident'>iris</span>::<span class='ident'>load_data</span>;
     <span class='kw'>use</span> <span class='ident'>metrics</span>::<span class='ident'>accuracy_score</span>;
+    <span class='kw'>use</span> <span class='ident'>multiclass</span>::<span class='ident'>OneVsRestWrapper</span>;
 
     <span class='kw'>use</span> <span class='ident'>super</span>::<span class='op'>*</span>;
+
+    <span class='kw'>use</span> <span class='ident'>bincode</span>;
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>basic_updating</span>() {
@@ -1143,6 +1200,53 @@
             }
 
             <span class='kw'>let</span> <span class='ident'>y_hat</span> <span class='op'>=</span> <span class='ident'>model</span>.<span class='ident'>predict</span>(<span class='kw-2'>&amp;</span><span class='ident'>x_test</span>).<span class='ident'>unwrap</span>();
+
+            <span class='ident'>test_accuracy</span> <span class='op'>+=</span> <span class='ident'>accuracy_score</span>(
+                <span class='kw-2'>&amp;</span><span class='ident'>target</span>.<span class='ident'>get_rows</span>(<span class='kw-2'>&amp;</span><span class='ident'>test_idx</span>),
+                <span class='kw-2'>&amp;</span><span class='ident'>y_hat</span>);
+        }
+
+        <span class='ident'>test_accuracy</span> <span class='op'>/=</span> <span class='ident'>no_splits</span> <span class='kw'>as</span> <span class='ident'>f32</span>;
+
+        <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;Accuracy {}&quot;</span>, <span class='ident'>test_accuracy</span>);
+
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>test_accuracy</span> <span class='op'>&gt;</span> <span class='number'>0.9</span>);
+    }
+
+    <span class='attribute'>#[<span class='ident'>test</span>]</span>
+    <span class='kw'>fn</span> <span class='ident'>serialization</span>() {
+        <span class='kw'>let</span> (<span class='ident'>data</span>, <span class='ident'>target</span>) <span class='op'>=</span> <span class='ident'>load_data</span>();
+
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>test_accuracy</span> <span class='op'>=</span> <span class='number'>0.0</span>;
+
+        <span class='kw'>let</span> <span class='ident'>no_splits</span> <span class='op'>=</span> <span class='number'>10</span>;
+
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>cv</span> <span class='op'>=</span> <span class='ident'>CrossValidation</span>::<span class='ident'>new</span>(<span class='ident'>data</span>.<span class='ident'>rows</span>(),
+                                          <span class='ident'>no_splits</span>);
+        <span class='ident'>cv</span>.<span class='ident'>set_rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]));
+
+        <span class='kw'>for</span> (<span class='ident'>train_idx</span>, <span class='ident'>test_idx</span>) <span class='kw'>in</span> <span class='ident'>cv</span> {
+
+            <span class='kw'>let</span> <span class='ident'>x_train</span> <span class='op'>=</span> <span class='ident'>data</span>.<span class='ident'>get_rows</span>(<span class='kw-2'>&amp;</span><span class='ident'>train_idx</span>);
+            <span class='kw'>let</span> <span class='ident'>x_test</span> <span class='op'>=</span> <span class='ident'>data</span>.<span class='ident'>get_rows</span>(<span class='kw-2'>&amp;</span><span class='ident'>test_idx</span>);
+
+            <span class='kw'>let</span> <span class='ident'>y_train</span> <span class='op'>=</span> <span class='ident'>target</span>.<span class='ident'>get_rows</span>(<span class='kw-2'>&amp;</span><span class='ident'>train_idx</span>);
+
+            <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>model</span> <span class='op'>=</span> <span class='ident'>Hyperparameters</span>::<span class='ident'>new</span>(<span class='ident'>data</span>.<span class='ident'>cols</span>())
+                .<span class='ident'>learning_rate</span>(<span class='number'>0.5</span>)
+                .<span class='ident'>l2_penalty</span>(<span class='number'>0.0</span>)
+                .<span class='ident'>l1_penalty</span>(<span class='number'>0.0</span>)
+                .<span class='ident'>one_vs_rest</span>();
+
+            <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='number'>20</span> {
+                <span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>x_train</span>, <span class='kw-2'>&amp;</span><span class='ident'>y_train</span>).<span class='ident'>unwrap</span>();
+            }
+
+            <span class='kw'>let</span> <span class='ident'>encoded</span> <span class='op'>=</span> <span class='ident'>bincode</span>::<span class='ident'>rustc_serialize</span>::<span class='ident'>encode</span>(<span class='kw-2'>&amp;</span><span class='ident'>model</span>,
+                                                           <span class='ident'>bincode</span>::<span class='ident'>SizeLimit</span>::<span class='ident'>Infinite</span>).<span class='ident'>unwrap</span>();
+            <span class='kw'>let</span> <span class='ident'>decoded</span>: <span class='ident'>OneVsRestWrapper</span><span class='op'>&lt;</span><span class='ident'>SGDClassifier</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>bincode</span>::<span class='ident'>rustc_serialize</span>::<span class='ident'>decode</span>(<span class='kw-2'>&amp;</span><span class='ident'>encoded</span>).<span class='ident'>unwrap</span>();
+
+            <span class='kw'>let</span> <span class='ident'>y_hat</span> <span class='op'>=</span> <span class='ident'>decoded</span>.<span class='ident'>predict</span>(<span class='kw-2'>&amp;</span><span class='ident'>x_test</span>).<span class='ident'>unwrap</span>();
 
             <span class='ident'>test_accuracy</span> <span class='op'>+=</span> <span class='ident'>accuracy_score</span>(
                 <span class='kw-2'>&amp;</span><span class='ident'>target</span>.<span class='ident'>get_rows</span>(<span class='kw-2'>&amp;</span><span class='ident'>test_idx</span>),

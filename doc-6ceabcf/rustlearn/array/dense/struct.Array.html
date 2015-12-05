@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Array` struct in crate `rustlearn`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Array">
+
+    <title>rustlearn::array::dense::Array - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../../index.html'>rustlearn</a>::<wbr><a href='../index.html'>array</a>::<wbr><a href='index.html'>dense</a></p><script>window.sidebarCurrent = {name: 'Array', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../../index.html'>rustlearn</a>::<wbr><a href='../index.html'>array</a>::<wbr><a href='index.html'>dense</a>::<wbr><a class='struct' href=''>Array</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-23' class='srclink' href='../../../src/rustlearn/array/dense.rs.html#127-132' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Array {
+    // some fields omitted
+}</pre><div class='docblock'><p>Basic two-dimensional dense matrix type.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h3><div class='impl-items'><h4 id='method.zeros' class='method'><code>fn <a href='#method.zeros' class='fnname'>zeros</a>(rows: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, cols: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<div class='docblock'><p>Create a <code>rows</code> by <code>cols</code> array of zeros.</p>
+</div><h4 id='method.ones' class='method'><code>fn <a href='#method.ones' class='fnname'>ones</a>(rows: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, cols: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<div class='docblock'><p>Create a <code>rows</code> by <code>cols</code> array of ones.</p>
+</div><h4 id='method.reshape' class='method'><code>fn <a href='#method.reshape' class='fnname'>reshape</a>(&amp;mut self, rows: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, cols: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>)</code></h4>
+<div class='docblock'><p>Change the shape of the array to <code>rows</code> by <code>cols</code>.</p>
+
+<h1 id='panics' class='section-header'><a href='#panics'>Panics</a></h1>
+<p>If the number of elements implied by the new shape
+is different from the current number of elements.</p>
+</div><h4 id='method.order' class='method'><code>fn <a href='#method.order' class='fnname'>order</a>(&amp;self) -&gt; &amp;<a class='enum' href='../../../rustlearn/array/traits/enum.MatrixOrder.html' title='rustlearn::array::traits::MatrixOrder'>MatrixOrder</a></code></h4>
+<div class='docblock'><p>Return the order (row-major or column-major)
+of the array.</p>
+</div><h4 id='method.data' class='method'><code>fn <a href='#method.data' class='fnname'>data</a>(&amp;self) -&gt; &amp;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>&gt;</code></h4>
+<div class='docblock'><p>Return an immutable reference to the underlying
+data buffer of the array.</p>
+
+<p>The arrangement of the elements in that vector
+is dependent on whether this is a row-major
+or a column-major array.</p>
+</div><h4 id='method.as_slice' class='method'><code>fn <a href='#method.as_slice' class='fnname'>as_slice</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a></code></h4>
+<div class='docblock'><p>Return an immutable reference to the underlying
+data buffer of the array.</p>
+
+<p>The arrangement of the elements in that vector
+is dependent on whether this is a row-major
+or a column-major array.</p>
+</div><h4 id='method.as_mut_slice' class='method'><code>fn <a href='#method.as_mut_slice' class='fnname'>as_mut_slice</a>(&amp;mut self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;mut [</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a></code></h4>
+<div class='docblock'><p>Return an mutable reference to the underlying
+data buffer of the array.</p>
+
+<p>The arrangement of the elements in that vector
+is dependent on whether this is a row-major
+or a column-major array.</p>
+</div><h4 id='method.T' class='method'><code>fn <a href='#method.T' class='fnname'>T</a>(self) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<div class='docblock'><p>Transpose the matrix.</p>
+</div><h4 id='method.sum' class='method'><code>fn <a href='#method.sum' class='fnname'>sum</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h4>
+<div class='docblock'><p>Compute the sum of the entries of the array.</p>
+</div><h4 id='method.mean' class='method'><code>fn <a href='#method.mean' class='fnname'>mean</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h4>
+<div class='docblock'><p>Compute the mean of the array.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='../../../rustlearn/array/traits/trait.RowIterable.html' title='rustlearn::array::traits::RowIterable'>RowIterable</a>&lt;<a class='struct' href='../../../rustlearn/array/dense/struct.ArrayView.html' title='rustlearn::array::dense::ArrayView'>ArrayView</a>&lt;'a&gt;&gt; for &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../../rustlearn/array/dense/struct.ArrayIterator.html' title='rustlearn::array::dense::ArrayIterator'>ArrayIterator</a>&lt;'a&gt;</code></h4>
+<h4 id='method.iter_rows' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.RowIterable.html#method.iter_rows' class='fnname'>iter_rows</a>(self) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.ArrayIterator.html' title='rustlearn::array::dense::ArrayIterator'>ArrayIterator</a>&lt;'a&gt;</code></h4>
+<h4 id='method.view_row' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.RowIterable.html#method.view_row' class='fnname'>view_row</a>(self, idx: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.ArrayView.html' title='rustlearn::array::dense::ArrayView'>ArrayView</a>&lt;'a&gt;</code></h4>
+</div><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>ColumnIterable</a>&lt;<a class='struct' href='../../../rustlearn/array/dense/struct.ArrayView.html' title='rustlearn::array::dense::ArrayView'>ArrayView</a>&lt;'a&gt;&gt; for &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../../rustlearn/array/dense/struct.ArrayIterator.html' title='rustlearn::array::dense::ArrayIterator'>ArrayIterator</a>&lt;'a&gt;</code></h4>
+<h4 id='method.iter_columns' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ColumnIterable.html#method.iter_columns' class='fnname'>iter_columns</a>(self) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.ArrayIterator.html' title='rustlearn::array::dense::ArrayIterator'>ArrayIterator</a>&lt;'a&gt;</code></h4>
+<h4 id='method.view_column' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ColumnIterable.html#method.view_column' class='fnname'>view_column</a>(self, idx: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.ArrayView.html' title='rustlearn::array::dense::ArrayView'>ArrayView</a>&lt;'a&gt;</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='../../../rustlearn/array/traits/trait.IndexableMatrix.html' title='rustlearn::array::traits::IndexableMatrix'>IndexableMatrix</a> for <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h3><div class='impl-items'><h4 id='method.rows' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.IndexableMatrix.html#method.rows' class='fnname'>rows</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<h4 id='method.cols' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.IndexableMatrix.html#method.cols' class='fnname'>cols</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<h4 id='method.get_unchecked' class='method'><code>unsafe fn <a href='../../../rustlearn/array/traits/trait.IndexableMatrix.html#method.get_unchecked' class='fnname'>get_unchecked</a>(&amp;self, row: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, col: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h4>
+<h4 id='method.get_unchecked_mut' class='method'><code>unsafe fn <a href='../../../rustlearn/array/traits/trait.IndexableMatrix.html#method.get_unchecked_mut' class='fnname'>get_unchecked_mut</a>(&amp;mut self, row: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, col: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; &amp;mut <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h4>
+<h4 id='method.get' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.IndexableMatrix.html#method.get' class='fnname'>get</a>(&amp;self, row: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, column: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h4>
+<h4 id='method.get_mut' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.IndexableMatrix.html#method.get_mut' class='fnname'>get_mut</a>(&amp;mut self, row: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, column: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; &amp;mut <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h4>
+<h4 id='method.set' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.IndexableMatrix.html#method.set' class='fnname'>set</a>(&amp;mut self, row: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, column: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, value: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>)</code></h4>
+<h4 id='method.set_unchecked' class='method'><code>unsafe fn <a href='../../../rustlearn/array/traits/trait.IndexableMatrix.html#method.set_unchecked' class='fnname'>set_unchecked</a>(&amp;mut self, row: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, column: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, value: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>)</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>&gt;&gt; for <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h3><div class='impl-items'><h4 id='method.from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(data: <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>&gt;) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html' title='core::convert::From'>From</a>&lt;&amp;'a <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>&gt;&gt;&gt; for <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h3><div class='impl-items'><h4 id='method.from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#method.from' class='fnname'>from</a>(input: &amp;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>&gt;&gt;) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html' title='rustlearn::array::traits::ElementwiseArrayOps'>ElementwiseArrayOps</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>&gt; for <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<h4 id='method.add' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.add' class='fnname'>add</a>(&amp;self, rhs: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<h4 id='method.add_inplace' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.add_inplace' class='fnname'>add_inplace</a>(&amp;mut self, rhs: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>)</code></h4>
+<h4 id='method.sub' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.sub' class='fnname'>sub</a>(&amp;self, rhs: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<h4 id='method.sub_inplace' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.sub_inplace' class='fnname'>sub_inplace</a>(&amp;mut self, rhs: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>)</code></h4>
+<h4 id='method.times' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.times' class='fnname'>times</a>(&amp;self, rhs: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<h4 id='method.times_inplace' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.times_inplace' class='fnname'>times_inplace</a>(&amp;mut self, rhs: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>)</code></h4>
+<h4 id='method.div' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.div' class='fnname'>div</a>(&amp;self, rhs: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<h4 id='method.div_inplace' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.div_inplace' class='fnname'>div_inplace</a>(&amp;mut self, rhs: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>)</code></h4>
+</div><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html' title='rustlearn::array::traits::ElementwiseArrayOps'>ElementwiseArrayOps</a>&lt;&amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a>&gt; for <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h3><div class='docblock'><p>Perform elementwise operations between two arrays.</p>
+
+<h1 id='panics' class='section-header'><a href='#panics'>Panics</a></h1>
+<p>Will panic if the two operands are not of the same shape.</p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<h4 id='method.add' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.add' class='fnname'>add</a>(&amp;self, rhs: &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a>) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<h4 id='method.add_inplace' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.add_inplace' class='fnname'>add_inplace</a>(&amp;mut self, rhs: &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a>)</code></h4>
+<h4 id='method.sub' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.sub' class='fnname'>sub</a>(&amp;self, rhs: &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a>) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<h4 id='method.sub_inplace' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.sub_inplace' class='fnname'>sub_inplace</a>(&amp;mut self, rhs: &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a>)</code></h4>
+<h4 id='method.times' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.times' class='fnname'>times</a>(&amp;self, rhs: &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a>) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<h4 id='method.times_inplace' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.times_inplace' class='fnname'>times_inplace</a>(&amp;mut self, rhs: &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a>)</code></h4>
+<h4 id='method.div' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.div' class='fnname'>div</a>(&amp;self, rhs: &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a>) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<h4 id='method.div_inplace' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.ElementwiseArrayOps.html#method.div_inplace' class='fnname'>div_inplace</a>(&amp;mut self, rhs: &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a>)</code></h4>
+</div><h3 class='impl'><code>impl&lt;'a&gt; <a class='trait' href='../../../rustlearn/array/traits/trait.Dot.html' title='rustlearn::array::traits::Dot'>Dot</a>&lt;&amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a>&gt; for <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<h4 id='method.dot' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.Dot.html#method.dot' class='fnname'>dot</a>(&amp;self, rhs: &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a>) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='../../../rustlearn/array/traits/trait.RowIndex.html' title='rustlearn::array::traits::RowIndex'>RowIndex</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>&gt;&gt; for <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<h4 id='method.get_rows' class='method'><code>fn <a href='../../../rustlearn/array/traits/trait.RowIndex.html#method.get_rows' class='fnname'>get_rows</a>(&amp;self, index: &amp;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>&gt;) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+</div><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></h4>
+<h4 id='method.clone_from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../";
+        window.currentCrate = "rustlearn";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../../jquery.js"></script>
+    <script src="../../../main.js"></script>
+    
+    <script async src="../../../search-index.js"></script>
+</body>
+</html>

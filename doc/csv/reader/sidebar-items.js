@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["NextField","NextField is the result of parsing a single CSV field."],["RecordTerminator","A record terminator."]],"struct":[["ByteRecords","An iterator of `ByteString` records."],["DecodedRecords","An iterator of decoded records."],["Reader","A CSV reader."],["StringRecords","An iterator of `String` records."]]});

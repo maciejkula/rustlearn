@@ -178,6 +178,25 @@
 <span id="136">136</span>
 <span id="137">137</span>
 <span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! A machine learning crate for Rust.</span>
 <span class='doccomment'>//!</span>
@@ -205,6 +224,11 @@
 <span class='doccomment'>//! </span>
 <span class='doccomment'>//! All the models support fitting and prediction on both dense and sparse data, and the implementations</span>
 <span class='doccomment'>//! should be roughly competitive with Python `sklearn` implementations, both in accuracy and performance.</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! ## Model serialization</span>
+<span class='doccomment'>//! </span>
+<span class='doccomment'>//! Model serialization is supported via `rustc_serialize`. This will probably change to `serde` once</span>
+<span class='doccomment'>//! compiler plugins land in stable.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! # Using `rustlearn`</span>
 <span class='doccomment'>//! Usage should be straightforward.</span>
@@ -287,17 +311,30 @@
 <span class='doccomment'>//!     .one_vs_rest();</span>
 <span class='doccomment'>//! </span>
 <span class='doccomment'>//! model.fit(&amp;data, &amp;target).unwrap();</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! // Optionally serialize and deserialize the model</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! // let encoded = bincode::rustc_serialize::encode(&amp;model,</span>
+<span class='doccomment'>//! //                                               bincode::SizeLimit::Infinite).unwrap();</span>
+<span class='doccomment'>//! // let decoded: OneVsRestWrapper&lt;RandomForest&gt; = bincode::rustc_serialize::decode(&amp;encoded).unwrap();</span>
 <span class='doccomment'>//! </span>
 <span class='doccomment'>//! let prediction = model.predict(&amp;data).unwrap();</span>
 <span class='doccomment'>//! ```</span>
-<span class='doccomment'>//!</span>
 
 
-<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>test</span>)]</span>
+<span class='comment'>// Only use unstable features when we are benchmarking</span>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>cfg_attr</span>(<span class='ident'>feature</span><span class='op'>=</span><span class='string'>&quot;bench&quot;</span>, <span class='ident'>feature</span>(<span class='ident'>test</span>))]</span>
+<span class='comment'>// Allow conventional capital X for feature arrays.</span>
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>allow</span>(<span class='ident'>non_snake_case</span>)]</span>
 
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rand</span>;
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;bench&quot;</span>)]</span>
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>test</span>;
+
+
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>bincode</span>;
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rand</span>;
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rustc_serialize</span>;
+
 
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>array</span>;
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>cross_validation</span>;
@@ -309,6 +346,7 @@
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>feature_extraction</span>;
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>trees</span>;
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>traits</span>;
+<span class='kw'>mod</span> <span class='ident'>utils</span>;
 
 
 <span class='attribute'>#[<span class='ident'>allow</span>(<span class='ident'>unused_imports</span>)]</span>

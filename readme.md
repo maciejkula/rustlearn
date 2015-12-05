@@ -2,7 +2,7 @@
 
 [![Circle CI](https://circleci.com/gh/maciejkula/rustlearn.svg?style=svg)](https://circleci.com/gh/maciejkula/rustlearn)
 
-A Rust machine learning crate.
+A machine learning package for Rust.
 
 For full usage details, see the [API documentation](https://maciejkula.github.io/rustlearn/doc/rustlearn/).
 

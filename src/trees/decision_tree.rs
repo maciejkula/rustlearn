@@ -40,8 +40,7 @@ use prelude::*;
 use multiclass::OneVsRestWrapper;
 use utils::EncodableRng;
 
-extern crate rand;
-
+use rand;
 use rand::{Rng, StdRng};
 use rand::distributions::{IndependentSample, Range};
 
@@ -878,6 +877,9 @@ mod tests {
 
     use bincode;
 
+    #[cfg(feature = "all_tests")]
+    use csv;
+
     extern crate time;
 
     #[test]
@@ -1188,7 +1190,6 @@ mod tests {
     #[cfg(feature = "all_tests")]
     fn test_decision_tree_newsgroups() {
 
-        extern crate csv;
         use feature_extraction::dict_vectorizer::*;
 
         let mut rdr = csv::Reader::from_file("./test_data/newsgroups/data.csv")

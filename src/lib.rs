@@ -130,8 +130,12 @@
 #[cfg(feature = "bench")]
 extern crate test;
 
-
+#[cfg(test)]
 extern crate bincode;
+
+#[cfg(test)]
+extern crate csv;
+
 extern crate rand;
 extern crate rustc_serialize;
 

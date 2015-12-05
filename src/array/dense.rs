@@ -123,6 +123,7 @@ enum ArrayIteratorAxis {
 
 
 /// Basic two-dimensional dense matrix type.
+#[derive(RustcEncodable, RustcDecodable)]
 #[derive(Clone, Debug)]
 pub struct Array {
     rows: usize,
@@ -795,9 +796,12 @@ pub fn close(x: f32, y: f32) -> bool {
 #[cfg(test)]
 mod tests {
 
+    use bincode;
+
     use array::traits::*;
     use super::*;
-    
+
+
     #[test]
     fn new_from_vec() {
         let mut arr = Array::from(vec![1.0, 2.0, 3.0, 4.0]);
@@ -854,6 +858,19 @@ mod tests {
 
         arr.add_inplace(1.0);
         assert!(allclose(&expected, &arr));
+    }
+
+    #[test]
+    fn serialization() {
+        let arr = Array::from(&vec![vec![0.0, 1.0],
+                                    vec![2.0, 3.0]]);
+
+        let encoded = bincode::rustc_serialize::encode(&arr,
+                                                       bincode::SizeLimit::Infinite).unwrap();
+        let decoded = bincode::rustc_serialize::decode(&encoded).unwrap();
+
+        assert!(allclose(&arr,
+                         &decoded));
     }
 
     #[test]

@@ -30,6 +30,11 @@ to use something more robust once a clear winner in that space emerges.
 All the models support fitting and prediction on both dense and sparse data, and the implementations
 should be roughly competitive with Python `sklearn` implementations, both in accuracy and performance.
 
+
+### Model serialization
+
+Model serialization is supported via `rustc_serialize`. This will probably change to `serde` once compiler plugins land in stable.
+
 ## Using `rustlearn`
 Usage should be straightforward.
 
@@ -111,6 +116,12 @@ let mut model = Hyperparameters::new(tree_params, 10)
     .one_vs_rest();
 
 model.fit(&data, &target).unwrap();
+
+// Optionally serialize and deserialize the model
+
+// let encoded = bincode::rustc_serialize::encode(&model,
+//                                                bincode::SizeLimit::Infinite).unwrap();
+// let decoded: OneVsRestWrapper<RandomForest> = bincode::rustc_serialize::decode(&encoded).unwrap();
 
 let prediction = model.predict(&data).unwrap();
 ```

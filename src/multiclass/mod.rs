@@ -77,6 +77,7 @@ impl<'a> Iterator for OneVsRest<'a> {
 }
 
 /// Wraps simple two-class classifiers to implement one-vs-rest strategies.
+#[derive(RustcEncodable, RustcDecodable)]
 pub struct OneVsRestWrapper<T> {
     base_model: T,
     models: Vec<T>,

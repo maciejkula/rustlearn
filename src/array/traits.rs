@@ -3,6 +3,7 @@
 use std::ops::{Range, RangeFrom, RangeTo, RangeFull};
 
 
+#[derive(RustcEncodable, RustcDecodable)]
 #[derive(Clone, Debug)]
 pub enum MatrixOrder {
     RowMajor,

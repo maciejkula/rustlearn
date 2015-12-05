@@ -25,6 +25,11 @@
 //! All the models support fitting and prediction on both dense and sparse data, and the implementations
 //! should be roughly competitive with Python `sklearn` implementations, both in accuracy and performance.
 //!
+//! ## Model serialization
+//! 
+//! Model serialization is supported via `rustc_serialize`. This will probably change to `serde` once
+//! compiler plugins land in stable.
+//!
 //! # Using `rustlearn`
 //! Usage should be straightforward.
 //! 
@@ -106,10 +111,16 @@
 //!     .one_vs_rest();
 //! 
 //! model.fit(&data, &target).unwrap();
+//!
+//! // Optionally serialize and deserialize the model
+//!
+//! // let encoded = bincode::rustc_serialize::encode(&model,
+//! //                                               bincode::SizeLimit::Infinite).unwrap();
+//! // let decoded: OneVsRestWrapper<RandomForest> = bincode::rustc_serialize::decode(&encoded).unwrap();
 //! 
 //! let prediction = model.predict(&data).unwrap();
 //! ```
-//!
+
 
 // Only use unstable features when we are benchmarking
 #![cfg_attr(feature="bench", feature(test))]
@@ -119,7 +130,11 @@
 #[cfg(feature = "bench")]
 extern crate test;
 
+
+extern crate bincode;
 extern crate rand;
+extern crate rustc_serialize;
+
 
 pub mod array;
 pub mod cross_validation;
@@ -131,9 +146,7 @@ pub mod multiclass;
 pub mod feature_extraction;
 pub mod trees;
 pub mod traits;
-
-
-
+mod utils;
 
 
 #[allow(unused_imports)]

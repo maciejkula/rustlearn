@@ -43,6 +43,7 @@ use array::traits::*;
 
 
 /// A sparse matrix with entries arranged row-wise.
+#[derive(RustcEncodable, RustcDecodable)]
 pub struct SparseRowArray {
     rows: usize,
     cols: usize,
@@ -52,6 +53,7 @@ pub struct SparseRowArray {
 
 
 /// A sparse matrix with entries arranged column-wise.
+#[derive(RustcEncodable, RustcDecodable)]
 pub struct SparseColumnArray {
     rows: usize,
     cols: usize,
@@ -472,6 +474,8 @@ mod tests {
     use array::dense::*;
     use array::traits::*;
 
+    use bincode;
+
     #[test]
     fn row_construction_and_indexing() {
 
@@ -504,8 +508,6 @@ mod tests {
         assert!(arr.get(0, 1) == 1.0);
         assert!(arr.get(1, 0) == 2.0);
         assert!(arr.get(1, 1) == 0.0);
-
-
     }
 
     #[test]
@@ -530,7 +532,7 @@ mod tests {
     fn column_test_iteration() {
 
         let dense_arr = Array::from(&vec![vec![0.0, 1.0],
-                                                 vec![2.0, 0.0]]);
+                                          vec![2.0, 0.0]]);
         let arr = SparseColumnArray::from(&dense_arr);
         let mut target = SparseColumnArray::zeros(2, 2);
 
@@ -542,6 +544,34 @@ mod tests {
 
         assert!(allclose(&dense_arr,
                          &target.todense()));
+    }
+
+    #[test]
+    fn serialization_sparse_row() {
+        let arr = SparseRowArray::from(
+            &Array::from(&vec![vec![0.0, 1.0],
+                               vec![2.0, 0.0]]));
+
+        let encoded = bincode::rustc_serialize::encode(&arr,
+                                                       bincode::SizeLimit::Infinite).unwrap();
+        let decoded: SparseRowArray = bincode::rustc_serialize::decode(&encoded).unwrap();
+
+        assert!(allclose(&arr.todense(),
+                         &decoded.todense()));
+    }
+
+    #[test]
+    fn serialization_sparse_colum() {
+        let arr = SparseColumnArray::from(
+            &Array::from(&vec![vec![0.0, 1.0],
+                               vec![2.0, 0.0]]));
+
+        let encoded = bincode::rustc_serialize::encode(&arr,
+                                                       bincode::SizeLimit::Infinite).unwrap();
+        let decoded: SparseColumnArray = bincode::rustc_serialize::decode(&encoded).unwrap();
+
+        assert!(allclose(&arr.todense(),
+                         &decoded.todense()));
     }
 
     #[test]

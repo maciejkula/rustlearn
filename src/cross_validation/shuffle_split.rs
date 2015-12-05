@@ -27,8 +27,7 @@
 
 use std::iter::Iterator;
 
-extern crate rand;
-
+use rand;
 use rand::{Rng, StdRng};
 
 

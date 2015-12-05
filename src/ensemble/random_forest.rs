@@ -39,8 +39,7 @@ use trees::decision_tree;
 use multiclass::OneVsRestWrapper;
 use utils::EncodableRng;
 
-extern crate rand;
-
+use rand;
 use rand::{SeedableRng, StdRng};
 use rand::distributions::{IndependentSample, Range};
 
@@ -208,6 +207,9 @@ mod tests {
 
     use bincode;
 
+    #[cfg(feature = "all_tests")]
+    use csv;
+
     #[test]
     fn test_random_forest_iris() {
         let (data, target) = load_data();
@@ -300,7 +302,6 @@ mod tests {
     #[cfg(feature = "all_tests")]
     fn test_random_forest_newsgroups() {
 
-        extern crate csv;
         extern crate time;
         use feature_extraction::dict_vectorizer::*;
         

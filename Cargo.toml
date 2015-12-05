@@ -15,10 +15,12 @@ exclude = [
 ]
 
 [dependencies]
-bincode = "0.4.0"
-csv = "0.14"
 rand = "0.3"
 rustc-serialize = "0.3"
+
+[dev-dependencies]
+bincode = "0.4.0"
+csv = "0.14"
 time = "0.1"
 
 [features]

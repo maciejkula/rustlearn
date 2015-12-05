@@ -365,6 +365,9 @@ mod tests {
 
     use bincode;
 
+    #[cfg(feature = "all_tests")]
+    use csv;
+
     #[test]
     fn basic_updating() {
 
@@ -600,7 +603,6 @@ mod tests {
     #[cfg(feature = "all_tests")]
     fn test_sgdclassifier_newsgroups() {
 
-        extern crate csv;
         use feature_extraction::dict_vectorizer::*;
 
         let mut rdr = csv::Reader::from_file("./test_data/newsgroups/data.csv")

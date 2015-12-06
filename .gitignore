@@ -9,3 +9,5 @@ perf
 *~
 *#*#
 *#*
+examples/*.data
+examples/*.labels

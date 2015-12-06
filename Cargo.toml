@@ -11,6 +11,7 @@ keywords = ["machine-learning"]
 authors = ["Maciej Kula <maciej.kula@gmail.com>"]
 exclude = [
 	"scripts/*",
+	"examples/*",
 	"test_data/*",
 ]
 
@@ -21,6 +22,7 @@ rustc-serialize = "0.3"
 [dev-dependencies]
 bincode = "0.4.0"
 csv = "0.14"
+hyper = "0.7.0"
 time = "0.1"
 
 [features]

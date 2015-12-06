@@ -1,6 +1,7 @@
 # rustlearn
 
 [![Circle CI](https://circleci.com/gh/maciejkula/rustlearn.svg?style=svg)](https://circleci.com/gh/maciejkula/rustlearn)
+[![Crates.io](https://img.shields.io/crates/v/rustlearn.svg)](https://crates.io/crates/rustlearn)
 
 A machine learning package for Rust.
 

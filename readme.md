@@ -19,14 +19,14 @@ to use something more robust once a clear winner in that space emerges.
 
 ### Matrix primitives
 
-- [dense matrices](array/dense/index.html)
-- [sparse matrices](array/sparse/index.html)
+- [dense matrices](https://maciejkula.github.io/rustlearn/doc/rustlearn/array/dense/index.html)
+- [sparse matrices](https://maciejkula.github.io/rustlearn/doc/rustlearn/array/sparse/index.html)
 
 ### Models
 
-- [logistic regression](linear_models/sgdclassifier/index.html) using stochastic gradient descent,
-- [decision trees](trees/decision_tree/index.html) using the CART algorithm, and
-- [random forests](ensemble/random_forest/index.html) using CART decision trees.
+- [logistic regression](https://maciejkula.github.io/rustlearn/doc/rustlearn/linear_models/sgdclassifier/index.html) using stochastic gradient descent,
+- [decision trees](https://maciejkula.github.io/rustlearn/doc/rustlearn/trees/decision_tree/index.html) using the CART algorithm, and
+- [random forests](https://maciejkula.github.io/rustlearn/doc/rustlearn/ensemble/random_forest/index.html) using CART decision trees.
 
 All the models support fitting and prediction on both dense and sparse data, and the implementations
 should be roughly competitive with Python `sklearn` implementations, both in accuracy and performance.

@@ -60,6 +60,9 @@ use std::iter::Iterator;
 use prelude::*;
 
 use multiclass::OneVsRestWrapper;
+use utils::{check_data_dimensionality,
+            check_matched_dimensions,
+            check_valid_labels};
 
 
 /// Hyperparameters for a SGDClassifier model.
@@ -204,9 +207,9 @@ impl SupervisedModel<Array> for SGDClassifier {
     
     fn fit(&mut self, X: &Array, y: &Array) -> Result<(), &'static str> {
 
-        assert!(X.cols() == self.dim);
-        assert!(X.rows() == y.rows());
-        assert!(y.cols() == 1);
+        try!(check_data_dimensionality(self.dim, X));
+        try!(check_matched_dimensions(X, y));
+        try!(check_valid_labels(y));
 
         for (row, &true_y) in X.iter_rows().zip(y.data().iter()) {
             let y_hat = self.compute_prediction(&row);
@@ -221,13 +224,13 @@ impl SupervisedModel<Array> for SGDClassifier {
         Ok(())
     }
 
-    fn decision_function(&self, x: &Array) -> Result<Array, &'static str> {
+    fn decision_function(&self, X: &Array) -> Result<Array, &'static str> {
 
-        assert!(x.cols() == self.dim);
+        try!(check_data_dimensionality(self.dim, X));
 
-        let mut data = Vec::with_capacity(x.rows());
+        let mut data = Vec::with_capacity(X.rows());
 
-        for row in x.iter_rows() {
+        for row in X.iter_rows() {
             data.push(self.compute_prediction(&row));
         }
 
@@ -240,9 +243,9 @@ impl SupervisedModel<SparseRowArray> for SGDClassifier {
 
     fn fit(&mut self, X: &SparseRowArray, y: &Array) -> Result<(), &'static str> {
 
-        assert!(X.cols() == self.dim);
-        assert!(X.rows() == y.rows());
-        assert!(y.cols() == 1);
+        try!(check_data_dimensionality(self.dim, X));
+        try!(check_matched_dimensions(X, y));
+        try!(check_valid_labels(y));
 
         for (row, &true_y) in X.iter_rows().zip(y.data().iter()) {
             let y_hat = self.compute_prediction(&row);
@@ -257,13 +260,13 @@ impl SupervisedModel<SparseRowArray> for SGDClassifier {
         Ok(())
     }
 
-    fn decision_function(&self, x: &SparseRowArray) -> Result<Array, &'static str> {
+    fn decision_function(&self, X: &SparseRowArray) -> Result<Array, &'static str> {
 
-        assert!(x.cols() == self.dim);
+        try!(check_data_dimensionality(self.dim, X));
 
-        let mut data = Vec::with_capacity(x.rows());
+        let mut data = Vec::with_capacity(X.rows());
 
-        for row in x.iter_rows() {
+        for row in X.iter_rows() {
             data.push(self.compute_prediction(&row));
         }
 

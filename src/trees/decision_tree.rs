@@ -38,7 +38,10 @@ use std::usize;
 use prelude::*;
 
 use multiclass::OneVsRestWrapper;
-use utils::EncodableRng;
+use utils::{check_data_dimensionality,
+            check_matched_dimensions,
+            check_valid_labels,
+            EncodableRng};
 
 use rand;
 use rand::{Rng, StdRng};
@@ -313,9 +316,9 @@ pub struct DecisionTree {
 impl SupervisedModel<Array> for DecisionTree {
     fn fit(&mut self, X: &Array, y: &Array) -> Result<(), &'static str> {
 
-        assert!(X.cols() == self.dim);
-        assert!(X.rows() == y.rows());
-        assert!(y.cols() == 1);
+        try!(check_data_dimensionality(self.dim, X));
+        try!(check_matched_dimensions(X, y));
+        try!(check_valid_labels(y));
 
         self.feature_types = DecisionTree::analyze_features(X);
 
@@ -334,13 +337,15 @@ impl SupervisedModel<Array> for DecisionTree {
         Ok(())
     }
 
-    fn decision_function(&self, x: &Array) -> Result<Array, &'static str> {
+    fn decision_function(&self, X: &Array) -> Result<Array, &'static str> {
+
+        try!(check_data_dimensionality(self.dim, X));
 
         match self.root {
             Some(ref node) => {
-                let mut data = Vec::with_capacity(x.rows());
-                for row_idx in 0..x.rows() {
-                    data.push(self.query_tree(&node, x, row_idx));
+                let mut data = Vec::with_capacity(X.rows());
+                for row_idx in 0..X.rows() {
+                    data.push(self.query_tree(&node, X, row_idx));
                 }
                 Ok(Array::from(data))
             },
@@ -354,9 +359,9 @@ impl SupervisedModel<SparseColumnArray> for DecisionTree {
 
     fn fit(&mut self, X: &SparseColumnArray, y: &Array) -> Result<(), &'static str> {
 
-        assert!(X.cols() == self.dim);
-        assert!(X.rows() == y.rows());
-        assert!(y.cols() == 1);
+        try!(check_data_dimensionality(self.dim, X));
+        try!(check_matched_dimensions(X, y));
+        try!(check_valid_labels(y));
 
         self.feature_types = DecisionTree::analyze_features_sparse(X);
 
@@ -375,13 +380,15 @@ impl SupervisedModel<SparseColumnArray> for DecisionTree {
         Ok(())
     }
 
-    fn decision_function(&self, x: &SparseColumnArray) -> Result<Array, &'static str> {
+    fn decision_function(&self, X: &SparseColumnArray) -> Result<Array, &'static str> {
+
+        try!(check_data_dimensionality(self.dim, X));
 
         match self.root {
             Some(ref node) => {
-                let mut data = Vec::with_capacity(x.rows());
-                for row_idx in 0..x.rows() {
-                    data.push(self.query_tree_sparse(&node, x, row_idx));
+                let mut data = Vec::with_capacity(X.rows());
+                for row_idx in 0..X.rows() {
+                    data.push(self.query_tree_sparse(&node, X, row_idx));
                 }
                 Ok(Array::from(data))
             },

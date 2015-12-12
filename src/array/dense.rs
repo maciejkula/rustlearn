@@ -175,7 +175,8 @@ impl<'a> Iterator for ArrayIterator<'a> {
 }
 
 
-impl<'a> RowIterable<ArrayView<'a>> for &'a Array {
+impl<'a> RowIterable for &'a Array {
+    type Item = ArrayView<'a>;
     type Output = ArrayIterator<'a>;
     fn iter_rows(self) -> ArrayIterator<'a> {
         ArrayIterator {idx: 0,
@@ -192,7 +193,8 @@ impl<'a> RowIterable<ArrayView<'a>> for &'a Array {
 }
 
 
-impl<'a> ColumnIterable<ArrayView<'a>> for &'a Array {
+impl<'a> ColumnIterable for &'a Array {
+    type Item = ArrayView<'a>;
     type Output = ArrayIterator<'a>;
     fn iter_columns(self) -> ArrayIterator<'a> {
         ArrayIterator {idx: 0,

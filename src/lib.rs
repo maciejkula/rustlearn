@@ -150,6 +150,7 @@ pub mod multiclass;
 pub mod feature_extraction;
 pub mod trees;
 pub mod traits;
+pub mod svm;
 mod utils;
 
 

@@ -1,7 +1,18 @@
+//! Internals of the `libsvm` FFI.
+//!
+//! Objects whose names start with `Libsvm` are for the most part
+//! things that we pass or get directly from `libsvm`, and are highly
+//! fragile.
+//!
+//! Their safe, memory-owning counterparts start with `Svm`.
+
+
 use prelude::*;
 
+/// SVM type.
 #[repr(C)]
 #[derive(Clone, Debug)]
+#[derive(RustcEncodable, RustcDecodable)]
 pub enum SvmType {
     C_SVC,
     NU_SVC,
@@ -11,19 +22,28 @@ pub enum SvmType {
 }
 
 
+/// Type of the kernel used by the SVM.
 #[repr(C)]
 #[derive(Clone, Debug)]
+#[derive(RustcEncodable, RustcDecodable)]
 pub enum KernelType {
     Linear,
     Polynomial,
     RBF,
     Sigmoid,
-    Precomputed
+    /// Not implemented.
+    Precomputed,
 }
 
 
+/// Libsvm uses a sparse representation of data,
+/// where every entry in the training matrix
+/// is characterised by a column index and a value.
+/// Because this is a safe Rust-like object in itself,
+/// it does not have a safe counterpart.
 #[repr(C)]
 #[derive(Clone, Debug)]
+#[derive(RustcEncodable, RustcDecodable)]
 pub struct LibsvmNode {
     index: i32,
     value: f64
@@ -37,14 +57,22 @@ impl LibsvmNode {
 }
 
 
+
+/// Libsvm structure representing training data.
 #[repr(C)]
 struct LibsvmProblem {
+    /// Number of rows in the training data.
     l: i32,
     y: *const f64,
+    /// Rows of the X matrix. Because row lenghts
+    /// are not stored anywhere, and do not need
+    /// to be equal, `libsvm` uses index = -1 as
+    /// a sentinel value.
     svm_node: *const *const LibsvmNode
 }
 
 
+/// Safe version of `LibsvmProblem`.
 pub struct SvmProblem {
     nodes: Vec<Vec<LibsvmNode>>,
     node_ptrs: Vec<* const LibsvmNode>,
@@ -52,6 +80,7 @@ pub struct SvmProblem {
 }
 
 
+/// Conert a row of the X matrix to its Libsvm representation.
 fn row_to_nodes<T: NonzeroIterable>(row: T) -> Vec<LibsvmNode> {
     let mut nodes = Vec::new();
 
@@ -67,8 +96,10 @@ fn row_to_nodes<T: NonzeroIterable>(row: T) -> Vec<LibsvmNode> {
 
 
 impl SvmProblem {
-    pub fn new_dense(X: &Array, y: &Array) -> SvmProblem {
-        let mut nodes = Vec::with_capacity(X.rows());
+    /// Create a new `SvmProblem` from training data.
+    pub fn new<T: RowIterable>(X: T, y: &Array) -> SvmProblem {
+
+        let mut nodes = Vec::new();
 
         for row in X.iter_rows() {
             let row_nodes = row_to_nodes(row);
@@ -84,6 +115,7 @@ impl SvmProblem {
                      .map(|&x| x as f64).collect::<Vec<_>>() }
     }
 
+    /// Returns the unsafe object that can be passed into `libsvm`.
     fn build_problem(&self) -> LibsvmProblem {
         LibsvmProblem { l: self.nodes.len() as i32,
                         y: self.y.first().unwrap() as *const f64,
@@ -92,6 +124,7 @@ impl SvmProblem {
 }
 
 
+/// `libsvm` representation of training parameters.
 #[repr(C)]
 struct LibsvmParameter {
     svm_type: SvmType,
@@ -112,16 +145,18 @@ struct LibsvmParameter {
 }
 
 
+/// Safe representation of `LibsvmParameter`.
 #[derive(Clone, Debug)]
+#[derive(RustcEncodable, RustcDecodable)]
 pub struct SvmParameter {
     svm_type: SvmType,
     kernel_type: KernelType,
-    degree: i32,
-    gamma: f64,
-    coef0: f64,
-    cache_size: f64,
+    pub degree: i32,
+    pub gamma: f64,
+    pub coef0: f64,
+    pub cache_size: f64,
     eps: f64,
-    C: f64,
+    pub C: f64,
     nr_weight: i32,
     weight_label: Vec<i32>,
     weight: Vec<f64>,
@@ -153,6 +188,8 @@ impl SvmParameter {
                        probability: 0 }
     }
 
+    /// Returns the parameter object to be passed into
+    /// `libsvm` functions.
     fn build_libsvm_parameter(&self) -> LibsvmParameter {
         LibsvmParameter { svm_type: self.svm_type.clone(),
                           kernel_type: self.kernel_type.clone(),
@@ -173,6 +210,8 @@ impl SvmParameter {
 }
 
 
+/// The model object returned from and accepted by
+/// `libsvm` functions.
 #[repr(C)]
 struct LibsvmModel {
     svm_parameter: LibsvmParameter,
@@ -190,7 +229,9 @@ struct LibsvmModel {
 }
 
 
+/// Safe representation of `LibsvmModel`.
 #[derive(Clone, Debug)]
+#[derive(RustcEncodable, RustcDecodable)]
 pub struct SvmModel {
     svm_parameter: SvmParameter,
     nr_class: i32,
@@ -290,7 +331,7 @@ impl SvmModel {
             let sv_row_ptr = *sv_ptr.offset(row as isize);
             let mut i = 0;
 
-            while true {
+            loop {
                 let node = (*sv_row_ptr.offset(i as isize)).clone();
                 sv_row.push(node.clone());
 
@@ -355,7 +396,11 @@ extern {
 }
 
 
-pub fn svm_train_safe(problem: &SvmProblem, parameters: &SvmParameter) -> SvmModel {
+/// Fit a `libsvm` model.
+pub fn fit<T: RowIterable>(X: T, y: &Array, parameters: &SvmParameter) -> SvmModel {
+
+    let problem = SvmProblem::new(X, y);
+
     let model_ptr = unsafe {
         svm_train(&problem.build_problem() as * const LibsvmProblem,
                   &parameters.build_libsvm_parameter() as * const LibsvmParameter)
@@ -373,14 +418,19 @@ pub fn svm_train_safe(problem: &SvmProblem, parameters: &SvmParameter) -> SvmMod
 }
 
 
-pub fn svm_decision_function_dense(model: &SvmModel, num_classes: usize, X: &Array) -> (Array, Array) {
+/// Call `libsvm` to get predictions (both predicted classes
+/// and OvO decision function values.
+pub fn predict<T: RowIterable>(model: &SvmModel, X: T, x_rows: usize) -> (Array, Array) {
 
+    let num_classes = model.nr_class as usize;
     let ovo_num_classes = num_classes * (num_classes - 1) / 2;
 
-    let mut df = vec![0.0; X.rows() * ovo_num_classes];
+    // We are actually mutating this in C, but convincing rustc that is
+    // safe is a bit of a pain
+    let df = vec![0.0; x_rows * ovo_num_classes];
     let mut df_slice = &df[..];
 
-    let mut predicted_class = Vec::with_capacity(X.rows());
+    let mut predicted_class = Vec::with_capacity(x_rows);
 
     // Allocate space for pointers to support vector components,
     // we don't need them after we're finished here
@@ -390,7 +440,7 @@ pub fn svm_decision_function_dense(model: &SvmModel, num_classes: usize, X: &Arr
 
     let mut libsvm_model = model.get_libsvm_model(&mut sv_ptrs, &mut sv_coef_ptrs);
 
-    for (i, row) in X.iter_rows().enumerate() {
+    for (_, row) in X.iter_rows().enumerate() {
         let nodes = row_to_nodes(row);
         unsafe {
             predicted_class.push(svm_predict_values(&mut libsvm_model as * mut LibsvmModel,
@@ -403,7 +453,7 @@ pub fn svm_decision_function_dense(model: &SvmModel, num_classes: usize, X: &Arr
 
     let df_data = df.iter().map(|&x| x as f32).collect::<Vec<_>>();
     let mut df_array = Array::from(df_data);
-    df_array.reshape(X.rows(), ovo_num_classes);
+    df_array.reshape(x_rows, ovo_num_classes);
 
     (df_array, Array::from(predicted_class))
 }

@@ -1,3 +1,3 @@
-//! Support vector models.
+//! Support vector machines.
 
 pub mod libsvm;

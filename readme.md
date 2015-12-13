@@ -25,6 +25,7 @@ to use something more robust once a clear winner in that space emerges.
 ### Models
 
 - [logistic regression](https://maciejkula.github.io/rustlearn/doc/rustlearn/linear_models/sgdclassifier/index.html) using stochastic gradient descent,
+- [support vector machines](svm/libsvm/svc/index.html) using the `libsvm` library,
 - [decision trees](https://maciejkula.github.io/rustlearn/doc/rustlearn/trees/decision_tree/index.html) using the CART algorithm, and
 - [random forests](https://maciejkula.github.io/rustlearn/doc/rustlearn/ensemble/random_forest/index.html) using CART decision trees.
 

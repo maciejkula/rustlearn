@@ -11,3 +11,4 @@ perf
 *#*
 examples/*.data
 examples/*.labels
+*.o

@@ -19,6 +19,7 @@
 //! ## Models
 //! 
 //! - [logistic regression](linear_models/sgdclassifier/index.html) using stochastic gradient descent,
+//! - [support vector machines](svm/libsvm/svc/index.html) using the `libsvm` library,
 //! - [decision trees](trees/decision_tree/index.html) using the CART algorithm, and
 //! - [random forests](ensemble/random_forest/index.html) using CART decision trees.
 //! 
@@ -150,6 +151,7 @@ pub mod multiclass;
 pub mod feature_extraction;
 pub mod trees;
 pub mod traits;
+pub mod svm;
 mod utils;
 
 

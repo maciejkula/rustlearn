@@ -75,23 +75,25 @@ pub trait IndexableMatrix {
 
 /// Trait representing a matrix that can be iterated over in
 /// a row-wise fashion.
-pub trait RowIterable<T: NonzeroIterable> {
-    type Output: Iterator<Item=T>;
+pub trait RowIterable {
+    type Item: NonzeroIterable;
+    type Output: Iterator<Item=Self::Item>;
     /// Iterate over rows of the matrix.
     fn iter_rows(self) -> Self::Output;
     /// View a row of the matrix.
-    fn view_row(self, idx: usize) -> T;
+    fn view_row(self, idx: usize) -> Self::Item;
 }
 
 
 /// Trait representing a matrix that can be iterated over in
 /// a column-wise fashion.
-pub trait ColumnIterable<T: NonzeroIterable> {
-    type Output: Iterator<Item=T>;
+pub trait ColumnIterable {
+    type Item: NonzeroIterable;
+    type Output: Iterator<Item=Self::Item>;
     /// Iterate over columns of a the matrix.
     fn iter_columns(self) -> Self::Output;
     /// View a column of the matrix.
-    fn view_column(self, idx: usize) -> T;
+    fn view_column(self, idx: usize) -> Self::Item;
 }
 
 

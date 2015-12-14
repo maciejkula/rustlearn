@@ -269,7 +269,8 @@ impl<'a> From<&'a SparseColumnArray> for SparseRowArray {
 }
 
 
-impl<'a> RowIterable<SparseArrayView<'a>> for &'a SparseRowArray {
+impl<'a> RowIterable for &'a SparseRowArray {
+    type Item = SparseArrayView<'a>;
     type Output = SparseArrayIterator<'a>;
     fn iter_rows(self) -> SparseArrayIterator<'a> {
         SparseArrayIterator {idx: 0,
@@ -360,7 +361,8 @@ impl<'a> From<&'a SparseRowArray> for SparseColumnArray {
 }
     
 
-impl<'a> ColumnIterable<SparseArrayView<'a>> for &'a SparseColumnArray {
+impl<'a> ColumnIterable for &'a SparseColumnArray {
+    type Item = SparseArrayView<'a>;
     type Output = SparseArrayIterator<'a>;
     fn iter_columns(self) -> SparseArrayIterator<'a> {
         SparseArrayIterator {idx: 0,

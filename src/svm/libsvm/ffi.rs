@@ -7,6 +7,7 @@
 //! Their safe, memory-owning counterparts start with `Svm`.
 
 use std::slice;
+use std::ffi::CStr;
 
 use prelude::*;
 
@@ -359,18 +360,44 @@ extern {
                  param: *const LibsvmParameter) -> *const LibsvmModel;
     fn svm_predict_values(svm_model: *mut LibsvmModel, svm_nodes: *const LibsvmNode, out: *const f64) -> f64;
     fn svm_free_and_destroy_model(svm_model: * const * const LibsvmModel);
+    fn svm_check_parameter(problem: * const LibsvmProblem, param: * const LibsvmParameter) -> *const i8;
+}
+
+
+fn check(problem: * const LibsvmProblem, param: * const LibsvmParameter) -> Result<(), String> {
+    unsafe {
+        let message = svm_check_parameter(problem, param);
+
+        match message.is_null() {
+            true => Ok(()),
+            false => Err(CStr::from_ptr(message).to_str().unwrap().to_owned()),
+        }
+    }
 }
 
 
 /// Fit a `libsvm` model.
-pub fn fit<'a, T>(X: &'a T, y: &Array, parameters: &SvmParameter) -> SvmModel where
+pub fn fit<'a, T>(X: &'a T, y: &Array, parameters: &SvmParameter) -> Result<SvmModel, &'static str> where
     T: IndexableMatrix, &'a T: RowIterable {
 
         let problem = SvmProblem::new(X, y);
 
+        let libsvm_problem = problem.build_problem();
+        let libsvm_param = parameters.build_libsvm_parameter();
+
         let model_ptr = unsafe {
-            svm_train(&problem.build_problem() as * const LibsvmProblem,
-                      &parameters.build_libsvm_parameter() as * const LibsvmParameter)
+            match check(&libsvm_problem as * const LibsvmProblem,
+                        &libsvm_param as * const LibsvmParameter) {
+                Ok(_) => {},
+                Err(error_str) => {
+                    // A bit of a horrible out-of-band error reporting,
+                    // we should switch the model traits to String errors
+                    println!("Libsvm check error: {}", error_str);
+                    return Err("Invalid libsvm parameters.")
+                },
+            };
+            svm_train(&libsvm_problem as * const LibsvmProblem,
+                      &libsvm_param as * const LibsvmParameter)
         };
 
         let model = SvmModel::new(parameters.clone(), model_ptr);
@@ -381,7 +408,7 @@ pub fn fit<'a, T>(X: &'a T, y: &Array, parameters: &SvmParameter) -> SvmModel wh
             svm_free_and_destroy_model(&model_ptr);
         }
 
-        model
+        Ok(model)
 }
 
 

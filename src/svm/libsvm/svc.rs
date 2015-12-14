@@ -101,7 +101,7 @@ macro_rules! impl_supervised_model {
 
                 let svm_params = self.hyperparams.svm_parameter();
 
-                self.model = Some(ffi::fit(X, y, &svm_params));
+                self.model = Some(try!(ffi::fit(X, y, &svm_params)));
 
                 Ok(())
             }

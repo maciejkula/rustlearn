@@ -6,6 +6,7 @@
 //!
 //! Their safe, memory-owning counterparts start with `Svm`.
 
+use std::slice;
 
 use prelude::*;
 
@@ -97,29 +98,30 @@ fn row_to_nodes<T: NonzeroIterable>(row: T) -> Vec<LibsvmNode> {
 
 impl SvmProblem {
     /// Create a new `SvmProblem` from training data.
-    pub fn new<T: RowIterable>(X: T, y: &Array) -> SvmProblem {
+    pub fn new<'a, T>(X: &'a T, y: &Array) -> SvmProblem where
+        T: IndexableMatrix, &'a T: RowIterable {
 
-        let mut nodes = Vec::new();
+            let mut nodes = Vec::with_capacity(X.rows());
 
-        for row in X.iter_rows() {
-            let row_nodes = row_to_nodes(row);
-            nodes.push(row_nodes)
+            for row in X.iter_rows() {
+                let row_nodes = row_to_nodes(row);
+                nodes.push(row_nodes)
+            }
+
+            let node_ptrs = nodes.iter().map(|x| x.as_ptr())
+                .collect::<Vec<_>>();
+
+            SvmProblem { nodes: nodes,
+                         node_ptrs: node_ptrs,
+                         y: y.data().iter()
+                         .map(|&x| x as f64).collect::<Vec<_>>() }
         }
-
-        let node_ptrs = nodes.iter().map(|x| x.first().unwrap() as *const LibsvmNode)
-            .collect::<Vec<_>>();
-
-        SvmProblem { nodes: nodes,
-                     node_ptrs: node_ptrs,
-                     y: y.data().iter()
-                     .map(|&x| x as f64).collect::<Vec<_>>() }
-    }
 
     /// Returns the unsafe object that can be passed into `libsvm`.
     fn build_problem(&self) -> LibsvmProblem {
         LibsvmProblem { l: self.nodes.len() as i32,
-                        y: self.y.first().unwrap() as *const f64,
-                        svm_node: self.node_ptrs.first().unwrap() as *const *const LibsvmNode }
+                        y: self.y.as_ptr(),
+                        svm_node: self.node_ptrs.as_ptr() }
     }
 }
 
@@ -200,8 +202,8 @@ impl SvmParameter {
                           cache_size: self.cache_size,
                           eps: self.eps,
                           nr_weight: self.nr_weight,
-                          weight: self.weight.first().unwrap() as *const f64,
-                          weight_label: self.weight_label.first().unwrap() as *const i32,
+                          weight: self.weight.as_ptr(),
+                          weight_label: self.weight_label.as_ptr(),
                           nu: self.nu,
                           p: self.p,
                           shrinking: self.shrinking,
@@ -273,50 +275,35 @@ impl SvmModel {
         sv_coef_ptrs.clear();
 
         for x in self.SV.iter() {
-            SV_ptrs.push(x.first().unwrap() as * const LibsvmNode);
+            SV_ptrs.push(x.as_ptr());
         }
 
         for x in self.sv_coef.iter() {
-            sv_coef_ptrs.push(x.first().unwrap() as * const f64);
+            sv_coef_ptrs.push(x.as_ptr());
         }
             
         LibsvmModel { svm_parameter: self.svm_parameter.build_libsvm_parameter(),
                       nr_class: self.nr_class,
                       l: self.l,
-                      SV: SV_ptrs.first().unwrap() as * const * const LibsvmNode,
-                      sv_coef: sv_coef_ptrs.first().unwrap() as * const * const f64,
-                      rho: self.rho.first().unwrap() as * const f64,
-                      probA: self.probA.first().unwrap() as * const f64,
-                      probB: self.probB.first().unwrap() as * const f64,
-                      sv_indices: self.sv_indices.first().unwrap() as * const i32,
-                      label: self.label.first().unwrap() as * const i32,
-                      nSV: self.nSV.first().unwrap() as * const i32,
+                      SV: SV_ptrs.as_ptr(),
+                      sv_coef: sv_coef_ptrs.as_ptr(),
+                      rho: self.rho.as_ptr(),
+                      probA: self.probA.as_ptr(),
+                      probB: self.probB.as_ptr(),
+                      sv_indices: self.sv_indices.as_ptr(),
+                      label: self.label.as_ptr(),
+                      nSV: self.nSV.as_ptr(),
                       free_sv: self.free_sv }
     }
 
     unsafe fn get_nSV(model_ptr: *const LibsvmModel) -> Vec<i32> {
-        let nr_class = ((*model_ptr)).nr_class;
-        let mut nSV = Vec::with_capacity(nr_class as usize);
-        let nsv_ptr = (*model_ptr).nSV;
-
-        for i in 0..nr_class {
-            nSV.push(*nsv_ptr.offset(i as isize));
-        }
-
-        nSV
+        let nr_class = ((*model_ptr)).nr_class as usize;
+        slice::from_raw_parts((*model_ptr).nSV, nr_class).to_owned()
     }
 
     unsafe fn get_label(model_ptr: *const LibsvmModel) -> Vec<i32> {
-
-        let nr_class = (*model_ptr).nr_class;
-        let mut labels = Vec::with_capacity(nr_class as usize);
-        let label_ptr = (*model_ptr).label;
-
-        for i in 0..nr_class {
-            labels.push(*label_ptr.offset(i as isize));
-        }
-
-        labels
+        let nr_class = (*model_ptr).nr_class as usize;
+        slice::from_raw_parts((*model_ptr).label, nr_class).to_owned()
     }
 
     unsafe fn get_SV(model_ptr: *const LibsvmModel) -> Vec<Vec<LibsvmNode>> {
@@ -349,42 +336,21 @@ impl SvmModel {
     }
 
     unsafe fn get_rho(model_ptr: *const LibsvmModel) -> Vec<f64> {
-        let mut nr_class = (*model_ptr).nr_class;
+        let mut nr_class = (*model_ptr).nr_class as usize;
         nr_class = nr_class * (nr_class - 1) / 2;
-
-        let mut rho = Vec::with_capacity(nr_class as usize);
-
-        let rho_ptr = (*model_ptr).rho;
-
-        for i in 0..nr_class {
-            rho.push(*rho_ptr.offset(i as isize));
-        }
-
-        rho
+        slice::from_raw_parts((*model_ptr).rho, nr_class).to_owned()
     }
 
     unsafe fn get_sv_coef(model_ptr: *const LibsvmModel) -> Vec<Vec<f64>> {
 
-        let nr_class = (*model_ptr).nr_class;
-        let l = (*model_ptr).l;
+        let nr_class = (*model_ptr).nr_class as usize;
+        let l = (*model_ptr).l as usize;
 
-        let mut sv_coef = Vec::with_capacity((nr_class - 1) as usize);
-
-        for i in 0..(nr_class - 1) {
-
-            let row_ptr = *(*model_ptr).sv_coef.offset(i as isize);
-            let mut coef_row = Vec::with_capacity(l as usize);
-
-            for j in 0..l {
-                coef_row.push(*row_ptr.offset(j as isize));
-            }
-
-            sv_coef.push(coef_row);
-        }
-
-        sv_coef
+        slice::from_raw_parts((*model_ptr).sv_coef, nr_class - 1)
+            .iter()
+            .map(|&x| slice::from_raw_parts(x, l).to_owned())
+            .collect::<Vec<_>>()
     }
-        
 }
 
 
@@ -397,63 +363,67 @@ extern {
 
 
 /// Fit a `libsvm` model.
-pub fn fit<T: RowIterable>(X: T, y: &Array, parameters: &SvmParameter) -> SvmModel {
+pub fn fit<'a, T>(X: &'a T, y: &Array, parameters: &SvmParameter) -> SvmModel where
+    T: IndexableMatrix, &'a T: RowIterable {
 
-    let problem = SvmProblem::new(X, y);
+        let problem = SvmProblem::new(X, y);
 
-    let model_ptr = unsafe {
-        svm_train(&problem.build_problem() as * const LibsvmProblem,
-                  &parameters.build_libsvm_parameter() as * const LibsvmParameter)
-    };
+        let model_ptr = unsafe {
+            svm_train(&problem.build_problem() as * const LibsvmProblem,
+                      &parameters.build_libsvm_parameter() as * const LibsvmParameter)
+        };
 
-    let model = SvmModel::new(parameters.clone(), model_ptr);
+        let model = SvmModel::new(parameters.clone(), model_ptr);
 
-    unsafe {
-        // Free the model data allocated by libsvm,
-        // we've got our own, sane copy.
-        svm_free_and_destroy_model(&model_ptr);
-    }
+        unsafe {
+            // Free the model data allocated by libsvm,
+            // we've got our own, sane copy.
+            svm_free_and_destroy_model(&model_ptr);
+        }
 
-    model
+        model
 }
 
 
 /// Call `libsvm` to get predictions (both predicted classes
 /// and OvO decision function values.
-pub fn predict<T: RowIterable>(model: &SvmModel, X: T, x_rows: usize) -> (Array, Array) {
+pub fn predict<'a, T>(model: &SvmModel, X: &'a T) -> (Array, Array) where
+    T: IndexableMatrix, &'a T: RowIterable {
 
-    let num_classes = model.nr_class as usize;
-    let ovo_num_classes = num_classes * (num_classes - 1) / 2;
+        let x_rows = X.rows();
 
-    // We are actually mutating this in C, but convincing rustc that is
-    // safe is a bit of a pain
-    let df = vec![0.0; x_rows * ovo_num_classes];
-    let mut df_slice = &df[..];
+        let num_classes = model.nr_class as usize;
+        let ovo_num_classes = num_classes * (num_classes - 1) / 2;
 
-    let mut predicted_class = Vec::with_capacity(x_rows);
+        // We are actually mutating this in C, but convincing rustc that is
+        // safe is a bit of a pain
+        let df = vec![0.0; x_rows * ovo_num_classes];
+        let mut df_slice = &df[..];
 
-    // Allocate space for pointers to support vector components,
-    // we don't need them after we're finished here
-    // so they will be freed.
-    let mut sv_ptrs = Vec::new();
-    let mut sv_coef_ptrs = Vec::new();
+        let mut predicted_class = Vec::with_capacity(x_rows);
 
-    let mut libsvm_model = model.get_libsvm_model(&mut sv_ptrs, &mut sv_coef_ptrs);
+        // Allocate space for pointers to support vector components,
+        // we don't need them after we're finished here
+        // so they will be freed.
+        let mut sv_ptrs = Vec::new();
+        let mut sv_coef_ptrs = Vec::new();
 
-    for (_, row) in X.iter_rows().enumerate() {
-        let nodes = row_to_nodes(row);
-        unsafe {
-            predicted_class.push(svm_predict_values(&mut libsvm_model as * mut LibsvmModel,
-                                                    nodes.first().unwrap() as *const LibsvmNode,
-                                                    df_slice.first().unwrap() as *const f64)
-                                 as f32);
+        let mut libsvm_model = model.get_libsvm_model(&mut sv_ptrs, &mut sv_coef_ptrs);
+
+        for (_, row) in X.iter_rows().enumerate() {
+            let nodes = row_to_nodes(row);
+            unsafe {
+                predicted_class.push(svm_predict_values(&mut libsvm_model as * mut LibsvmModel,
+                                                        nodes.as_ptr(),
+                                                        df_slice.as_ptr())
+                                     as f32);
+            }
+            df_slice = &df_slice[ovo_num_classes..];
         }
-        df_slice = &df_slice[ovo_num_classes..];
+
+        let df_data = df.iter().map(|&x| x as f32).collect::<Vec<_>>();
+        let mut df_array = Array::from(df_data);
+        df_array.reshape(x_rows, ovo_num_classes);
+
+        (df_array, Array::from(predicted_class))
     }
-
-    let df_data = df.iter().map(|&x| x as f32).collect::<Vec<_>>();
-    let mut df_array = Array::from(df_data);
-    df_array.reshape(x_rows, ovo_num_classes);
-
-    (df_array, Array::from(predicted_class))
-}

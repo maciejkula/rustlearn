@@ -113,9 +113,7 @@ macro_rules! impl_supervised_model {
                 match self.model {
                     Some(ref model) => {
                         let (decision_function, _)
-                            = ffi::predict(model,
-                                           X,
-                                           X.rows());
+                            = ffi::predict(model, X);
                         Ok(decision_function)
                     },
                     None => Err("Model must be fit before predicting.")
@@ -127,9 +125,7 @@ macro_rules! impl_supervised_model {
                 match self.model {
                     Some(ref model) => {
                         let (_, predicted_class)
-                            = ffi::predict(model,
-                                           X,
-                                           X.rows());
+                            = ffi::predict(model, X);
                         Ok(predicted_class)
                     },
                     None => Err("Model must be fit before predicting.")

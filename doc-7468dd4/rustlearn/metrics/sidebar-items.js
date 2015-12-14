@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["accuracy_score","Measure classifier accuracy"]]});

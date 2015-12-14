@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["svc","Support Vector Classifier using the `libsvm` library."]]});

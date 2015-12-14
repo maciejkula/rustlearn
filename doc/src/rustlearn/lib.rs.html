@@ -197,6 +197,12 @@
 <span id="155">155</span>
 <span id="156">156</span>
 <span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! A machine learning crate for Rust.</span>
 <span class='doccomment'>//!</span>
@@ -219,6 +225,7 @@
 <span class='doccomment'>//! ## Models</span>
 <span class='doccomment'>//! </span>
 <span class='doccomment'>//! - [logistic regression](linear_models/sgdclassifier/index.html) using stochastic gradient descent,</span>
+<span class='doccomment'>//! - [support vector machines](svm/libsvm/svc/index.html) using the `libsvm` library,</span>
 <span class='doccomment'>//! - [decision trees](trees/decision_tree/index.html) using the CART algorithm, and</span>
 <span class='doccomment'>//! - [random forests](ensemble/random_forest/index.html) using CART decision trees.</span>
 <span class='doccomment'>//! </span>
@@ -330,8 +337,12 @@
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;bench&quot;</span>)]</span>
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>test</span>;
 
-
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>bincode</span>;
+
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>csv</span>;
+
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rand</span>;
 <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rustc_serialize</span>;
 
@@ -346,6 +357,7 @@
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>feature_extraction</span>;
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>trees</span>;
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>traits</span>;
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>svm</span>;
 <span class='kw'>mod</span> <span class='ident'>utils</span>;
 
 

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `rustlearn` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, rustlearn">
+
+    <title>rustlearn - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'rustlearn', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>rustlearn</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-0' class='srclink' href='../src/rustlearn/lib.rs.html#1-157' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>A machine learning crate for Rust.</p>
+
+<h1 id='introduction' class='section-header'><a href='#introduction'>Introduction</a></h1>
+<p>This crate is mostly an excuse for me to learn Rust. Nevertheless, it contains reasonably effective
+implementations of a number of common machine learing algorithms.</p>
+
+<p>At the moment, <code>rustlearn</code> uses its own basic dense and sparse array types, but I will be happy
+to use something more robust once a clear winner in that space emerges.</p>
+
+<h1 id='features' class='section-header'><a href='#features'>Features</a></h1>
+<h2 id='matrix-primitives' class='section-header'><a href='#matrix-primitives'>Matrix primitives</a></h2>
+<ul>
+<li><a href="array/dense/index.html">dense matrices</a></li>
+<li><a href="array/sparse/index.html">sparse matrices</a></li>
+</ul>
+
+<h2 id='models' class='section-header'><a href='#models'>Models</a></h2>
+<ul>
+<li><a href="linear_models/sgdclassifier/index.html">logistic regression</a> using stochastic gradient descent,</li>
+<li><a href="trees/decision_tree/index.html">decision trees</a> using the CART algorithm, and</li>
+<li><a href="ensemble/random_forest/index.html">random forests</a> using CART decision trees.</li>
+</ul>
+
+<p>All the models support fitting and prediction on both dense and sparse data, and the implementations
+should be roughly competitive with Python <code>sklearn</code> implementations, both in accuracy and performance.</p>
+
+<h2 id='model-serialization' class='section-header'><a href='#model-serialization'>Model serialization</a></h2>
+<p>Model serialization is supported via <code>rustc_serialize</code>. This will probably change to <code>serde</code> once
+compiler plugins land in stable.</p>
+
+<h1 id='using-rustlearn' class='section-header'><a href='#using-rustlearn'>Using <code>rustlearn</code></a></h1>
+<p>Usage should be straightforward.</p>
+
+<ul>
+<li>import the prelude for alll the linear algebra primitives and common traits:</li>
+</ul>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>rustlearn</span>::<span class='ident'>prelude</span>::<span class='op'>*</span>;</pre>
+
+<ul>
+<li>import individual models and utilities from submodules:</li>
+</ul>
+<pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>rustlearn</span>::<span class='ident'>prelude</span>::<span class='op'>*</span>;
+
+<span class='kw'>use</span> <span class='ident'>rustlearn</span>::<span class='ident'>linear_models</span>::<span class='ident'>sgdclassifier</span>::<span class='ident'>Hyperparameters</span>;
+<span class='comment'>// more imports</span></pre>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<h2 id='logistic-regression' class='section-header'><a href='#logistic-regression'>Logistic regression</a></h2><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>rustlearn</span>::<span class='ident'>prelude</span>::<span class='op'>*</span>;
+<span class='kw'>use</span> <span class='ident'>rustlearn</span>::<span class='ident'>datasets</span>::<span class='ident'>iris</span>;
+<span class='kw'>use</span> <span class='ident'>rustlearn</span>::<span class='ident'>cross_validation</span>::<span class='ident'>CrossValidation</span>;
+<span class='kw'>use</span> <span class='ident'>rustlearn</span>::<span class='ident'>linear_models</span>::<span class='ident'>sgdclassifier</span>::<span class='ident'>Hyperparameters</span>;
+<span class='kw'>use</span> <span class='ident'>rustlearn</span>::<span class='ident'>metrics</span>::<span class='ident'>accuracy_score</span>;
+ 
+
+<span class='kw'>let</span> (<span class='ident'>X</span>, <span class='ident'>y</span>) <span class='op'>=</span> <span class='ident'>iris</span>::<span class='ident'>load_data</span>();
+
+<span class='kw'>let</span> <span class='ident'>num_splits</span> <span class='op'>=</span> <span class='number'>10</span>;
+<span class='kw'>let</span> <span class='ident'>num_epochs</span> <span class='op'>=</span> <span class='number'>5</span>;
+
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>accuracy</span> <span class='op'>=</span> <span class='number'>0.0</span>;
+
+<span class='kw'>for</span> (<span class='ident'>train_idx</span>, <span class='ident'>test_idx</span>) <span class='kw'>in</span> <span class='ident'>CrossValidation</span>::<span class='ident'>new</span>(<span class='ident'>X</span>.<span class='ident'>rows</span>(), <span class='ident'>num_splits</span>) {
+
+    <span class='kw'>let</span> <span class='ident'>X_train</span> <span class='op'>=</span> <span class='ident'>X</span>.<span class='ident'>get_rows</span>(<span class='kw-2'>&amp;</span><span class='ident'>train_idx</span>);
+    <span class='kw'>let</span> <span class='ident'>y_train</span> <span class='op'>=</span> <span class='ident'>y</span>.<span class='ident'>get_rows</span>(<span class='kw-2'>&amp;</span><span class='ident'>train_idx</span>);
+    <span class='kw'>let</span> <span class='ident'>X_test</span> <span class='op'>=</span> <span class='ident'>X</span>.<span class='ident'>get_rows</span>(<span class='kw-2'>&amp;</span><span class='ident'>test_idx</span>);
+    <span class='kw'>let</span> <span class='ident'>y_test</span> <span class='op'>=</span> <span class='ident'>y</span>.<span class='ident'>get_rows</span>(<span class='kw-2'>&amp;</span><span class='ident'>test_idx</span>);
+ 
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>model</span> <span class='op'>=</span> <span class='ident'>Hyperparameters</span>::<span class='ident'>new</span>(<span class='ident'>X</span>.<span class='ident'>cols</span>())
+                                    .<span class='ident'>learning_rate</span>(<span class='number'>0.5</span>)
+                                    .<span class='ident'>l2_penalty</span>(<span class='number'>0.0</span>)
+                                    .<span class='ident'>l1_penalty</span>(<span class='number'>0.0</span>)
+                                    .<span class='ident'>one_vs_rest</span>();
+
+    <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>num_epochs</span> {
+        <span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>X_train</span>, <span class='kw-2'>&amp;</span><span class='ident'>y_train</span>).<span class='ident'>unwrap</span>();
+    }
+
+    <span class='kw'>let</span> <span class='ident'>prediction</span> <span class='op'>=</span> <span class='ident'>model</span>.<span class='ident'>predict</span>(<span class='kw-2'>&amp;</span><span class='ident'>X_test</span>).<span class='ident'>unwrap</span>();
+    <span class='ident'>accuracy</span> <span class='op'>+=</span> <span class='ident'>accuracy_score</span>(<span class='kw-2'>&amp;</span><span class='ident'>y_test</span>, <span class='kw-2'>&amp;</span><span class='ident'>prediction</span>);
+}
+
+<span class='ident'>accuracy</span> <span class='op'>/=</span> <span class='ident'>num_splits</span> <span class='kw'>as</span> <span class='ident'>f32</span>;
+</pre>
+
+<h2 id='random-forest' class='section-header'><a href='#random-forest'>Random forest</a></h2><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>rustlearn</span>::<span class='ident'>prelude</span>::<span class='op'>*</span>;
+ 
+<span class='kw'>use</span> <span class='ident'>rustlearn</span>::<span class='ident'>ensemble</span>::<span class='ident'>random_forest</span>::<span class='ident'>Hyperparameters</span>;
+<span class='kw'>use</span> <span class='ident'>rustlearn</span>::<span class='ident'>datasets</span>::<span class='ident'>iris</span>;
+<span class='kw'>use</span> <span class='ident'>rustlearn</span>::<span class='ident'>trees</span>::<span class='ident'>decision_tree</span>;
+ 
+<span class='kw'>let</span> (<span class='ident'>data</span>, <span class='ident'>target</span>) <span class='op'>=</span> <span class='ident'>iris</span>::<span class='ident'>load_data</span>();
+ 
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>tree_params</span> <span class='op'>=</span> <span class='ident'>decision_tree</span>::<span class='ident'>Hyperparameters</span>::<span class='ident'>new</span>(<span class='ident'>data</span>.<span class='ident'>cols</span>());
+<span class='ident'>tree_params</span>.<span class='ident'>min_samples_split</span>(<span class='number'>10</span>)
+    .<span class='ident'>max_features</span>(<span class='number'>4</span>);
+ 
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>model</span> <span class='op'>=</span> <span class='ident'>Hyperparameters</span>::<span class='ident'>new</span>(<span class='ident'>tree_params</span>, <span class='number'>10</span>)
+    .<span class='ident'>one_vs_rest</span>();
+ 
+<span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>data</span>, <span class='kw-2'>&amp;</span><span class='ident'>target</span>).<span class='ident'>unwrap</span>();
+
+<span class='comment'>// Optionally serialize and deserialize the model</span>
+
+<span class='comment'>// let encoded = bincode::rustc_serialize::encode(&amp;model,</span>
+<span class='comment'>//                                               bincode::SizeLimit::Infinite).unwrap();</span>
+<span class='comment'>// let decoded: OneVsRestWrapper&lt;RandomForest&gt; = bincode::rustc_serialize::decode(&amp;encoded).unwrap();</span>
+ 
+<span class='kw'>let</span> <span class='ident'>prediction</span> <span class='op'>=</span> <span class='ident'>model</span>.<span class='ident'>predict</span>(<span class='kw-2'>&amp;</span><span class='ident'>data</span>).<span class='ident'>unwrap</span>();</pre>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='array/index.html'
+                               title='rustlearn::array'>array</a></td>
+                        <td class='docblock short'>
+                             <p>Basic matrix-like datastructures.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='cross_validation/index.html'
+                               title='rustlearn::cross_validation'>cross_validation</a></td>
+                        <td class='docblock short'>
+                             <p>Cross validation utilities.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='datasets/index.html'
+                               title='rustlearn::datasets'>datasets</a></td>
+                        <td class='docblock short'>
+                             <p>Datasets and dataset loading utilities.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='ensemble/index.html'
+                               title='rustlearn::ensemble'>ensemble</a></td>
+                        <td class='docblock short'>
+                             <p>Ensemble models.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='feature_extraction/index.html'
+                               title='rustlearn::feature_extraction'>feature_extraction</a></td>
+                        <td class='docblock short'>
+                             <p>Feature extraction utilities.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='linear_models/index.html'
+                               title='rustlearn::linear_models'>linear_models</a></td>
+                        <td class='docblock short'>
+                             <p>Linear models.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='metrics/index.html'
+                               title='rustlearn::metrics'>metrics</a></td>
+                        <td class='docblock short'>
+                             <p>Accuracy metrics.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='multiclass/index.html'
+                               title='rustlearn::multiclass'>multiclass</a></td>
+                        <td class='docblock short'>
+                             <p>Utilities for mutliclass classifiers.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='prelude/index.html'
+                               title='rustlearn::prelude'>prelude</a></td>
+                        <td class='docblock short'>
+                             <p>Basic data structures and traits used throughout <code>rustlearn</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='traits/index.html'
+                               title='rustlearn::traits'>traits</a></td>
+                        <td class='docblock short'>
+                             <p>Common rustlearn traits.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='trees/index.html'
+                               title='rustlearn::trees'>trees</a></td>
+                        <td class='docblock short'>
+                             <p>Decision trees.</p>
+
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "rustlearn";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script async src="../search-index.js"></script>
+</body>
+</html>

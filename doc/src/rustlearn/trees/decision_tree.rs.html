@@ -1490,6 +1490,14 @@
 <span id="1448">1448</span>
 <span id="1449">1449</span>
 <span id="1450">1450</span>
+<span id="1451">1451</span>
+<span id="1452">1452</span>
+<span id="1453">1453</span>
+<span id="1454">1454</span>
+<span id="1455">1455</span>
+<span id="1456">1456</span>
+<span id="1457">1457</span>
+<span id="1458">1458</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! A two-class decision tree classifer.</span>
 <span class='doccomment'>//!</span>
@@ -1531,10 +1539,12 @@
 <span class='kw'>use</span> <span class='ident'>prelude</span>::<span class='op'>*</span>;
 
 <span class='kw'>use</span> <span class='ident'>multiclass</span>::<span class='ident'>OneVsRestWrapper</span>;
-<span class='kw'>use</span> <span class='ident'>utils</span>::<span class='ident'>EncodableRng</span>;
+<span class='kw'>use</span> <span class='ident'>utils</span>::{<span class='ident'>check_data_dimensionality</span>,
+            <span class='ident'>check_matched_dimensions</span>,
+            <span class='ident'>check_valid_labels</span>,
+            <span class='ident'>EncodableRng</span>};
 
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rand</span>;
-
+<span class='kw'>use</span> <span class='ident'>rand</span>;
 <span class='kw'>use</span> <span class='ident'>rand</span>::{<span class='ident'>Rng</span>, <span class='ident'>StdRng</span>};
 <span class='kw'>use</span> <span class='ident'>rand</span>::<span class='ident'>distributions</span>::{<span class='ident'>IndependentSample</span>, <span class='ident'>Range</span>};
 
@@ -1807,9 +1817,9 @@
 <span class='kw'>impl</span> <span class='ident'>SupervisedModel</span><span class='op'>&lt;</span><span class='ident'>Array</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>DecisionTree</span> {
     <span class='kw'>fn</span> <span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>X</span>: <span class='kw-2'>&amp;</span><span class='ident'>Array</span>, <span class='ident'>y</span>: <span class='kw-2'>&amp;</span><span class='ident'>Array</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span><span class='op'>&gt;</span> {
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>X</span>.<span class='ident'>cols</span>() <span class='op'>==</span> <span class='self'>self</span>.<span class='ident'>dim</span>);
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>X</span>.<span class='ident'>rows</span>() <span class='op'>==</span> <span class='ident'>y</span>.<span class='ident'>rows</span>());
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>y</span>.<span class='ident'>cols</span>() <span class='op'>==</span> <span class='number'>1</span>);
+        <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>check_data_dimensionality</span>(<span class='self'>self</span>.<span class='ident'>dim</span>, <span class='ident'>X</span>));
+        <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>check_matched_dimensions</span>(<span class='ident'>X</span>, <span class='ident'>y</span>));
+        <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>check_valid_labels</span>(<span class='ident'>y</span>));
 
         <span class='self'>self</span>.<span class='ident'>feature_types</span> <span class='op'>=</span> <span class='ident'>DecisionTree</span>::<span class='ident'>analyze_features</span>(<span class='ident'>X</span>);
 
@@ -1828,13 +1838,15 @@
         <span class='prelude-val'>Ok</span>(())
     }
 
-    <span class='kw'>fn</span> <span class='ident'>decision_function</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>x</span>: <span class='kw-2'>&amp;</span><span class='ident'>Array</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Array</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span><span class='op'>&gt;</span> {
+    <span class='kw'>fn</span> <span class='ident'>decision_function</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>X</span>: <span class='kw-2'>&amp;</span><span class='ident'>Array</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Array</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span><span class='op'>&gt;</span> {
+
+        <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>check_data_dimensionality</span>(<span class='self'>self</span>.<span class='ident'>dim</span>, <span class='ident'>X</span>));
 
         <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>root</span> {
             <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>node</span>) <span class='op'>=&gt;</span> {
-                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>data</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>with_capacity</span>(<span class='ident'>x</span>.<span class='ident'>rows</span>());
-                <span class='kw'>for</span> <span class='ident'>row_idx</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>x</span>.<span class='ident'>rows</span>() {
-                    <span class='ident'>data</span>.<span class='ident'>push</span>(<span class='self'>self</span>.<span class='ident'>query_tree</span>(<span class='kw-2'>&amp;</span><span class='ident'>node</span>, <span class='ident'>x</span>, <span class='ident'>row_idx</span>));
+                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>data</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>with_capacity</span>(<span class='ident'>X</span>.<span class='ident'>rows</span>());
+                <span class='kw'>for</span> <span class='ident'>row_idx</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>X</span>.<span class='ident'>rows</span>() {
+                    <span class='ident'>data</span>.<span class='ident'>push</span>(<span class='self'>self</span>.<span class='ident'>query_tree</span>(<span class='kw-2'>&amp;</span><span class='ident'>node</span>, <span class='ident'>X</span>, <span class='ident'>row_idx</span>));
                 }
                 <span class='prelude-val'>Ok</span>(<span class='ident'>Array</span>::<span class='ident'>from</span>(<span class='ident'>data</span>))
             },
@@ -1848,9 +1860,9 @@
 
     <span class='kw'>fn</span> <span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>X</span>: <span class='kw-2'>&amp;</span><span class='ident'>SparseColumnArray</span>, <span class='ident'>y</span>: <span class='kw-2'>&amp;</span><span class='ident'>Array</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span><span class='op'>&gt;</span> {
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>X</span>.<span class='ident'>cols</span>() <span class='op'>==</span> <span class='self'>self</span>.<span class='ident'>dim</span>);
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>X</span>.<span class='ident'>rows</span>() <span class='op'>==</span> <span class='ident'>y</span>.<span class='ident'>rows</span>());
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>y</span>.<span class='ident'>cols</span>() <span class='op'>==</span> <span class='number'>1</span>);
+        <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>check_data_dimensionality</span>(<span class='self'>self</span>.<span class='ident'>dim</span>, <span class='ident'>X</span>));
+        <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>check_matched_dimensions</span>(<span class='ident'>X</span>, <span class='ident'>y</span>));
+        <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>check_valid_labels</span>(<span class='ident'>y</span>));
 
         <span class='self'>self</span>.<span class='ident'>feature_types</span> <span class='op'>=</span> <span class='ident'>DecisionTree</span>::<span class='ident'>analyze_features_sparse</span>(<span class='ident'>X</span>);
 
@@ -1869,13 +1881,15 @@
         <span class='prelude-val'>Ok</span>(())
     }
 
-    <span class='kw'>fn</span> <span class='ident'>decision_function</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>x</span>: <span class='kw-2'>&amp;</span><span class='ident'>SparseColumnArray</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Array</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span><span class='op'>&gt;</span> {
+    <span class='kw'>fn</span> <span class='ident'>decision_function</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>X</span>: <span class='kw-2'>&amp;</span><span class='ident'>SparseColumnArray</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Array</span>, <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;static</span> <span class='ident'>str</span><span class='op'>&gt;</span> {
+
+        <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>check_data_dimensionality</span>(<span class='self'>self</span>.<span class='ident'>dim</span>, <span class='ident'>X</span>));
 
         <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>root</span> {
             <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>node</span>) <span class='op'>=&gt;</span> {
-                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>data</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>with_capacity</span>(<span class='ident'>x</span>.<span class='ident'>rows</span>());
-                <span class='kw'>for</span> <span class='ident'>row_idx</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>x</span>.<span class='ident'>rows</span>() {
-                    <span class='ident'>data</span>.<span class='ident'>push</span>(<span class='self'>self</span>.<span class='ident'>query_tree_sparse</span>(<span class='kw-2'>&amp;</span><span class='ident'>node</span>, <span class='ident'>x</span>, <span class='ident'>row_idx</span>));
+                <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>data</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>with_capacity</span>(<span class='ident'>X</span>.<span class='ident'>rows</span>());
+                <span class='kw'>for</span> <span class='ident'>row_idx</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>X</span>.<span class='ident'>rows</span>() {
+                    <span class='ident'>data</span>.<span class='ident'>push</span>(<span class='self'>self</span>.<span class='ident'>query_tree_sparse</span>(<span class='kw-2'>&amp;</span><span class='ident'>node</span>, <span class='ident'>X</span>, <span class='ident'>row_idx</span>));
                 }
                 <span class='prelude-val'>Ok</span>(<span class='ident'>Array</span>::<span class='ident'>from</span>(<span class='ident'>data</span>))
             },
@@ -2371,6 +2385,9 @@
 
     <span class='kw'>use</span> <span class='ident'>bincode</span>;
 
+    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;all_tests&quot;</span>)]</span>
+    <span class='kw'>use</span> <span class='ident'>csv</span>;
+
     <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>time</span>;
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
@@ -2681,7 +2698,6 @@
     <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;all_tests&quot;</span>)]</span>
     <span class='kw'>fn</span> <span class='ident'>test_decision_tree_newsgroups</span>() {
 
-        <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>csv</span>;
         <span class='kw'>use</span> <span class='ident'>feature_extraction</span>::<span class='ident'>dict_vectorizer</span>::<span class='op'>*</span>;
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rdr</span> <span class='op'>=</span> <span class='ident'>csv</span>::<span class='ident'>Reader</span>::<span class='ident'>from_file</span>(<span class='string'>&quot;./test_data/newsgroups/data.csv&quot;</span>)

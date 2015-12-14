@@ -465,6 +465,7 @@
 <span id="423">423</span>
 <span id="424">424</span>
 <span id="425">425</span>
+<span id="426">426</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Random forests.</span>
 <span class='doccomment'>//!</span>
@@ -507,8 +508,7 @@
 <span class='kw'>use</span> <span class='ident'>multiclass</span>::<span class='ident'>OneVsRestWrapper</span>;
 <span class='kw'>use</span> <span class='ident'>utils</span>::<span class='ident'>EncodableRng</span>;
 
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rand</span>;
-
+<span class='kw'>use</span> <span class='ident'>rand</span>;
 <span class='kw'>use</span> <span class='ident'>rand</span>::{<span class='ident'>SeedableRng</span>, <span class='ident'>StdRng</span>};
 <span class='kw'>use</span> <span class='ident'>rand</span>::<span class='ident'>distributions</span>::{<span class='ident'>IndependentSample</span>, <span class='ident'>Range</span>};
 
@@ -676,6 +676,9 @@
 
     <span class='kw'>use</span> <span class='ident'>bincode</span>;
 
+    <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;all_tests&quot;</span>)]</span>
+    <span class='kw'>use</span> <span class='ident'>csv</span>;
+
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>test_random_forest_iris</span>() {
         <span class='kw'>let</span> (<span class='ident'>data</span>, <span class='ident'>target</span>) <span class='op'>=</span> <span class='ident'>load_data</span>();
@@ -768,7 +771,6 @@
     <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;all_tests&quot;</span>)]</span>
     <span class='kw'>fn</span> <span class='ident'>test_random_forest_newsgroups</span>() {
 
-        <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>csv</span>;
         <span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>time</span>;
         <span class='kw'>use</span> <span class='ident'>feature_extraction</span>::<span class='ident'>dict_vectorizer</span>::<span class='op'>*</span>;
         

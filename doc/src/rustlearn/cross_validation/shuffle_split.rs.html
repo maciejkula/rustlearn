@@ -194,7 +194,6 @@
 <span id="152">152</span>
 <span id="153">153</span>
 <span id="154">154</span>
-<span id="155">155</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Validation via repeated random shuffling</span>
 <span class='doccomment'>//! of the data and splitting into a training and test set.</span>
@@ -225,8 +224,7 @@
 
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>iter</span>::<span class='ident'>Iterator</span>;
 
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>rand</span>;
-
+<span class='kw'>use</span> <span class='ident'>rand</span>;
 <span class='kw'>use</span> <span class='ident'>rand</span>::{<span class='ident'>Rng</span>, <span class='ident'>StdRng</span>};
 
 

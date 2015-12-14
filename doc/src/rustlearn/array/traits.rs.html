@@ -211,6 +211,8 @@
 <span id="169">169</span>
 <span id="170">170</span>
 <span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Basic traits applying to all types of matrices.</span>
 
@@ -289,23 +291,25 @@
 
 <span class='doccomment'>/// Trait representing a matrix that can be iterated over in</span>
 <span class='doccomment'>/// a row-wise fashion.</span>
-<span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>RowIterable</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>NonzeroIterable</span><span class='op'>&gt;</span> {
-    <span class='kw'>type</span> <span class='ident'>Output</span>: <span class='ident'>Iterator</span><span class='op'>&lt;</span><span class='ident'>Item</span><span class='op'>=</span><span class='ident'>T</span><span class='op'>&gt;</span>;
+<span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>RowIterable</span> {
+    <span class='kw'>type</span> <span class='ident'>Item</span>: <span class='ident'>NonzeroIterable</span>;
+    <span class='kw'>type</span> <span class='ident'>Output</span>: <span class='ident'>Iterator</span><span class='op'>&lt;</span><span class='ident'>Item</span><span class='op'>=</span><span class='ident'>Self</span>::<span class='ident'>Item</span><span class='op'>&gt;</span>;
     <span class='doccomment'>/// Iterate over rows of the matrix.</span>
     <span class='kw'>fn</span> <span class='ident'>iter_rows</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Self</span>::<span class='ident'>Output</span>;
     <span class='doccomment'>/// View a row of the matrix.</span>
-    <span class='kw'>fn</span> <span class='ident'>view_row</span>(<span class='self'>self</span>, <span class='ident'>idx</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>T</span>;
+    <span class='kw'>fn</span> <span class='ident'>view_row</span>(<span class='self'>self</span>, <span class='ident'>idx</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>Self</span>::<span class='ident'>Item</span>;
 }
 
 
 <span class='doccomment'>/// Trait representing a matrix that can be iterated over in</span>
 <span class='doccomment'>/// a column-wise fashion.</span>
-<span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>ColumnIterable</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>NonzeroIterable</span><span class='op'>&gt;</span> {
-    <span class='kw'>type</span> <span class='ident'>Output</span>: <span class='ident'>Iterator</span><span class='op'>&lt;</span><span class='ident'>Item</span><span class='op'>=</span><span class='ident'>T</span><span class='op'>&gt;</span>;
+<span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>ColumnIterable</span> {
+    <span class='kw'>type</span> <span class='ident'>Item</span>: <span class='ident'>NonzeroIterable</span>;
+    <span class='kw'>type</span> <span class='ident'>Output</span>: <span class='ident'>Iterator</span><span class='op'>&lt;</span><span class='ident'>Item</span><span class='op'>=</span><span class='ident'>Self</span>::<span class='ident'>Item</span><span class='op'>&gt;</span>;
     <span class='doccomment'>/// Iterate over columns of a the matrix.</span>
     <span class='kw'>fn</span> <span class='ident'>iter_columns</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Self</span>::<span class='ident'>Output</span>;
     <span class='doccomment'>/// View a column of the matrix.</span>
-    <span class='kw'>fn</span> <span class='ident'>view_column</span>(<span class='self'>self</span>, <span class='ident'>idx</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>T</span>;
+    <span class='kw'>fn</span> <span class='ident'>view_column</span>(<span class='self'>self</span>, <span class='ident'>idx</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>Self</span>::<span class='ident'>Item</span>;
 }
 
 

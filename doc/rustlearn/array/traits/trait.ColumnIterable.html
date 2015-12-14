@@ -45,26 +45,27 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-839' class='srclink' href='../../../src/rustlearn/array/traits.rs.html#89-95' title='goto source code'>[src]</a></span></h1>
-<pre class='rust trait'>pub trait ColumnIterable&lt;T: <a class='trait' href='../../../rustlearn/array/traits/trait.NonzeroIterable.html' title='rustlearn::array::traits::NonzeroIterable'>NonzeroIterable</a>&gt; {
-    type Output: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/trait.Iterator.html' title='core::iter::Iterator'>Iterator</a>&lt;Item=T&gt;;
+        </span><a id='src-842' class='srclink' href='../../../src/rustlearn/array/traits.rs.html#90-97' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait ColumnIterable {
+    type Item: <a class='trait' href='../../../rustlearn/array/traits/trait.NonzeroIterable.html' title='rustlearn::array::traits::NonzeroIterable'>NonzeroIterable</a>;
+    type Output: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/trait.Iterator.html' title='core::iter::Iterator'>Iterator</a>&lt;Item=Self::<a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>Item</a>&gt;;
     fn <a href='#tymethod.iter_columns' class='fnname'>iter_columns</a>(self) -&gt; Self::<a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>Output</a>;
-    fn <a href='#tymethod.view_column' class='fnname'>view_column</a>(self, idx: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; T;
+    fn <a href='#tymethod.view_column' class='fnname'>view_column</a>(self, idx: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; Self::<a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>Item</a>;
 }</pre><div class='docblock'><p>Trait representing a matrix that can be iterated over in
 a column-wise fashion.</p>
 </div>
             <h2 id='associated-types'>Associated Types</h2>
             <div class='methods'>
-        <h3 id='associatedtype.Output' class='method stab '><code>type Output: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/trait.Iterator.html' title='core::iter::Iterator'>Iterator</a>&lt;Item=T&gt;</code></h3></div>
+        <h3 id='associatedtype.Item' class='method stab '><code>type Item: <a class='trait' href='../../../rustlearn/array/traits/trait.NonzeroIterable.html' title='rustlearn::array::traits::NonzeroIterable'>NonzeroIterable</a></code></h3><h3 id='associatedtype.Output' class='method stab '><code>type Output: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/trait.Iterator.html' title='core::iter::Iterator'>Iterator</a>&lt;Item=Self::<a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>Item</a>&gt;</code></h3></div>
             <h2 id='required-methods'>Required Methods</h2>
             <div class='methods'>
         <h3 id='tymethod.iter_columns' class='method stab '><code>fn <a href='#tymethod.iter_columns' class='fnname'>iter_columns</a>(self) -&gt; Self::<a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>Output</a></code></h3><div class='docblock'><p>Iterate over columns of a the matrix.</p>
-</div><h3 id='tymethod.view_column' class='method stab '><code>fn <a href='#tymethod.view_column' class='fnname'>view_column</a>(self, idx: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; T</code></h3><div class='docblock'><p>View a column of the matrix.</p>
+</div><h3 id='tymethod.view_column' class='method stab '><code>fn <a href='#tymethod.view_column' class='fnname'>view_column</a>(self, idx: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; Self::<a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>Item</a></code></h3><div class='docblock'><p>View a column of the matrix.</p>
 </div></div>
         <h2 id='implementors'>Implementors</h2>
         <ul class='item-list' id='implementors-list'>
-    <li><code>impl&lt;'a&gt; <a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>ColumnIterable</a>&lt;<a class='struct' href='../../../rustlearn/array/dense/struct.ArrayView.html' title='rustlearn::array::dense::ArrayView'>ArrayView</a>&lt;'a&gt;&gt; for &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></li>
-<li><code>impl&lt;'a&gt; <a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>ColumnIterable</a>&lt;<a class='struct' href='../../../rustlearn/array/sparse/struct.SparseArrayView.html' title='rustlearn::array::sparse::SparseArrayView'>SparseArrayView</a>&lt;'a&gt;&gt; for &amp;'a <a class='struct' href='../../../rustlearn/array/sparse/struct.SparseColumnArray.html' title='rustlearn::array::sparse::SparseColumnArray'>SparseColumnArray</a></code></li>
+    <li><code>impl&lt;'a&gt; <a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>ColumnIterable</a> for &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></li>
+<li><code>impl&lt;'a&gt; <a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>ColumnIterable</a> for &amp;'a <a class='struct' href='../../../rustlearn/array/sparse/struct.SparseColumnArray.html' title='rustlearn::array::sparse::SparseColumnArray'>SparseColumnArray</a></code></li>
 </ul><script type="text/javascript" async
                               src="../../../implementors/rustlearn/array/traits/trait.ColumnIterable.js">
                       </script></section>

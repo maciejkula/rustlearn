@@ -56,11 +56,11 @@
 //!                               vec![2.0, 3.0]]);
 //!
 //! let sum = array.data().iter().fold(0.0, |sum, val| sum + val);
-//! 
+//!
 //! ```
 //!
 //! Over rows and columns:
-//! 
+//!
 //! ```
 //! use rustlearn::prelude::*;
 //!
@@ -87,7 +87,7 @@
 //! # Elementwise operations
 //!
 //! On both `f32` and other `Array`s, with both immutable and in-place variants.
-//! 
+//!
 //! ```
 //! use rustlearn::prelude::*;
 //!
@@ -118,7 +118,7 @@ use array::traits::*;
 #[derive(Clone, Copy, Debug)]
 enum ArrayIteratorAxis {
     Row,
-    Column
+    Column,
 }
 
 
@@ -129,7 +129,7 @@ pub struct Array {
     rows: usize,
     cols: usize,
     order: MatrixOrder,
-    data: Vec<f32>
+    data: Vec<f32>,
 }
 
 
@@ -138,7 +138,7 @@ pub struct Array {
 pub struct ArrayView<'a> {
     idx: usize,
     axis: ArrayIteratorAxis,
-    array: &'a Array
+    array: &'a Array,
 }
 
 
@@ -146,25 +146,28 @@ pub struct ArrayView<'a> {
 pub struct ArrayIterator<'a> {
     idx: usize,
     axis: ArrayIteratorAxis,
-    array: &'a Array
+    array: &'a Array,
 }
 
 
 impl<'a> Iterator for ArrayIterator<'a> {
-
     type Item = ArrayView<'a>;
 
     fn next(&mut self) -> Option<ArrayView<'a>> {
 
         let bound = match self.axis {
             ArrayIteratorAxis::Row => self.array.rows,
-            ArrayIteratorAxis::Column => self.array.cols
+            ArrayIteratorAxis::Column => self.array.cols,
         };
 
         let result = match self.idx < bound {
-            true => Some(ArrayView {idx: self.idx,
-                                    axis: self.axis,
-                                    array: self.array}),
+            true => {
+                Some(ArrayView {
+                    idx: self.idx,
+                    axis: self.axis,
+                    array: self.array,
+                })
+            }
             false => None,
         };
 
@@ -179,16 +182,20 @@ impl<'a> RowIterable for &'a Array {
     type Item = ArrayView<'a>;
     type Output = ArrayIterator<'a>;
     fn iter_rows(self) -> ArrayIterator<'a> {
-        ArrayIterator {idx: 0,
-                       axis: ArrayIteratorAxis::Row,
-                       array: &self}
+        ArrayIterator {
+            idx: 0,
+            axis: ArrayIteratorAxis::Row,
+            array: &self,
+        }
     }
 
     fn view_row(self, idx: usize) -> ArrayView<'a> {
         assert!(idx < self.rows);
-        ArrayView {idx: idx,
-                   axis: ArrayIteratorAxis::Row,
-                   array: &self}
+        ArrayView {
+            idx: idx,
+            axis: ArrayIteratorAxis::Row,
+            array: &self,
+        }
     }
 }
 
@@ -197,16 +204,20 @@ impl<'a> ColumnIterable for &'a Array {
     type Item = ArrayView<'a>;
     type Output = ArrayIterator<'a>;
     fn iter_columns(self) -> ArrayIterator<'a> {
-        ArrayIterator {idx: 0,
-                       axis: ArrayIteratorAxis::Column,
-                       array: &self}
+        ArrayIterator {
+            idx: 0,
+            axis: ArrayIteratorAxis::Column,
+            array: &self,
+        }
     }
 
     fn view_column(self, idx: usize) -> ArrayView<'a> {
         assert!(idx < self.cols);
-        ArrayView {idx: idx,
-                   axis: ArrayIteratorAxis::Column,
-                   array: &self}
+        ArrayView {
+            idx: idx,
+            axis: ArrayIteratorAxis::Column,
+            array: &self,
+        }
     }
 }
 
@@ -214,44 +225,37 @@ impl<'a> ColumnIterable for &'a Array {
 /// Iterator over entries of a dense matrix view.
 pub struct ArrayViewIterator<'a> {
     idx: usize,
-    view: &'a ArrayView<'a>
+    view: &'a ArrayView<'a>,
 }
 
 
 /// Iterator over nonzero entries of a dense matrix view.
 pub struct ArrayViewNonzeroIterator<'a> {
     idx: usize,
-    view: ArrayView<'a>
+    view: ArrayView<'a>,
 }
 
 
 impl<'a> Iterator for ArrayViewIterator<'a> {
-    
     type Item = f32;
-    
+
     fn next(&mut self) -> Option<f32> {
 
         let result = match self.view.axis {
             ArrayIteratorAxis::Row => {
                 match self.idx < self.view.array.cols {
-                    true => unsafe {
-                        Some(self.view.array.get_unchecked(self.view.idx,
-                                                           self.idx))
-                    },
+                    true => unsafe { Some(self.view.array.get_unchecked(self.view.idx, self.idx)) },
                     false => None,
                 }
-            },
+            }
             ArrayIteratorAxis::Column => {
                 match self.idx < self.view.array.rows {
-                    true => unsafe {
-                        Some(self.view.array.get_unchecked(self.idx,
-                                                           self.view.idx))
-                    },
+                    true => unsafe { Some(self.view.array.get_unchecked(self.idx, self.view.idx)) },
                     false => None,
                 }
-            },
+            }
         };
-        
+
         self.idx += 1;
 
         result
@@ -260,9 +264,8 @@ impl<'a> Iterator for ArrayViewIterator<'a> {
 
 
 impl<'a> Iterator for ArrayViewNonzeroIterator<'a> {
-    
     type Item = (usize, f32);
-    
+
     // Todo: actually skip zero entries
     fn next(&mut self) -> Option<(usize, f32)> {
 
@@ -271,24 +274,28 @@ impl<'a> Iterator for ArrayViewNonzeroIterator<'a> {
                 match self.idx < self.view.array.cols {
                     true => unsafe {
                         Some((self.idx,
-                              self.view.array.get_unchecked(self.view.idx,
-                                                            self.idx).clone()))
+                              self.view
+                                  .array
+                                  .get_unchecked(self.view.idx, self.idx)
+                                  .clone()))
                     },
                     false => None,
                 }
-            },
+            }
             ArrayIteratorAxis::Column => {
                 match self.idx < self.view.array.cols {
                     true => unsafe {
                         Some((self.idx,
-                              self.view.array.get_unchecked(self.idx,
-                                                            self.view.idx).clone()))
+                              self.view
+                                  .array
+                                  .get_unchecked(self.idx, self.view.idx)
+                                  .clone()))
                     },
                     false => None,
                 }
-            },
+            }
         };
-        
+
         self.idx += 1;
 
         result
@@ -299,8 +306,10 @@ impl<'a> Iterator for ArrayViewNonzeroIterator<'a> {
 impl<'a> ArrayView<'a> {
     /// Iterate over elements of the `ArrayView`.
     pub fn iter(&'a self) -> ArrayViewIterator<'a> {
-        ArrayViewIterator {idx: 0,
-                           view: self}
+        ArrayViewIterator {
+            idx: 0,
+            view: self,
+        }
     }
 }
 
@@ -308,8 +317,10 @@ impl<'a> ArrayView<'a> {
 impl<'a> NonzeroIterable for &'a ArrayView<'a> {
     type Output = ArrayViewNonzeroIterator<'a>;
     fn iter_nonzero(self) -> ArrayViewNonzeroIterator<'a> {
-        ArrayViewNonzeroIterator {idx: 0,
-                                  view: (*self).clone()}
+        ArrayViewNonzeroIterator {
+            idx: 0,
+            view: (*self).clone(),
+        }
     }
 }
 
@@ -317,14 +328,15 @@ impl<'a> NonzeroIterable for &'a ArrayView<'a> {
 impl<'a> NonzeroIterable for ArrayView<'a> {
     type Output = ArrayViewNonzeroIterator<'a>;
     fn iter_nonzero(self) -> ArrayViewNonzeroIterator<'a> {
-        ArrayViewNonzeroIterator {idx: 0,
-                                  view: self}
+        ArrayViewNonzeroIterator {
+            idx: 0,
+            view: self,
+        }
     }
 }
 
 
 impl IndexableMatrix for Array {
-
     fn rows(&self) -> usize {
         self.rows
     }
@@ -354,32 +366,47 @@ impl IndexableMatrix for Array {
 impl Array {
     /// Create a `rows` by `cols` array of zeros.
     pub fn zeros(rows: usize, cols: usize) -> Array {
-        
+
         let mut data: Vec<f32> = Vec::with_capacity(rows * cols);
-        
+
         for _ in 0..(rows * cols) {
             data.push(0.0);
         }
 
-        Array {rows: rows, cols: cols, order: MatrixOrder::RowMajor, data: data }
+        Array {
+            rows: rows,
+            cols: cols,
+            order: MatrixOrder::RowMajor,
+            data: data,
+        }
     }
 
     /// Create a `rows` by `cols` array of ones.
     pub fn ones(rows: usize, cols: usize) -> Array {
-        
+
         let mut data: Vec<f32> = Vec::with_capacity(rows * cols);
-        
+
         for _ in 0..(rows * cols) {
             data.push(1.0);
         }
 
-        Array {rows: rows, cols: cols, order: MatrixOrder::RowMajor, data: data }
+        Array {
+            rows: rows,
+            cols: cols,
+            order: MatrixOrder::RowMajor,
+            data: data,
+        }
     }
 
     fn empty(rows: usize, cols: usize) -> Array {
         let data: Vec<f32> = Vec::with_capacity(rows * cols);
-        
-        Array {rows: rows, cols: cols, order: MatrixOrder::RowMajor, data: data }
+
+        Array {
+            rows: rows,
+            cols: cols,
+            order: MatrixOrder::RowMajor,
+            data: data,
+        }
     }
 
     /// Change the shape of the array to `rows` by `cols`.
@@ -466,10 +493,12 @@ impl From<Vec<f32>> for Array {
 
         assert!(data.len() > 0);
 
-        Array {rows: data.len(),
-               cols: 1,
-               order: MatrixOrder::RowMajor,
-               data: data}
+        Array {
+            rows: data.len(),
+            cols: 1,
+            order: MatrixOrder::RowMajor,
+            data: data,
+        }
     }
 }
 
@@ -496,23 +525,29 @@ impl<'a> From<&'a Vec<Vec<f32>>> for Array {
             }
         }
 
-        Array {rows: rows,
-               cols: cols,
-               order: MatrixOrder::RowMajor,
-               data: data}
+        Array {
+            rows: rows,
+            cols: cols,
+            order: MatrixOrder::RowMajor,
+            data: data,
+        }
     }
 }
 
 
 impl ElementwiseArrayOps<f32> for Array {
-
     type Output = Array;
 
     fn add(&self, rhs: f32) -> Array {
-        Array {rows: self.rows, cols: self.cols,
-               order: MatrixOrder::RowMajor,
-               data: self.data.iter().map(|&x| x + rhs)
-               .collect::<Vec<f32>>()}
+        Array {
+            rows: self.rows,
+            cols: self.cols,
+            order: MatrixOrder::RowMajor,
+            data: self.data
+                      .iter()
+                      .map(|&x| x + rhs)
+                      .collect::<Vec<f32>>(),
+        }
     }
 
     fn add_inplace(&mut self, rhs: f32) {
@@ -530,10 +565,15 @@ impl ElementwiseArrayOps<f32> for Array {
     }
 
     fn times(&self, rhs: f32) -> Array {
-        Array {rows: self.rows, cols: self.cols,
-               order: MatrixOrder::RowMajor,
-               data: self.data.iter().map(|&x| x * rhs)
-               .collect::<Vec<f32>>()}
+        Array {
+            rows: self.rows,
+            cols: self.cols,
+            order: MatrixOrder::RowMajor,
+            data: self.data
+                      .iter()
+                      .map(|&x| x * rhs)
+                      .collect::<Vec<f32>>(),
+        }
     }
 
     fn times_inplace(&mut self, rhs: f32) {
@@ -543,10 +583,15 @@ impl ElementwiseArrayOps<f32> for Array {
     }
 
     fn div(&self, rhs: f32) -> Array {
-        Array {rows: self.rows, cols: self.cols,
-               order: MatrixOrder::RowMajor,
-               data: self.data.iter().map(|&x| x / rhs)
-               .collect::<Vec<f32>>()}
+        Array {
+            rows: self.rows,
+            cols: self.cols,
+            order: MatrixOrder::RowMajor,
+            data: self.data
+                      .iter()
+                      .map(|&x| x / rhs)
+                      .collect::<Vec<f32>>(),
+        }
     }
 
     fn div_inplace(&mut self, rhs: f32) {
@@ -561,34 +606,33 @@ impl ElementwiseArrayOps<f32> for Array {
 /// # Panics
 /// Will panic if the two operands are not of the same shape.
 impl<'a> ElementwiseArrayOps<&'a Array> for Array {
-
     type Output = Array;
 
     fn add(&self, rhs: &'a Array) -> Array {
 
-        assert!(self.rows == rhs.rows
-                && self.cols == rhs.cols);
+        assert!(self.rows == rhs.rows && self.cols == rhs.cols);
 
         let mut data = Vec::with_capacity(self.rows * self.cols);
 
         unsafe {
             for i in 0..self.rows {
                 for j in 0..self.cols {
-                    data.push(self.get_unchecked(i, j)
-                              + rhs.get_unchecked(i, j));
+                    data.push(self.get_unchecked(i, j) + rhs.get_unchecked(i, j));
                 }
             }
         }
 
-        Array {rows: self.rows, cols: self.cols,
-               order: MatrixOrder::RowMajor,
-               data: data}
+        Array {
+            rows: self.rows,
+            cols: self.cols,
+            order: MatrixOrder::RowMajor,
+            data: data,
+        }
     }
 
     fn add_inplace(&mut self, rhs: &'a Array) {
 
-        assert!(self.rows == rhs.rows
-                && self.cols == rhs.cols);
+        assert!(self.rows == rhs.rows && self.cols == rhs.cols);
 
         unsafe {
             for i in 0..self.rows {
@@ -602,29 +646,29 @@ impl<'a> ElementwiseArrayOps<&'a Array> for Array {
 
     fn sub(&self, rhs: &'a Array) -> Array {
 
-        assert!(self.rows == rhs.rows
-                && self.cols == rhs.cols);
+        assert!(self.rows == rhs.rows && self.cols == rhs.cols);
 
         let mut data = Vec::with_capacity(self.rows * self.cols);
 
         unsafe {
             for i in 0..self.rows {
                 for j in 0..self.cols {
-                    data.push(self.get_unchecked(i, j)
-                              - rhs.get_unchecked(i, j));
+                    data.push(self.get_unchecked(i, j) - rhs.get_unchecked(i, j));
                 }
             }
         }
 
-        Array {rows: self.rows, cols: self.cols,
-               order: MatrixOrder::RowMajor,
-               data: data}
+        Array {
+            rows: self.rows,
+            cols: self.cols,
+            order: MatrixOrder::RowMajor,
+            data: data,
+        }
     }
 
     fn sub_inplace(&mut self, rhs: &'a Array) {
 
-        assert!(self.rows == rhs.rows
-                && self.cols == rhs.cols);
+        assert!(self.rows == rhs.rows && self.cols == rhs.cols);
 
         unsafe {
             for i in 0..self.rows {
@@ -638,29 +682,29 @@ impl<'a> ElementwiseArrayOps<&'a Array> for Array {
 
     fn times(&self, rhs: &'a Array) -> Array {
 
-        assert!(self.rows == rhs.rows
-                && self.cols == rhs.cols);
+        assert!(self.rows == rhs.rows && self.cols == rhs.cols);
 
         let mut data = Vec::with_capacity(self.rows * self.cols);
 
         unsafe {
             for i in 0..self.rows {
                 for j in 0..self.cols {
-                    data.push(self.get_unchecked(i, j)
-                              * rhs.get_unchecked(i, j));
+                    data.push(self.get_unchecked(i, j) * rhs.get_unchecked(i, j));
                 }
             }
         }
 
-        Array {rows: self.rows, cols: self.cols,
-               order: MatrixOrder::RowMajor,
-               data: data}
+        Array {
+            rows: self.rows,
+            cols: self.cols,
+            order: MatrixOrder::RowMajor,
+            data: data,
+        }
     }
 
     fn times_inplace(&mut self, rhs: &'a Array) {
 
-        assert!(self.rows == rhs.rows
-                && self.cols == rhs.cols);
+        assert!(self.rows == rhs.rows && self.cols == rhs.cols);
 
         unsafe {
             for i in 0..self.rows {
@@ -674,29 +718,29 @@ impl<'a> ElementwiseArrayOps<&'a Array> for Array {
 
     fn div(&self, rhs: &'a Array) -> Array {
 
-        assert!(self.rows == rhs.rows
-                && self.cols == rhs.cols);
+        assert!(self.rows == rhs.rows && self.cols == rhs.cols);
 
         let mut data = Vec::with_capacity(self.rows * self.cols);
 
         unsafe {
             for i in 0..self.rows {
                 for j in 0..self.cols {
-                    data.push(self.get_unchecked(i, j)
-                              / rhs.get_unchecked(i, j));
+                    data.push(self.get_unchecked(i, j) / rhs.get_unchecked(i, j));
                 }
             }
         }
 
-        Array {rows: self.rows, cols: self.cols,
-               order: MatrixOrder::RowMajor,
-               data: data}
+        Array {
+            rows: self.rows,
+            cols: self.cols,
+            order: MatrixOrder::RowMajor,
+            data: data,
+        }
     }
 
     fn div_inplace(&mut self, rhs: &'a Array) {
 
-        assert!(self.rows == rhs.rows
-                && self.cols == rhs.cols);
+        assert!(self.rows == rhs.rows && self.cols == rhs.cols);
 
         unsafe {
             for i in 0..self.rows {
@@ -711,7 +755,6 @@ impl<'a> ElementwiseArrayOps<&'a Array> for Array {
 
 
 impl<'a> Dot<&'a Array> for Array {
-
     type Output = Array;
 
     fn dot(&self, rhs: &'a Array) -> Array {
@@ -725,10 +768,9 @@ impl<'a> Dot<&'a Array> for Array {
                 for j in 0..output.cols {
 
                     let mut output_entry = 0.0;
-                    
+
                     for k in 0..self.cols {
-                        output_entry += self.get_unchecked(i, k)
-                            * rhs.get_unchecked(k, j);
+                        output_entry += self.get_unchecked(i, k) * rhs.get_unchecked(k, j);
                     }
 
                     *output.get_unchecked_mut(i, j) = output_entry;
@@ -755,7 +797,12 @@ impl RowIndex<Vec<usize>> for Array {
             }
         }
 
-        Array {rows: index.len(), cols: self.cols, order: MatrixOrder::RowMajor, data: data}
+        Array {
+            rows: index.len(),
+            cols: self.cols,
+            order: MatrixOrder::RowMajor,
+            data: data,
+        }
     }
 }
 
@@ -766,20 +813,18 @@ pub fn allclose(x: &Array, y: &Array) -> bool {
     let rtol = 1e-05;
 
     match x.rows == y.rows && x.cols == y.cols {
-        true => {
-            unsafe {
-                for i in 0..x.rows {
-                    for j in 0..x.cols {
-                        let a = x.get_unchecked(i, j);
-                        let b = y.get_unchecked(i, j);
-                        if !((a - b).abs() < (atol + rtol * b.abs())) {
-                            return false;
-                        }
+        true => unsafe {
+            for i in 0..x.rows {
+                for j in 0..x.cols {
+                    let a = x.get_unchecked(i, j);
+                    let b = y.get_unchecked(i, j);
+                    if !((a - b).abs() < (atol + rtol * b.abs())) {
+                        return false;
                     }
                 }
-                true
             }
-        }
+            true
+        },
         false => false,
     }
 }
@@ -864,15 +909,12 @@ mod tests {
 
     #[test]
     fn serialization() {
-        let arr = Array::from(&vec![vec![0.0, 1.0],
-                                    vec![2.0, 3.0]]);
+        let arr = Array::from(&vec![vec![0.0, 1.0], vec![2.0, 3.0]]);
 
-        let encoded = bincode::rustc_serialize::encode(&arr,
-                                                       bincode::SizeLimit::Infinite).unwrap();
+        let encoded = bincode::rustc_serialize::encode(&arr, bincode::SizeLimit::Infinite).unwrap();
         let decoded = bincode::rustc_serialize::decode(&encoded).unwrap();
 
-        assert!(allclose(&arr,
-                         &decoded));
+        assert!(allclose(&arr, &decoded));
     }
 
     #[test]

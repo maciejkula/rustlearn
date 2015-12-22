@@ -7,8 +7,7 @@ use prelude::*;
 use super::ffi;
 pub use super::ffi::KernelType;
 
-use utils::{check_data_dimensionality,
-            check_matched_dimensions};
+use utils::{check_data_dimensionality, check_matched_dimensions};
 
 
 #[derive(Clone)]
@@ -17,18 +16,17 @@ use utils::{check_data_dimensionality,
 pub struct Hyperparameters {
     dim: usize,
     num_classes: usize,
-    svm_parameter: ffi::SvmParameter
+    svm_parameter: ffi::SvmParameter,
 }
 
 
 impl Hyperparameters {
     pub fn new(dim: usize, kernel: KernelType, num_classes: usize) -> Hyperparameters {
-        Hyperparameters { dim: dim,
-                          num_classes: num_classes,
-                          svm_parameter: ffi::SvmParameter::new(ffi::SvmType::C_SVC,
-                                                                kernel,
-                                                                num_classes,
-                                                                dim) }
+        Hyperparameters {
+            dim: dim,
+            num_classes: num_classes,
+            svm_parameter: ffi::SvmParameter::new(ffi::SvmType::C_SVC, kernel, num_classes, dim),
+        }
     }
 
     /// Set the regularization parameter `C`; smaller values
@@ -71,9 +69,11 @@ impl Hyperparameters {
     /// problems via one-vs-one (OvO) estimation, so no one-vs-rest
     /// wrapper is provided.
     pub fn build(&self) -> SVC {
-        SVC { dim: self.dim,
-              hyperparams: self.to_owned(),
-              model: None }
+        SVC {
+            dim: self.dim,
+            hyperparams: self.to_owned(),
+            model: None,
+        }
     }
 
     fn svm_parameter(&self) -> &ffi::SvmParameter {
@@ -87,7 +87,7 @@ impl Hyperparameters {
 pub struct SVC {
     dim: usize,
     hyperparams: Hyperparameters,
-    model: Option<ffi::SvmModel>
+    model: Option<ffi::SvmModel>,
 }
 
 
@@ -218,8 +218,7 @@ mod tests {
 
         let no_splits = 10;
 
-        let mut cv = CrossValidation::new(data.rows(),
-                                          no_splits);
+        let mut cv = CrossValidation::new(data.rows(), no_splits);
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
@@ -229,19 +228,14 @@ mod tests {
 
             let y_train = target.get_rows(&train_idx);
 
-            let mut model = Hyperparameters::new(data.cols(), KernelType::Linear, 3)
-                .build();
+            let mut model = Hyperparameters::new(data.cols(), KernelType::Linear, 3).build();
 
             model.fit(&x_train, &y_train).unwrap();
 
             let y_hat = model.predict(&x_test).unwrap();
 
-            test_accuracy += accuracy_score(
-                &target.get_rows(&test_idx),
-                &y_hat);
-            train_accuracy += accuracy_score(
-                &y_train,
-                &model.predict(&x_train).unwrap());
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &y_hat);
+            train_accuracy += accuracy_score(&y_train, &model.predict(&x_train).unwrap());
         }
 
         test_accuracy /= no_splits as f32;
@@ -261,8 +255,7 @@ mod tests {
 
         let no_splits = 10;
 
-        let mut cv = CrossValidation::new(data.rows(),
-                                          no_splits);
+        let mut cv = CrossValidation::new(data.rows(), no_splits);
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
@@ -272,23 +265,18 @@ mod tests {
 
             let y_train = target.get_rows(&train_idx);
 
-            let mut model = Hyperparameters::new(data.cols(), KernelType::Linear, 3)
-                .build();
+            let mut model = Hyperparameters::new(data.cols(), KernelType::Linear, 3).build();
 
             model.fit(&x_train, &y_train).unwrap();
 
-            let encoded = bincode::rustc_serialize::encode(&model,
-                                                           bincode::SizeLimit::Infinite).unwrap();
+            let encoded = bincode::rustc_serialize::encode(&model, bincode::SizeLimit::Infinite)
+                              .unwrap();
             let decoded: SVC = bincode::rustc_serialize::decode(&encoded).unwrap();
 
             let y_hat = decoded.predict(&x_test).unwrap();
 
-            test_accuracy += accuracy_score(
-                &target.get_rows(&test_idx),
-                &y_hat);
-            train_accuracy += accuracy_score(
-                &y_train,
-                &decoded.predict(&x_train).unwrap());
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &y_hat);
+            train_accuracy += accuracy_score(&y_train, &decoded.predict(&x_train).unwrap());
         }
 
         test_accuracy /= no_splits as f32;
@@ -306,8 +294,8 @@ mod tests {
         use feature_extraction::dict_vectorizer::*;
 
         let mut rdr = csv::Reader::from_file("./test_data/newsgroups/data.csv")
-            .unwrap()
-            .has_headers(false);
+                          .unwrap()
+                          .has_headers(false);
 
         let mut vectorizer = DictVectorizer::new();
         let mut target = Vec::new();
@@ -328,8 +316,7 @@ mod tests {
         let no_splits = 2;
         let mut test_accuracy = 0.0;
 
-        let mut cv = CrossValidation::new(X.rows(),
-                                          no_splits);
+        let mut cv = CrossValidation::new(X.rows(), no_splits);
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
@@ -339,19 +326,14 @@ mod tests {
 
             let y_train = target.get_rows(&train_idx);
 
-            let mut model = Hyperparameters::new(X.cols(),
-                                                 KernelType::Linear,
-                                                 20)
-                .build();
-            
+            let mut model = Hyperparameters::new(X.cols(), KernelType::Linear, 20).build();
+
 
             model.fit(&x_train, &y_train).unwrap();
 
             let y_hat = model.predict(&x_test).unwrap();
 
-            test_accuracy += accuracy_score(
-                &target.get_rows(&test_idx),
-                &y_hat);
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &y_hat);
         }
 
         test_accuracy /= no_splits as f32;

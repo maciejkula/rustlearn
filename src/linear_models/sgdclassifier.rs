@@ -60,9 +60,7 @@ use std::iter::Iterator;
 use prelude::*;
 
 use multiclass::OneVsRestWrapper;
-use utils::{check_data_dimensionality,
-            check_matched_dimensions,
-            check_valid_labels};
+use utils::{check_data_dimensionality, check_matched_dimensions, check_valid_labels};
 
 
 /// Hyperparameters for a SGDClassifier model.
@@ -93,10 +91,12 @@ impl Hyperparameters {
     ///                                 .build();
     /// ```
     pub fn new(dim: usize) -> Hyperparameters {
-        Hyperparameters {dim: dim,
-                         learning_rate: 0.05,
-                         l2_penalty: 0.0,
-                         l1_penalty: 0.0}
+        Hyperparameters {
+            dim: dim,
+            learning_rate: 0.05,
+            l2_penalty: 0.0,
+            l1_penalty: 0.0,
+        }
     }
     /// Set the initial learning rate.
     ///
@@ -125,18 +125,20 @@ impl Hyperparameters {
 
     /// Build a two-class model.
     pub fn build(&self) -> SGDClassifier {
-        SGDClassifier {dim: self.dim,
-                       learning_rate: self.learning_rate,
-                       l2_penalty: self.l2_penalty,
-                       l1_penalty: self.l1_penalty,
-                       coefficients: Array::zeros(self.dim, 1),
-                       gradsq: Array::ones(self.dim, 1),
-                       applied_l1: Array::zeros(self.dim, 1),
-                       applied_l2: Array::ones(self.dim, 1),
-                       accumulated_l1: 0.0,
-                       accumulated_l2: 1.0}
+        SGDClassifier {
+            dim: self.dim,
+            learning_rate: self.learning_rate,
+            l2_penalty: self.l2_penalty,
+            l1_penalty: self.l1_penalty,
+            coefficients: Array::zeros(self.dim, 1),
+            gradsq: Array::ones(self.dim, 1),
+            applied_l1: Array::zeros(self.dim, 1),
+            applied_l2: Array::ones(self.dim, 1),
+            accumulated_l1: 0.0,
+            accumulated_l2: 1.0,
+        }
     }
-    
+
     /// Build a one-vs-rest multiclass model.
     pub fn one_vs_rest(&self) -> OneVsRestWrapper<SGDClassifier> {
         let base_model = self.build();
@@ -204,7 +206,6 @@ macro_rules! min {
 
 
 impl SupervisedModel<Array> for SGDClassifier {
-    
     fn fit(&mut self, X: &Array, y: &Array) -> Result<(), &'static str> {
 
         try!(check_data_dimensionality(self.dim, X));
@@ -240,7 +241,6 @@ impl SupervisedModel<Array> for SGDClassifier {
 
 
 impl SupervisedModel<SparseRowArray> for SGDClassifier {
-
     fn fit(&mut self, X: &SparseRowArray, y: &Array) -> Result<(), &'static str> {
 
         try!(check_data_dimensionality(self.dim, X));
@@ -276,7 +276,6 @@ impl SupervisedModel<SparseRowArray> for SGDClassifier {
 
 
 impl SGDClassifier {
-
     /// Returns a reference to the estimated coefficients vector.
     pub fn get_coefficients(&self) -> &Array {
         &self.coefficients
@@ -285,9 +284,9 @@ impl SGDClassifier {
     fn update_at_idx(&mut self, idx: usize, update: f32) {
 
         let gradsq = self.gradsq.get(idx, 0);
-        
+
         let local_learning_rate = self.learning_rate / gradsq.sqrt();
-        
+
         *self.coefficients.get_mut(idx, 0) -= local_learning_rate * update;
         *self.gradsq.get_mut(idx, 0) += update.powi(2);
     }
@@ -295,7 +294,7 @@ impl SGDClassifier {
     fn update<T: NonzeroIterable>(&mut self, x: T, loss: f32) {
 
         for (idx, gradient) in x.iter_nonzero() {
-            
+
             self.update_at_idx(idx, loss * gradient);
             self.apply_regularization(idx);
         }
@@ -328,7 +327,7 @@ impl SGDClassifier {
             true => {
                 *coefficient = max!(0.0,
                                     *coefficient - local_learning_rate * l1_potential_update);
-            },
+            }
             false => {
                 *coefficient = min!(0.0,
                                     *coefficient + local_learning_rate * l1_potential_update)
@@ -349,7 +348,6 @@ impl SGDClassifier {
 
         sigmoid(prediction)
     }
-
 }
 
 
@@ -375,10 +373,10 @@ mod tests {
     fn basic_updating() {
 
         let mut model = Hyperparameters::new(2)
-            .learning_rate(0.01)
-            .l2_penalty(0.0)
-            .l1_penalty(0.0)
-            .build();
+                            .learning_rate(0.01)
+                            .l2_penalty(0.0)
+                            .l1_penalty(0.0)
+                            .build();
 
         let y = Array::ones(1, 1);
         let X = Array::from(&vec![vec![1.0, -0.1]]);
@@ -400,10 +398,10 @@ mod tests {
     #[test]
     fn basic_regularization() {
         let mut model = Hyperparameters::new(2)
-            .learning_rate(1.0)
-            .l2_penalty(0.5)
-            .l1_penalty(0.0)
-            .build();
+                            .learning_rate(1.0)
+                            .l2_penalty(0.5)
+                            .l1_penalty(0.0)
+                            .build();
 
         let y = Array::ones(1, 1);
         let X = Array::from(&vec![vec![0.0, 0.0]]);
@@ -417,10 +415,10 @@ mod tests {
         assert!(model.coefficients.data()[1] == -0.5);
 
         let mut model = Hyperparameters::new(2)
-            .learning_rate(1.0)
-            .l2_penalty(0.0)
-            .l1_penalty(0.5)
-            .build();
+                            .learning_rate(1.0)
+                            .l2_penalty(0.0)
+                            .l1_penalty(0.5)
+                            .build();
 
         model.coefficients.as_mut_slice()[0] = 1.0;
         model.coefficients.as_mut_slice()[1] = -1.0;
@@ -442,10 +440,10 @@ mod tests {
     #[test]
     fn test_sparse_regularization() {
         let mut model = Hyperparameters::new(2)
-            .learning_rate(1.0)
-            .l2_penalty(0.001)
-            .l1_penalty(0.00001)
-            .build();
+                            .learning_rate(1.0)
+                            .l2_penalty(0.001)
+                            .l1_penalty(0.00001)
+                            .build();
 
         let y = Array::ones(1, 1);
         let X = SparseRowArray::from(&Array::from(&vec![vec![1.0, 0.0]]));
@@ -476,8 +474,7 @@ mod tests {
 
         let no_splits = 10;
 
-        let mut cv = CrossValidation::new(data.rows(),
-                                          no_splits);
+        let mut cv = CrossValidation::new(data.rows(), no_splits);
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
@@ -488,10 +485,10 @@ mod tests {
             let y_train = target.get_rows(&train_idx);
 
             let mut model = Hyperparameters::new(data.cols())
-                .learning_rate(0.5)
-                .l2_penalty(0.0)
-                .l1_penalty(0.0)
-                .one_vs_rest();
+                                .learning_rate(0.5)
+                                .l2_penalty(0.0)
+                                .l1_penalty(0.0)
+                                .one_vs_rest();
 
             for _ in 0..20 {
                 model.fit(&x_train, &y_train).unwrap();
@@ -499,9 +496,7 @@ mod tests {
 
             let y_hat = model.predict(&x_test).unwrap();
 
-            test_accuracy += accuracy_score(
-                &target.get_rows(&test_idx),
-                &y_hat);
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &y_hat);
         }
 
         test_accuracy /= no_splits as f32;
@@ -519,8 +514,7 @@ mod tests {
 
         let no_splits = 10;
 
-        let mut cv = CrossValidation::new(data.rows(),
-                                          no_splits);
+        let mut cv = CrossValidation::new(data.rows(), no_splits);
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
@@ -531,24 +525,23 @@ mod tests {
             let y_train = target.get_rows(&train_idx);
 
             let mut model = Hyperparameters::new(data.cols())
-                .learning_rate(0.5)
-                .l2_penalty(0.0)
-                .l1_penalty(0.0)
-                .one_vs_rest();
+                                .learning_rate(0.5)
+                                .l2_penalty(0.0)
+                                .l1_penalty(0.0)
+                                .one_vs_rest();
 
             for _ in 0..20 {
                 model.fit(&x_train, &y_train).unwrap();
             }
 
-            let encoded = bincode::rustc_serialize::encode(&model,
-                                                           bincode::SizeLimit::Infinite).unwrap();
-            let decoded: OneVsRestWrapper<SGDClassifier> = bincode::rustc_serialize::decode(&encoded).unwrap();
+            let encoded = bincode::rustc_serialize::encode(&model, bincode::SizeLimit::Infinite)
+                              .unwrap();
+            let decoded: OneVsRestWrapper<SGDClassifier> =
+                bincode::rustc_serialize::decode(&encoded).unwrap();
 
             let y_hat = decoded.predict(&x_test).unwrap();
 
-            test_accuracy += accuracy_score(
-                &target.get_rows(&test_idx),
-                &y_hat);
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &y_hat);
         }
 
         test_accuracy /= no_splits as f32;
@@ -567,8 +560,7 @@ mod tests {
 
         let no_splits = 10;
 
-        let mut cv = CrossValidation::new(data.rows(),
-                                          no_splits);
+        let mut cv = CrossValidation::new(data.rows(), no_splits);
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
@@ -579,10 +571,10 @@ mod tests {
             let y_train = target.get_rows(&train_idx);
 
             let mut model = Hyperparameters::new(data.cols())
-                .learning_rate(0.5)
-                .l2_penalty(0.0)
-                .l1_penalty(0.0)
-                .one_vs_rest();
+                                .learning_rate(0.5)
+                                .l2_penalty(0.0)
+                                .l1_penalty(0.0)
+                                .one_vs_rest();
 
             for _ in 0..20 {
                 model.fit(&x_train, &y_train).unwrap();
@@ -590,9 +582,7 @@ mod tests {
 
             let y_hat = model.predict(&x_test).unwrap();
 
-            test_accuracy += accuracy_score(
-                &target.get_rows(&test_idx),
-                &y_hat);
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &y_hat);
         }
 
         test_accuracy /= no_splits as f32;
@@ -609,8 +599,8 @@ mod tests {
         use feature_extraction::dict_vectorizer::*;
 
         let mut rdr = csv::Reader::from_file("./test_data/newsgroups/data.csv")
-            .unwrap()
-            .has_headers(false);
+                          .unwrap()
+                          .has_headers(false);
 
         let mut vectorizer = DictVectorizer::new();
         let mut target = Vec::new();
@@ -633,8 +623,7 @@ mod tests {
 
         let mut test_accuracy = 0.0;
 
-        let mut cv = CrossValidation::new(X.rows(),
-                                          no_splits);
+        let mut cv = CrossValidation::new(X.rows(), no_splits);
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
@@ -645,10 +634,10 @@ mod tests {
             let y_train = target.get_rows(&train_idx);
 
             let mut model = Hyperparameters::new(X.cols())
-                .learning_rate(0.05)
-                .l2_penalty(0.000001)
-                .l1_penalty(0.000001)
-                .one_vs_rest();
+                                .learning_rate(0.05)
+                                .l2_penalty(0.000001)
+                                .l1_penalty(0.000001)
+                                .one_vs_rest();
 
             // Run 5 epochs of training
             for _ in 0..5 {
@@ -657,9 +646,7 @@ mod tests {
 
             let y_hat = model.predict(&x_test).unwrap();
 
-            test_accuracy += accuracy_score(
-                &target.get_rows(&test_idx),
-                &y_hat);
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &y_hat);
         }
 
         test_accuracy /= no_splits as f32;

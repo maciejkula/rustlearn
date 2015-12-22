@@ -24,8 +24,12 @@ impl<'a> OneVsRest<'a> {
         let mut classes = y.data().clone();
         classes.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
         classes.dedup();
-        
-        OneVsRest {y: y, classes: classes, iter: 0}
+
+        OneVsRest {
+            y: y,
+            classes: classes,
+            iter: 0,
+        }
     }
 
     pub fn merge(class_labels: &Vec<f32>, predictions: &Vec<Array>) -> Array {
@@ -40,14 +44,14 @@ impl<'a> OneVsRest<'a> {
         for i in 0..no_rows {
 
             let mut decision_func_val = 0.0;
-            
+
             for (&label, prediction_arr) in class_labels.iter()
-                .zip(predictions.iter()) {
-                    if prediction_arr.get(i, 0) > decision_func_val {
-                        *prediction.get_mut(i, 0) = label;
-                        decision_func_val = prediction_arr.get(i, 0);
-                    }
+                                                        .zip(predictions.iter()) {
+                if prediction_arr.get(i, 0) > decision_func_val {
+                    *prediction.get_mut(i, 0) = label;
+                    decision_func_val = prediction_arr.get(i, 0);
                 }
+            }
         }
 
         prediction
@@ -62,13 +66,20 @@ impl<'a> Iterator for OneVsRest<'a> {
         let ret = match self.iter < self.classes.len() {
             true => {
                 let target_class = self.classes[self.iter];
-                let binary_target = Array::from(
-                    self.y.data().iter()
-                        .map(|&v| if v == target_class {1.0} else {0.0})
-                        .collect::<Vec<_>>());
+                let binary_target = Array::from(self.y
+                                                    .data()
+                                                    .iter()
+                                                    .map(|&v| {
+                                                        if v == target_class {
+                                                            1.0
+                                                        } else {
+                                                            0.0
+                                                        }
+                                                    })
+                                                    .collect::<Vec<_>>());
                 Some((target_class, binary_target))
-            },
-            false => None
+            }
+            false => None,
         };
 
         self.iter += 1;
@@ -81,22 +92,24 @@ impl<'a> Iterator for OneVsRest<'a> {
 pub struct OneVsRestWrapper<T> {
     base_model: T,
     models: Vec<T>,
-    class_labels: Vec<f32>
+    class_labels: Vec<f32>,
 }
 
 
 impl<T: Clone> OneVsRestWrapper<T> {
     pub fn new(base_model: T) -> OneVsRestWrapper<T> {
-        OneVsRestWrapper {base_model: base_model,
-                          models: Vec::new(),
-                          class_labels: Vec::new()}
+        OneVsRestWrapper {
+            base_model: base_model,
+            models: Vec::new(),
+            class_labels: Vec::new(),
+        }
     }
 
     fn get_model(&mut self, class_label: f32) -> &mut T {
         for (idx, label) in self.class_labels.iter().enumerate() {
             match class_label.partial_cmp(label) {
                 Some(Ordering::Equal) => return &mut self.models[idx],
-                _ => {},
+                _ => {}
             }
         }
 
@@ -119,19 +132,17 @@ impl<T: Clone> OneVsRestWrapper<T> {
 impl<T: SupervisedModel<Array> + Clone> SupervisedModel<Array> for OneVsRestWrapper<T> {
     fn fit(&mut self, X: &Array, y: &Array) -> Result<(), &'static str> {
 
-        for (class_label, binary_target)
-            in OneVsRest::split(y) {
-                
-                let model = self.get_model(class_label);
-                try!(model.fit(X, &binary_target));
-            }
+        for (class_label, binary_target) in OneVsRest::split(y) {
+
+            let model = self.get_model(class_label);
+            try!(model.fit(X, &binary_target));
+        }
         Ok(())
     }
 
     fn decision_function(&self, X: &Array) -> Result<Array, &'static str> {
 
-        let mut out = Array::zeros(X.rows(),
-                                   self.class_labels.len());
+        let mut out = Array::zeros(X.rows(), self.class_labels.len());
 
         for (col_idx, model) in self.models.iter().enumerate() {
             let values = try!(model.decision_function(X));
@@ -152,7 +163,7 @@ impl<T: SupervisedModel<Array> + Clone> SupervisedModel<Array> for OneVsRestWrap
 
             let mut max_value = f32::NEG_INFINITY;
             let mut max_class = 0;
-            
+
             for (class_idx, val) in row.iter_nonzero() {
                 if val > max_value {
                     max_value = val;
@@ -168,20 +179,20 @@ impl<T: SupervisedModel<Array> + Clone> SupervisedModel<Array> for OneVsRestWrap
 }
 
 
-impl<T: SupervisedModel<SparseRowArray> + Clone> SupervisedModel<SparseRowArray> for OneVsRestWrapper<T> {
+impl<T> SupervisedModel<SparseRowArray> for OneVsRestWrapper<T>
+    where T: SupervisedModel<SparseRowArray> + Clone
+{
     fn fit(&mut self, X: &SparseRowArray, y: &Array) -> Result<(), &'static str> {
-        for (class_label, binary_target)
-            in OneVsRest::split(y) {
-                let model = self.get_model(class_label);
-                try!(model.fit(X, &binary_target));
-            }
+        for (class_label, binary_target) in OneVsRest::split(y) {
+            let model = self.get_model(class_label);
+            try!(model.fit(X, &binary_target));
+        }
         Ok(())
     }
 
     fn decision_function(&self, X: &SparseRowArray) -> Result<Array, &'static str> {
 
-        let mut out = Array::zeros(X.rows(),
-                                   self.class_labels.len());
+        let mut out = Array::zeros(X.rows(), self.class_labels.len());
 
         for (col_idx, model) in self.models.iter().enumerate() {
             let values = try!(model.decision_function(X));
@@ -202,7 +213,7 @@ impl<T: SupervisedModel<SparseRowArray> + Clone> SupervisedModel<SparseRowArray>
 
             let mut max_value = f32::NEG_INFINITY;
             let mut max_class = 0;
-            
+
             for (class_idx, val) in row.iter_nonzero() {
                 if val > max_value {
                     max_value = val;
@@ -218,20 +229,20 @@ impl<T: SupervisedModel<SparseRowArray> + Clone> SupervisedModel<SparseRowArray>
 }
 
 
-impl<T: SupervisedModel<SparseColumnArray> + Clone> SupervisedModel<SparseColumnArray> for OneVsRestWrapper<T> {
+impl<T> SupervisedModel<SparseColumnArray> for OneVsRestWrapper<T>
+    where T: SupervisedModel<SparseColumnArray> + Clone
+{
     fn fit(&mut self, X: &SparseColumnArray, y: &Array) -> Result<(), &'static str> {
-        for (class_label, binary_target)
-            in OneVsRest::split(y) {
-                let model = self.get_model(class_label);
-                try!(model.fit(X, &binary_target));
-            }
+        for (class_label, binary_target) in OneVsRest::split(y) {
+            let model = self.get_model(class_label);
+            try!(model.fit(X, &binary_target));
+        }
         Ok(())
     }
 
     fn decision_function(&self, X: &SparseColumnArray) -> Result<Array, &'static str> {
 
-        let mut out = Array::zeros(X.rows(),
-                                   self.class_labels.len());
+        let mut out = Array::zeros(X.rows(), self.class_labels.len());
 
         for (col_idx, model) in self.models.iter().enumerate() {
             let values = try!(model.decision_function(X));
@@ -252,7 +263,7 @@ impl<T: SupervisedModel<SparseColumnArray> + Clone> SupervisedModel<SparseColumn
 
             let mut max_value = f32::NEG_INFINITY;
             let mut max_class = 0;
-            
+
             for (class_idx, val) in row.iter_nonzero() {
                 if val > max_value {
                     max_value = val;

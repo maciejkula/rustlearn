@@ -15,25 +15,25 @@
 //!
 //! - [dense matrices](array/dense/index.html)
 //! - [sparse matrices](array/sparse/index.html)
-//! 
+//!
 //! ## Models
-//! 
+//!
 //! - [logistic regression](linear_models/sgdclassifier/index.html) using stochastic gradient descent,
 //! - [support vector machines](svm/libsvm/svc/index.html) using the `libsvm` library,
 //! - [decision trees](trees/decision_tree/index.html) using the CART algorithm, and
 //! - [random forests](ensemble/random_forest/index.html) using CART decision trees.
-//! 
+//!
 //! All the models support fitting and prediction on both dense and sparse data, and the implementations
 //! should be roughly competitive with Python `sklearn` implementations, both in accuracy and performance.
 //!
 //! ## Model serialization
-//! 
+//!
 //! Model serialization is supported via `rustc_serialize`. This will probably change to `serde` once
 //! compiler plugins land in stable.
 //!
 //! # Using `rustlearn`
 //! Usage should be straightforward.
-//! 
+//!
 //! - import the prelude for alll the linear algebra primitives and common traits:
 //!
 //! ```
@@ -48,7 +48,7 @@
 //! use rustlearn::linear_models::sgdclassifier::Hyperparameters;
 //! // more imports
 //! ```
-//! 
+//!
 //! # Examples
 //!
 //! ## Logistic regression
@@ -59,7 +59,7 @@
 //! use rustlearn::cross_validation::CrossValidation;
 //! use rustlearn::linear_models::sgdclassifier::Hyperparameters;
 //! use rustlearn::metrics::accuracy_score;
-//! 
+//!
 //!
 //! let (X, y) = iris::load_data();
 //!
@@ -74,7 +74,7 @@
 //!     let y_train = y.get_rows(&train_idx);
 //!     let X_test = X.get_rows(&test_idx);
 //!     let y_test = y.get_rows(&test_idx);
-//! 
+//!
 //!     let mut model = Hyperparameters::new(X.cols())
 //!                                     .learning_rate(0.5)
 //!                                     .l2_penalty(0.0)
@@ -97,20 +97,20 @@
 //!
 //! ```
 //! use rustlearn::prelude::*;
-//! 
+//!
 //! use rustlearn::ensemble::random_forest::Hyperparameters;
 //! use rustlearn::datasets::iris;
 //! use rustlearn::trees::decision_tree;
-//! 
+//!
 //! let (data, target) = iris::load_data();
-//! 
+//!
 //! let mut tree_params = decision_tree::Hyperparameters::new(data.cols());
 //! tree_params.min_samples_split(10)
 //!     .max_features(4);
-//! 
+//!
 //! let mut model = Hyperparameters::new(tree_params, 10)
 //!     .one_vs_rest();
-//! 
+//!
 //! model.fit(&data, &target).unwrap();
 //!
 //! // Optionally serialize and deserialize the model
@@ -118,7 +118,7 @@
 //! // let encoded = bincode::rustc_serialize::encode(&model,
 //! //                                               bincode::SizeLimit::Infinite).unwrap();
 //! // let decoded: OneVsRestWrapper<RandomForest> = bincode::rustc_serialize::decode(&encoded).unwrap();
-//! 
+//!
 //! let prediction = model.predict(&data).unwrap();
 //! ```
 

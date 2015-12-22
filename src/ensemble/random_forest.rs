@@ -10,22 +10,22 @@
 //!
 //! ```
 //! use rustlearn::prelude::*;
-//! 
+//!
 //! use rustlearn::ensemble::random_forest::Hyperparameters;
 //! use rustlearn::datasets::iris;
 //! use rustlearn::trees::decision_tree;
-//! 
+//!
 //! let (data, target) = iris::load_data();
-//! 
+//!
 //! let mut tree_params = decision_tree::Hyperparameters::new(data.cols());
 //! tree_params.min_samples_split(10)
 //!     .max_features(4);
-//! 
+//!
 //! let mut model = Hyperparameters::new(tree_params, 10)
 //!     .one_vs_rest();
-//! 
+//!
 //! model.fit(&data, &target).unwrap();
-//! 
+//!
 //! let prediction = model.predict(&data).unwrap();
 //! ```
 
@@ -48,7 +48,7 @@ use rand::distributions::{IndependentSample, Range};
 pub struct Hyperparameters {
     tree_hyperparameters: decision_tree::Hyperparameters,
     num_trees: usize,
-    rng: EncodableRng
+    rng: EncodableRng,
 }
 
 
@@ -56,11 +56,14 @@ impl Hyperparameters {
     /// Create a new instance of Hyperparameters, using the Hyperparameters
     /// for a `DecisionTree` and the number of trees to build.
     pub fn new(tree_hyperparameters: decision_tree::Hyperparameters,
-               num_trees: usize) -> Hyperparameters {
+               num_trees: usize)
+               -> Hyperparameters {
 
-        Hyperparameters {tree_hyperparameters: tree_hyperparameters,
-                         num_trees: num_trees,
-                         rng: EncodableRng::new()}
+        Hyperparameters {
+            tree_hyperparameters: tree_hyperparameters,
+            num_trees: num_trees,
+            rng: EncodableRng::new(),
+        }
     }
 
     /// Set the random number generator.
@@ -87,12 +90,14 @@ impl Hyperparameters {
                                        .map(|_| range.ind_sample(&mut rng.rng))
                                        .collect::<Vec<_>>()[..])
                     );
-            
+
             trees.push(hyperparams.build());
         }
 
-        RandomForest {trees: trees,
-                      rng: self.rng.clone()}
+        RandomForest {
+            trees: trees,
+            rng: self.rng.clone(),
+        }
     }
 
     /// Build a one-vs-rest multiclass random forest.
@@ -108,7 +113,7 @@ impl Hyperparameters {
 #[derive(Clone)]
 pub struct RandomForest {
     trees: Vec<decision_tree::DecisionTree>,
-    rng: EncodableRng
+    rng: EncodableRng,
 }
 
 
@@ -126,7 +131,7 @@ impl SupervisedModel<Array> for RandomForest {
 
         Ok(())
     }
-    
+
     fn decision_function(&self, X: &Array) -> Result<Array, &'static str> {
 
         let mut df = Array::zeros(X.rows(), 1);
@@ -143,7 +148,6 @@ impl SupervisedModel<Array> for RandomForest {
 
 
 impl SupervisedModel<SparseRowArray> for RandomForest {
-
     fn fit(&mut self, X: &SparseRowArray, y: &Array) -> Result<(), &'static str> {
 
         let mut rng = self.rng.clone();
@@ -158,7 +162,7 @@ impl SupervisedModel<SparseRowArray> for RandomForest {
 
         Ok(())
     }
-    
+
     fn decision_function(&self, X: &SparseRowArray) -> Result<Array, &'static str> {
 
         let mut df = Array::zeros(X.rows(), 1);
@@ -177,16 +181,16 @@ impl SupervisedModel<SparseRowArray> for RandomForest {
 
 
 impl RandomForest {
-
     /// Return a reference to the consituent trees vector.
     pub fn trees(&self) -> &Vec<decision_tree::DecisionTree> {
         &self.trees
     }
-    
+
     fn bootstrap_indices(num_indices: usize, rng: &mut rand::StdRng) -> Vec<usize> {
         let range = Range::new(0, num_indices);
 
-        (0..num_indices).map(|_| range.ind_sample(rng))
+        (0..num_indices)
+            .map(|_| range.ind_sample(rng))
             .collect::<Vec<_>>()
     }
 }
@@ -218,8 +222,7 @@ mod tests {
 
         let no_splits = 10;
 
-        let mut cv = CrossValidation::new(data.rows(),
-                                          no_splits);
+        let mut cv = CrossValidation::new(data.rows(), no_splits);
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
@@ -231,20 +234,18 @@ mod tests {
 
             let mut tree_params = decision_tree::Hyperparameters::new(data.cols());
             tree_params.min_samples_split(10)
-                .max_features(4)
-                .rng(StdRng::from_seed(&[100]));
+                       .max_features(4)
+                       .rng(StdRng::from_seed(&[100]));
 
             let mut model = Hyperparameters::new(tree_params, 10)
-                .rng(StdRng::from_seed(&[100]))
-                .one_vs_rest();
+                                .rng(StdRng::from_seed(&[100]))
+                                .one_vs_rest();
 
             model.fit(&x_train, &y_train).unwrap();
 
             let test_prediction = model.predict(&x_test).unwrap();
 
-            test_accuracy += accuracy_score(
-                &target.get_rows(&test_idx),
-                &test_prediction);
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &test_prediction);
         }
 
         test_accuracy /= no_splits as f32;
@@ -262,8 +263,7 @@ mod tests {
 
         let no_splits = 10;
 
-        let mut cv = CrossValidation::new(data.rows(),
-                                          no_splits);
+        let mut cv = CrossValidation::new(data.rows(), no_splits);
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
@@ -275,20 +275,18 @@ mod tests {
 
             let mut tree_params = decision_tree::Hyperparameters::new(data.cols());
             tree_params.min_samples_split(10)
-                .max_features(4)
-                .rng(StdRng::from_seed(&[100]));
+                       .max_features(4)
+                       .rng(StdRng::from_seed(&[100]));
 
             let mut model = Hyperparameters::new(tree_params, 10)
-                .rng(StdRng::from_seed(&[100]))
-                .one_vs_rest();
+                                .rng(StdRng::from_seed(&[100]))
+                                .one_vs_rest();
 
             model.fit(&x_train, &y_train).unwrap();
 
             let test_prediction = model.predict(&x_test).unwrap();
 
-            test_accuracy += accuracy_score(
-                &target.get_rows(&test_idx),
-                &test_prediction);
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &test_prediction);
         }
 
         test_accuracy /= no_splits as f32;
@@ -304,10 +302,10 @@ mod tests {
 
         extern crate time;
         use feature_extraction::dict_vectorizer::*;
-        
+
         let mut rdr = csv::Reader::from_file("./test_data/newsgroups/data.csv")
-            .unwrap()
-            .has_headers(false);
+                          .unwrap()
+                          .has_headers(false);
 
         let mut vectorizer = DictVectorizer::new();
         let mut target = Vec::new();
@@ -331,8 +329,7 @@ mod tests {
         let mut test_accuracy = 0.0;
         let mut train_accuracy = 0.0;
 
-        let mut cv = CrossValidation::new(X.rows(),
-                                          no_splits);
+        let mut cv = CrossValidation::new(X.rows(), no_splits);
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
@@ -344,11 +341,9 @@ mod tests {
 
             let mut tree_params = decision_tree::Hyperparameters::new(X.cols());
             tree_params.min_samples_split(5)
-                .rng(StdRng::from_seed(&[100]));
-                
-            let mut model = Hyperparameters::new(
-                tree_params, 20)
-                .one_vs_rest();
+                       .rng(StdRng::from_seed(&[100]));
+
+            let mut model = Hyperparameters::new(tree_params, 20).one_vs_rest();
 
             let start = time::precise_time_ns();
 
@@ -358,13 +353,9 @@ mod tests {
             let y_hat = model.predict(&x_test).unwrap();
             let y_hat_train = model.predict(&x_train).unwrap();
 
-            test_accuracy += accuracy_score(
-                &target.get_rows(&test_idx),
-                &y_hat);
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &y_hat);
 
-            train_accuracy += accuracy_score(
-                &target.get_rows(&train_idx),
-                &y_hat_train);
+            train_accuracy += accuracy_score(&target.get_rows(&train_idx), &y_hat_train);
         }
 
         test_accuracy /= no_splits as f32;
@@ -383,8 +374,7 @@ mod tests {
 
         let no_splits = 10;
 
-        let mut cv = CrossValidation::new(data.rows(),
-                                          no_splits);
+        let mut cv = CrossValidation::new(data.rows(), no_splits);
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
@@ -396,24 +386,23 @@ mod tests {
 
             let mut tree_params = decision_tree::Hyperparameters::new(data.cols());
             tree_params.min_samples_split(10)
-                .max_features(4)
-                .rng(StdRng::from_seed(&[100]));
+                       .max_features(4)
+                       .rng(StdRng::from_seed(&[100]));
 
             let mut model = Hyperparameters::new(tree_params, 10)
-                .rng(StdRng::from_seed(&[100]))
-                .one_vs_rest();
+                                .rng(StdRng::from_seed(&[100]))
+                                .one_vs_rest();
 
             model.fit(&x_train, &y_train).unwrap();
 
-            let encoded = bincode::rustc_serialize::encode(&model,
-                                                           bincode::SizeLimit::Infinite).unwrap();
-            let decoded: OneVsRestWrapper<RandomForest> = bincode::rustc_serialize::decode(&encoded).unwrap();
+            let encoded = bincode::rustc_serialize::encode(&model, bincode::SizeLimit::Infinite)
+                              .unwrap();
+            let decoded: OneVsRestWrapper<RandomForest> =
+                bincode::rustc_serialize::decode(&encoded).unwrap();
 
             let test_prediction = decoded.predict(&x_test).unwrap();
 
-            test_accuracy += accuracy_score(
-                &target.get_rows(&test_idx),
-                &test_prediction);
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &test_prediction);
         }
 
         test_accuracy /= no_splits as f32;

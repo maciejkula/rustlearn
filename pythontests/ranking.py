@@ -59,28 +59,16 @@ def generate_module():
 
     RANDOM_STATE = np.random.RandomState(1031412)
 
-    module = Module(imports=['metrics::ranking::*'])
-
-    for num in range(5):
-        name = 'roc_auc_test_%s' % num
-        module.add_test(_generate_test(name, RANDOM_STATE))
-
-    # for num in range(5):
-    # name = 'roc_auc_test_repeated_%s' % num
-    # module.add_test(_generate_repeated_test(name, RANDOM_STATE))
-
-    return module
-
-
-def generate():
-
     fname = os.path.join(os.path.dirname(__file__),
                          '..',
                          'src',
                          'metrics',
                          'test.rs')
 
-    generate_module().write(fname)
+    module = Module(imports=['metrics::ranking::*'])
 
+    for num in range(5):
+        name = 'roc_auc_test_%s' % num
+        module.add_test(_generate_test(name, RANDOM_STATE))
 
-generate()
+    return fname, module

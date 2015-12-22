@@ -2,6 +2,10 @@
 
 use array::prelude::*;
 
+pub mod ranking;
+
+mod test;
+
 
 /// Measure classifier accuracy
 ///

@@ -1,5 +1,9 @@
 # Changelog
 
+## [unreleased][unreleased]
+### Added
+- added ROC AUC score metric	
+
 ## [0.2.0][2015-12-14]
 ### Added
 - added libsvm bindings and the SVC model.

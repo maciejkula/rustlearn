@@ -40,7 +40,7 @@ use multiclass::OneVsRestWrapper;
 use utils::EncodableRng;
 
 use rand;
-use rand::{SeedableRng, StdRng};
+use rand::{SeedableRng};
 use rand::distributions::{IndependentSample, Range};
 
 

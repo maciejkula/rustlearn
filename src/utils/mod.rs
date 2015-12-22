@@ -9,7 +9,7 @@ use prelude::*;
 /// generator on decoding.
 #[derive(Clone)]
 pub struct EncodableRng {
-    pub rng: StdRng
+    pub rng: StdRng,
 }
 
 
@@ -37,20 +37,22 @@ impl Decodable for EncodableRng {
 pub fn check_valid_labels(y: &Array) -> Result<(), &'static str> {
 
     if y.cols() != 1 {
-        return Err("Target array has more than one column.")
+        return Err("Target array has more than one column.");
     }
 
     match y.data().iter().all(|&x| x == 0.0 || x == 1.0) {
         true => Ok(()),
-        false => Err("Invalid labels: target data is not either 0.0 or 1.0")
+        false => Err("Invalid labels: target data is not either 0.0 or 1.0"),
     }
 }
 
 
-pub fn check_data_dimensionality<T: IndexableMatrix>(model_dim: usize, X: &T) -> Result<(), &'static str> {
+pub fn check_data_dimensionality<T: IndexableMatrix>(model_dim: usize,
+                                                     X: &T)
+                                                     -> Result<(), &'static str> {
     match X.cols() == model_dim {
         true => Ok(()),
-        false => Err("Model input and model dimensionality differ.")
+        false => Err("Model input and model dimensionality differ."),
     }
 }
 
@@ -58,6 +60,6 @@ pub fn check_data_dimensionality<T: IndexableMatrix>(model_dim: usize, X: &T) ->
 pub fn check_matched_dimensions<T: IndexableMatrix>(X: &T, y: &Array) -> Result<(), &'static str> {
     match X.rows() == y.rows() {
         true => Ok(()),
-        false => Err("Data matrix and target array do not have the same number of rows")
+        false => Err("Data matrix and target array do not have the same number of rows"),
     }
 }

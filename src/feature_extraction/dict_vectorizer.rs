@@ -31,15 +31,17 @@ use prelude::*;
 #[derive(RustcEncodable, RustcDecodable)]
 pub struct DictVectorizer {
     dictionary: HashMap<String, (usize, usize)>,
-    data: Vec<(usize, usize, f32)>
+    data: Vec<(usize, usize, f32)>,
 }
 
 
 impl DictVectorizer {
     /// Create a new `DictVectorizer`.
     pub fn new() -> DictVectorizer {
-        DictVectorizer {dictionary: HashMap::new(),
-                        data: Vec::new()}
+        DictVectorizer {
+            dictionary: HashMap::new(),
+            data: Vec::new(),
+        }
     }
 
     /// Set the feature value of a named feature in a given row.
@@ -51,13 +53,18 @@ impl DictVectorizer {
         let dict_len = self.dictionary.len();
 
         let col = match self.dictionary.get_mut(name) {
-            Some(value) => {value.1 += 1; value.0},
-            None => {insert = true; dict_len}
+            Some(value) => {
+                value.1 += 1;
+                value.0
+            }
+            None => {
+                insert = true;
+                dict_len
+            }
         };
 
         if insert == true {
-            self.dictionary.insert(name.to_string(),
-                                   (col, 1));
+            self.dictionary.insert(name.to_string(), (col, 1));
         }
 
         self.data.push((row, col, value));

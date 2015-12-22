@@ -7,7 +7,7 @@ use std::ops::{Range, RangeFrom, RangeTo, RangeFull};
 #[derive(Clone, Debug)]
 pub enum MatrixOrder {
     RowMajor,
-    ColumnMajor
+    ColumnMajor,
 }
 
 
@@ -24,7 +24,8 @@ pub trait IndexableMatrix {
     /// Get the value of the entry at (`row`, `column`) without bounds checking.
     unsafe fn get_unchecked(&self, row: usize, column: usize) -> f32;
 
-    /// Get a mutable reference to the value of the entry at (`row`, `column`) without bounds checking.
+    /// Get a mutable reference to the value of the entry at (`row`, `column`)
+    /// without bounds checking.
     unsafe fn get_unchecked_mut(&mut self, row: usize, column: usize) -> &mut f32;
 
     /// Get the value of the entry at (`row`, `column`).
@@ -35,9 +36,7 @@ pub trait IndexableMatrix {
         assert!(row < self.rows());
         assert!(column < self.cols());
 
-        unsafe {
-            self.get_unchecked(row, column)
-        }
+        unsafe { self.get_unchecked(row, column) }
     }
 
     /// Get a mutable reference to value of the entry at (`row`, `column`).
@@ -48,9 +47,7 @@ pub trait IndexableMatrix {
         assert!(row < self.rows());
         assert!(column < self.cols());
 
-        unsafe {
-            self.get_unchecked_mut(row, column)
-        }
+        unsafe { self.get_unchecked_mut(row, column) }
     }
 
     /// Set the value of the entry at (`row`, `column`) to `value`.
@@ -60,7 +57,7 @@ pub trait IndexableMatrix {
     fn set(&mut self, row: usize, column: usize, value: f32) {
         assert!(row < self.rows());
         assert!(column < self.cols());
-        
+
         unsafe {
             self.set_unchecked(row, column, value);
         }
@@ -113,7 +110,8 @@ pub trait RowIndex<Rhs> {
 }
 
 
-impl<T> RowIndex<usize> for T where T: RowIndex<Vec<usize>> {
+impl<T> RowIndex<usize> for T where T: RowIndex<Vec<usize>>
+{
     type Output = T::Output;
     fn get_rows(&self, index: &usize) -> Self::Output {
         self.get_rows(&vec![*index])
@@ -121,7 +119,8 @@ impl<T> RowIndex<usize> for T where T: RowIndex<Vec<usize>> {
 }
 
 
-impl<T> RowIndex<Range<usize>> for T where T: RowIndex<Vec<usize>> {
+impl<T> RowIndex<Range<usize>> for T where T: RowIndex<Vec<usize>>
+{
     type Output = T::Output;
     fn get_rows(&self, index: &Range<usize>) -> Self::Output {
         self.get_rows(&(index.start..index.end).collect::<Vec<usize>>())
@@ -129,7 +128,8 @@ impl<T> RowIndex<Range<usize>> for T where T: RowIndex<Vec<usize>> {
 }
 
 
-impl<T> RowIndex<RangeFrom<usize>> for T where T: RowIndex<Range<usize>> + IndexableMatrix {
+impl<T> RowIndex<RangeFrom<usize>> for T where T: RowIndex<Range<usize>> + IndexableMatrix
+{
     type Output = T::Output;
     fn get_rows(&self, index: &RangeFrom<usize>) -> Self::Output {
         self.get_rows(&(index.start..self.rows()))
@@ -137,7 +137,8 @@ impl<T> RowIndex<RangeFrom<usize>> for T where T: RowIndex<Range<usize>> + Index
 }
 
 
-impl<T> RowIndex<RangeTo<usize>> for T where T: RowIndex<Range<usize>> + IndexableMatrix {
+impl<T> RowIndex<RangeTo<usize>> for T where T: RowIndex<Range<usize>> + IndexableMatrix
+{
     type Output = T::Output;
     fn get_rows(&self, index: &RangeTo<usize>) -> Self::Output {
         self.get_rows(&(0..index.end))
@@ -145,7 +146,8 @@ impl<T> RowIndex<RangeTo<usize>> for T where T: RowIndex<Range<usize>> + Indexab
 }
 
 
-impl<T> RowIndex<RangeFull> for T where T: RowIndex<Range<usize>> + IndexableMatrix {
+impl<T> RowIndex<RangeFull> for T where T: RowIndex<Range<usize>> + IndexableMatrix
+{
     type Output = T::Output;
     fn get_rows(&self, _: &RangeFull) -> Self::Output {
         self.get_rows(&(0..self.rows()))

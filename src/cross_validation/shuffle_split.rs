@@ -36,7 +36,7 @@ pub struct ShuffleSplit {
     n_iter: usize,
     test_size: f32,
     rng: rand::StdRng,
-    iter: usize
+    iter: usize,
 }
 
 
@@ -47,11 +47,13 @@ impl ShuffleSplit {
     /// into a train set of `(1.0 - test_size) * n_samples` rows
     /// and a test set of `test_size * n_samples` rows, `n_iter` times.
     pub fn new(n_samples: usize, n_iter: usize, test_size: f32) -> ShuffleSplit {
-        ShuffleSplit {n: n_samples,
-                      n_iter: n_iter,
-                      test_size: test_size,
-                      rng: rand::StdRng::new().unwrap(),
-                      iter: 0}
+        ShuffleSplit {
+            n: n_samples,
+            n_iter: n_iter,
+            test_size: test_size,
+            rng: rand::StdRng::new().unwrap(),
+            iter: 0,
+        }
     }
 
     /// Set the random number generator.
@@ -78,7 +80,7 @@ impl Iterator for ShuffleSplit {
                 let shuffled_indices = self.get_shuffled_indices();
                 let (train, test) = shuffled_indices.split_at(split_idx);
                 Some((train.to_owned(), test.to_owned()))
-            },
+            }
             false => None,
         };
 
@@ -123,10 +125,8 @@ mod tests {
     #[test]
     #[should_panic]
     fn shuffle_differs() {
-        let set1 = ShuffleSplit::new(1000, 1, 0.2)
-            .collect::<Vec<_>>();
-        let set2 = ShuffleSplit::new(1000, 1, 0.2)
-            .collect::<Vec<_>>();
+        let set1 = ShuffleSplit::new(1000, 1, 0.2).collect::<Vec<_>>();
+        let set2 = ShuffleSplit::new(1000, 1, 0.2).collect::<Vec<_>>();
 
         assert!(set1[0].0 == set2[0].0);
     }
@@ -144,7 +144,7 @@ mod tests {
 
         split1.set_rng(rng1);
         split2.set_rng(rng2);
-        
+
         let set1 = split1.collect::<Vec<_>>();
         let set2 = split2.collect::<Vec<_>>();
 

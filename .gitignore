@@ -12,3 +12,5 @@ perf
 examples/*.data
 examples/*.labels
 *.o
+*.pyc
+*.bk

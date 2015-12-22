@@ -28,7 +28,7 @@
 use std::iter::Iterator;
 
 use rand;
-use rand::{Rng, StdRng};
+use rand::{Rng};
 
 
 pub struct ShuffleSplit {

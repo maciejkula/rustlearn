@@ -80,8 +80,7 @@ def generate():
                          'metrics',
                          'test.rs')
 
-    with open(fname, 'wb') as datafile:
-        datafile.write(generate_module().render())
+    generate_module().write(fname)
 
 
 generate()

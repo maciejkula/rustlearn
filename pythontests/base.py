@@ -1,5 +1,7 @@
 import os
 
+import subprocess
+
 import numpy as np
 
 
@@ -54,6 +56,15 @@ mod generated_tests {{
                                     imports=self.render_imports(),
                                     tests='\n'.join([x.render() for x
                                                      in self.tests]))
+
+    def write(self, fname):
+
+        with open(fname, 'wb') as datafile:
+            datafile.write(self.render())
+
+        subprocess.check_call(['rustfmt',
+                               fname,
+                               '--write-mode=overwrite'])
 
 
 class Test(object):

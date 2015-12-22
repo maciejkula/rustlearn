@@ -122,6 +122,7 @@ fn check_roc_auc_inputs(y_true: &Array, y_hat: &Array) -> Result<(), &'static st
 ///
 /// # Failures
 /// Will fail if inputs are illegal:
+///
 /// - inputs are of unequal length
 /// - both classes are not represented in the input
 /// - inputs are empty

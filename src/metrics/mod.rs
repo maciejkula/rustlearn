@@ -2,9 +2,11 @@
 
 use array::prelude::*;
 
-pub mod ranking;
+mod ranking;
 
 mod test;
+
+pub use self::ranking::roc_auc_score;
 
 
 /// Measure classifier accuracy

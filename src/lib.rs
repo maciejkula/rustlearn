@@ -26,6 +26,16 @@
 //! All the models support fitting and prediction on both dense and sparse data, and the implementations
 //! should be roughly competitive with Python `sklearn` implementations, both in accuracy and performance.
 //!
+//! ## Cross-validation
+//!
+//! - [k-fold cross-validation](cross_validation/cross_validation/index.html)
+//! - [shuffle split](cross_validation/shuffle_split/index.html)
+//!
+//! ## Metrics
+//!
+//! - [accuracy](metrics/fn.accuracy_score.html)
+//! - [ROC AUC score](metrics/ranking/fn.roc_auc_score.html)
+//!
 //! ## Model serialization
 //!
 //! Model serialization is supported via `rustc_serialize`. This will probably change to `serde` once

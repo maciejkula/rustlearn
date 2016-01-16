@@ -9,6 +9,7 @@
 
     <title>shuffle_split.rs.html -- source</title>
 
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../main.css">
 
     
@@ -225,7 +226,7 @@
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>iter</span>::<span class='ident'>Iterator</span>;
 
 <span class='kw'>use</span> <span class='ident'>rand</span>;
-<span class='kw'>use</span> <span class='ident'>rand</span>::{<span class='ident'>Rng</span>, <span class='ident'>StdRng</span>};
+<span class='kw'>use</span> <span class='ident'>rand</span>::{<span class='ident'>Rng</span>};
 
 
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>ShuffleSplit</span> {
@@ -233,7 +234,7 @@
     <span class='ident'>n_iter</span>: <span class='ident'>usize</span>,
     <span class='ident'>test_size</span>: <span class='ident'>f32</span>,
     <span class='ident'>rng</span>: <span class='ident'>rand</span>::<span class='ident'>StdRng</span>,
-    <span class='ident'>iter</span>: <span class='ident'>usize</span>
+    <span class='ident'>iter</span>: <span class='ident'>usize</span>,
 }
 
 
@@ -244,11 +245,13 @@
     <span class='doccomment'>/// into a train set of `(1.0 - test_size) * n_samples` rows</span>
     <span class='doccomment'>/// and a test set of `test_size * n_samples` rows, `n_iter` times.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>n_samples</span>: <span class='ident'>usize</span>, <span class='ident'>n_iter</span>: <span class='ident'>usize</span>, <span class='ident'>test_size</span>: <span class='ident'>f32</span>) <span class='op'>-&gt;</span> <span class='ident'>ShuffleSplit</span> {
-        <span class='ident'>ShuffleSplit</span> {<span class='ident'>n</span>: <span class='ident'>n_samples</span>,
-                      <span class='ident'>n_iter</span>: <span class='ident'>n_iter</span>,
-                      <span class='ident'>test_size</span>: <span class='ident'>test_size</span>,
-                      <span class='ident'>rng</span>: <span class='ident'>rand</span>::<span class='ident'>StdRng</span>::<span class='ident'>new</span>().<span class='ident'>unwrap</span>(),
-                      <span class='ident'>iter</span>: <span class='number'>0</span>}
+        <span class='ident'>ShuffleSplit</span> {
+            <span class='ident'>n</span>: <span class='ident'>n_samples</span>,
+            <span class='ident'>n_iter</span>: <span class='ident'>n_iter</span>,
+            <span class='ident'>test_size</span>: <span class='ident'>test_size</span>,
+            <span class='ident'>rng</span>: <span class='ident'>rand</span>::<span class='ident'>StdRng</span>::<span class='ident'>new</span>().<span class='ident'>unwrap</span>(),
+            <span class='ident'>iter</span>: <span class='number'>0</span>,
+        }
     }
 
     <span class='doccomment'>/// Set the random number generator.</span>
@@ -275,7 +278,7 @@
                 <span class='kw'>let</span> <span class='ident'>shuffled_indices</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>get_shuffled_indices</span>();
                 <span class='kw'>let</span> (<span class='ident'>train</span>, <span class='ident'>test</span>) <span class='op'>=</span> <span class='ident'>shuffled_indices</span>.<span class='ident'>split_at</span>(<span class='ident'>split_idx</span>);
                 <span class='prelude-val'>Some</span>((<span class='ident'>train</span>.<span class='ident'>to_owned</span>(), <span class='ident'>test</span>.<span class='ident'>to_owned</span>()))
-            },
+            }
             <span class='boolval'>false</span> <span class='op'>=&gt;</span> <span class='prelude-val'>None</span>,
         };
 
@@ -320,10 +323,8 @@
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='attribute'>#[<span class='ident'>should_panic</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>shuffle_differs</span>() {
-        <span class='kw'>let</span> <span class='ident'>set1</span> <span class='op'>=</span> <span class='ident'>ShuffleSplit</span>::<span class='ident'>new</span>(<span class='number'>1000</span>, <span class='number'>1</span>, <span class='number'>0.2</span>)
-            .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>();
-        <span class='kw'>let</span> <span class='ident'>set2</span> <span class='op'>=</span> <span class='ident'>ShuffleSplit</span>::<span class='ident'>new</span>(<span class='number'>1000</span>, <span class='number'>1</span>, <span class='number'>0.2</span>)
-            .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>();
+        <span class='kw'>let</span> <span class='ident'>set1</span> <span class='op'>=</span> <span class='ident'>ShuffleSplit</span>::<span class='ident'>new</span>(<span class='number'>1000</span>, <span class='number'>1</span>, <span class='number'>0.2</span>).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>();
+        <span class='kw'>let</span> <span class='ident'>set2</span> <span class='op'>=</span> <span class='ident'>ShuffleSplit</span>::<span class='ident'>new</span>(<span class='number'>1000</span>, <span class='number'>1</span>, <span class='number'>0.2</span>).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>();
 
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>set1</span>[<span class='number'>0</span>].<span class='number'>0</span> <span class='op'>==</span> <span class='ident'>set2</span>[<span class='number'>0</span>].<span class='number'>0</span>);
     }
@@ -341,7 +342,7 @@
 
         <span class='ident'>split1</span>.<span class='ident'>set_rng</span>(<span class='ident'>rng1</span>);
         <span class='ident'>split2</span>.<span class='ident'>set_rng</span>(<span class='ident'>rng2</span>);
-        
+
         <span class='kw'>let</span> <span class='ident'>set1</span> <span class='op'>=</span> <span class='ident'>split1</span>.<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>();
         <span class='kw'>let</span> <span class='ident'>set2</span> <span class='op'>=</span> <span class='ident'>split2</span>.<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>();
 
@@ -409,6 +410,6 @@
     <script src="../../../jquery.js"></script>
     <script src="../../../main.js"></script>
     
-    <script async src="../../../search-index.js"></script>
+    <script defer src="../../../search-index.js"></script>
 </body>
 </html>

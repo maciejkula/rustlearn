@@ -9,6 +9,7 @@
 
     <title>lib.rs.html -- source</title>
 
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
 
     
@@ -203,6 +204,16 @@
 <span id="161">161</span>
 <span id="162">162</span>
 <span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! A machine learning crate for Rust.</span>
 <span class='doccomment'>//!</span>
@@ -221,25 +232,35 @@
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! - [dense matrices](array/dense/index.html)</span>
 <span class='doccomment'>//! - [sparse matrices](array/sparse/index.html)</span>
-<span class='doccomment'>//! </span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//! ## Models</span>
-<span class='doccomment'>//! </span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//! - [logistic regression](linear_models/sgdclassifier/index.html) using stochastic gradient descent,</span>
 <span class='doccomment'>//! - [support vector machines](svm/libsvm/svc/index.html) using the `libsvm` library,</span>
 <span class='doccomment'>//! - [decision trees](trees/decision_tree/index.html) using the CART algorithm, and</span>
 <span class='doccomment'>//! - [random forests](ensemble/random_forest/index.html) using CART decision trees.</span>
-<span class='doccomment'>//! </span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//! All the models support fitting and prediction on both dense and sparse data, and the implementations</span>
 <span class='doccomment'>//! should be roughly competitive with Python `sklearn` implementations, both in accuracy and performance.</span>
 <span class='doccomment'>//!</span>
+<span class='doccomment'>//! ## Cross-validation</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! - [k-fold cross-validation](cross_validation/cross_validation/index.html)</span>
+<span class='doccomment'>//! - [shuffle split](cross_validation/shuffle_split/index.html)</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! ## Metrics</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! - [accuracy](metrics/fn.accuracy_score.html)</span>
+<span class='doccomment'>//! - [ROC AUC score](metrics/ranking/fn.roc_auc_score.html)</span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//! ## Model serialization</span>
-<span class='doccomment'>//! </span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//! Model serialization is supported via `rustc_serialize`. This will probably change to `serde` once</span>
 <span class='doccomment'>//! compiler plugins land in stable.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! # Using `rustlearn`</span>
 <span class='doccomment'>//! Usage should be straightforward.</span>
-<span class='doccomment'>//! </span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//! - import the prelude for alll the linear algebra primitives and common traits:</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! ```</span>
@@ -254,7 +275,7 @@
 <span class='doccomment'>//! use rustlearn::linear_models::sgdclassifier::Hyperparameters;</span>
 <span class='doccomment'>//! // more imports</span>
 <span class='doccomment'>//! ```</span>
-<span class='doccomment'>//! </span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//! # Examples</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! ## Logistic regression</span>
@@ -265,7 +286,7 @@
 <span class='doccomment'>//! use rustlearn::cross_validation::CrossValidation;</span>
 <span class='doccomment'>//! use rustlearn::linear_models::sgdclassifier::Hyperparameters;</span>
 <span class='doccomment'>//! use rustlearn::metrics::accuracy_score;</span>
-<span class='doccomment'>//! </span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! let (X, y) = iris::load_data();</span>
 <span class='doccomment'>//!</span>
@@ -280,7 +301,7 @@
 <span class='doccomment'>//!     let y_train = y.get_rows(&amp;train_idx);</span>
 <span class='doccomment'>//!     let X_test = X.get_rows(&amp;test_idx);</span>
 <span class='doccomment'>//!     let y_test = y.get_rows(&amp;test_idx);</span>
-<span class='doccomment'>//! </span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//!     let mut model = Hyperparameters::new(X.cols())</span>
 <span class='doccomment'>//!                                     .learning_rate(0.5)</span>
 <span class='doccomment'>//!                                     .l2_penalty(0.0)</span>
@@ -303,20 +324,20 @@
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! ```</span>
 <span class='doccomment'>//! use rustlearn::prelude::*;</span>
-<span class='doccomment'>//! </span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//! use rustlearn::ensemble::random_forest::Hyperparameters;</span>
 <span class='doccomment'>//! use rustlearn::datasets::iris;</span>
 <span class='doccomment'>//! use rustlearn::trees::decision_tree;</span>
-<span class='doccomment'>//! </span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//! let (data, target) = iris::load_data();</span>
-<span class='doccomment'>//! </span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//! let mut tree_params = decision_tree::Hyperparameters::new(data.cols());</span>
 <span class='doccomment'>//! tree_params.min_samples_split(10)</span>
 <span class='doccomment'>//!     .max_features(4);</span>
-<span class='doccomment'>//! </span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//! let mut model = Hyperparameters::new(tree_params, 10)</span>
 <span class='doccomment'>//!     .one_vs_rest();</span>
-<span class='doccomment'>//! </span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//! model.fit(&amp;data, &amp;target).unwrap();</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! // Optionally serialize and deserialize the model</span>
@@ -324,7 +345,7 @@
 <span class='doccomment'>//! // let encoded = bincode::rustc_serialize::encode(&amp;model,</span>
 <span class='doccomment'>//! //                                               bincode::SizeLimit::Infinite).unwrap();</span>
 <span class='doccomment'>//! // let decoded: OneVsRestWrapper&lt;RandomForest&gt; = bincode::rustc_serialize::decode(&amp;encoded).unwrap();</span>
-<span class='doccomment'>//! </span>
+<span class='doccomment'>//!</span>
 <span class='doccomment'>//! let prediction = model.predict(&amp;data).unwrap();</span>
 <span class='doccomment'>//! ```</span>
 
@@ -358,7 +379,7 @@
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>trees</span>;
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>traits</span>;
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>svm</span>;
-<span class='kw'>mod</span> <span class='ident'>utils</span>;
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>utils</span>;
 
 
 <span class='attribute'>#[<span class='ident'>allow</span>(<span class='ident'>unused_imports</span>)]</span>
@@ -427,6 +448,6 @@
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
     
-    <script async src="../../search-index.js"></script>
+    <script defer src="../../search-index.js"></script>
 </body>
 </html>

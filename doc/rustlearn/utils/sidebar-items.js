@@ -1,1 +1,1 @@
-initSidebarItems({});
+initSidebarItems({"fn":[["check_data_dimensionality","Check compatibility of the model dimensions and the number of columns in X."],["check_matched_dimensions",""],["check_valid_labels","Check that the input array contains valid binary classification labels."]],"struct":[["EncodableRng","Wrapper for making random number generators serializable. Does no actual encoding, and merely creates a new generator on decoding."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Hyperparameters","Hyperparameters for a SGDClassifier model."],["SGDClassifier","A two-class linear regression classifier implemented using stochastic gradient descent."]]});

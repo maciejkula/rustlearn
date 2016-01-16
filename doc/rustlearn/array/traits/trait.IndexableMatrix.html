@@ -9,6 +9,7 @@
 
     <title>rustlearn::array::traits::IndexableMatrix - Rust</title>
 
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../main.css">
 
     
@@ -45,7 +46,7 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-797' class='srclink' href='../../../src/rustlearn/array/traits.rs.html#16-73' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-804' class='srclink' href='../../../src/rustlearn/array/traits.rs.html#16-70' title='goto source code'>[src]</a></span></h1>
 <pre class='rust trait'>pub trait IndexableMatrix {
     fn <a href='#tymethod.rows' class='fnname'>rows</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>;
     fn <a href='#tymethod.cols' class='fnname'>cols</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>;
@@ -64,7 +65,8 @@ at will using their row and column position.</p>
         <h3 id='tymethod.rows' class='method stab '><code>fn <a href='#tymethod.rows' class='fnname'>rows</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h3><div class='docblock'><p>Return the number of rows of the matrix.</p>
 </div><h3 id='tymethod.cols' class='method stab '><code>fn <a href='#tymethod.cols' class='fnname'>cols</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h3><div class='docblock'><p>Return the number of columns of the matrix.</p>
 </div><h3 id='tymethod.get_unchecked' class='method stab '><code>unsafe fn <a href='#tymethod.get_unchecked' class='fnname'>get_unchecked</a>(&amp;self, row: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, column: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h3><div class='docblock'><p>Get the value of the entry at (<code>row</code>, <code>column</code>) without bounds checking.</p>
-</div><h3 id='tymethod.get_unchecked_mut' class='method stab '><code>unsafe fn <a href='#tymethod.get_unchecked_mut' class='fnname'>get_unchecked_mut</a>(&amp;mut self, row: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, column: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; &amp;mut <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h3><div class='docblock'><p>Get a mutable reference to the value of the entry at (<code>row</code>, <code>column</code>) without bounds checking.</p>
+</div><h3 id='tymethod.get_unchecked_mut' class='method stab '><code>unsafe fn <a href='#tymethod.get_unchecked_mut' class='fnname'>get_unchecked_mut</a>(&amp;mut self, row: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, column: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; &amp;mut <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h3><div class='docblock'><p>Get a mutable reference to the value of the entry at (<code>row</code>, <code>column</code>)
+without bounds checking.</p>
 </div></div>
             <h2 id='provided-methods'>Provided Methods</h2>
             <div class='methods'>
@@ -74,11 +76,11 @@ at will using their row and column position.</p>
 <p>Will panic if the element accessed is out of bounds.</p>
 </div><h3 id='method.get_mut' class='method stab '><code>fn <a href='#method.get_mut' class='fnname'>get_mut</a>(&amp;mut self, row: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, column: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; &amp;mut <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a></code></h3><div class='docblock'><p>Get a mutable reference to value of the entry at (<code>row</code>, <code>column</code>).</p>
 
-<h1 id='panics' class='section-header'><a href='#panics'>Panics</a></h1>
+<h1 id='panics-1' class='section-header'><a href='#panics-1'>Panics</a></h1>
 <p>Will panic if the element accessed is out of bounds.</p>
 </div><h3 id='method.set' class='method stab '><code>fn <a href='#method.set' class='fnname'>set</a>(&amp;mut self, row: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, column: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, value: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>)</code></h3><div class='docblock'><p>Set the value of the entry at (<code>row</code>, <code>column</code>) to <code>value</code>.</p>
 
-<h1 id='panics' class='section-header'><a href='#panics'>Panics</a></h1>
+<h1 id='panics-2' class='section-header'><a href='#panics-2'>Panics</a></h1>
 <p>Will panic if the element accessed is out of bounds.</p>
 </div><h3 id='method.set_unchecked' class='method stab '><code>unsafe fn <a href='#method.set_unchecked' class='fnname'>set_unchecked</a>(&amp;mut self, row: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, column: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, value: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>)</code></h3><div class='docblock'><p>Set the value of the entry at (<code>row</code>, <code>column</code>) to <code>value</code> without bounds checking.</p>
 </div></div>
@@ -148,6 +150,6 @@ at will using their row and column position.</p>
     <script src="../../../jquery.js"></script>
     <script src="../../../main.js"></script>
     
-    <script async src="../../../search-index.js"></script>
+    <script defer src="../../../search-index.js"></script>
 </body>
 </html>

@@ -9,6 +9,7 @@
 
     <title>mod.rs.html -- source</title>
 
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../main.css">
 
     
@@ -43,10 +44,18 @@
     <section id='main' class="content source"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Datasets and dataset loading utilities.</span>
 
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>iris</span>;
+
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>feature</span> <span class='op'>=</span> <span class='string'>&quot;all_tests&quot;</span>)]</span>
+<span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>newsgroups</span>;
 </pre>
 </section>
     <section id='search' class="content hidden"></section>
@@ -107,6 +116,6 @@
     <script src="../../../jquery.js"></script>
     <script src="../../../main.js"></script>
     
-    <script async src="../../../search-index.js"></script>
+    <script defer src="../../../search-index.js"></script>
 </body>
 </html>

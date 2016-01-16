@@ -9,6 +9,7 @@
 
     <title>cross_validation.rs.html -- source</title>
 
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../main.css">
 
     
@@ -182,6 +183,11 @@
 <span id="140">140</span>
 <span id="141">141</span>
 <span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! K-fold cross validation.</span>
 <span class='doccomment'>//!</span>
@@ -219,7 +225,7 @@
     <span class='ident'>n_folds</span>: <span class='ident'>usize</span>,
     <span class='ident'>indices</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span>,
     <span class='ident'>iter</span>: <span class='ident'>usize</span>,
-    <span class='ident'>rng</span>: <span class='ident'>StdRng</span>
+    <span class='ident'>rng</span>: <span class='ident'>StdRng</span>,
 }
 
 
@@ -230,19 +236,22 @@
     <span class='doccomment'>/// Panics if `n_folds &lt; n_samples` or `n_folds &lt;= 1`.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>n_samples</span>: <span class='ident'>usize</span>, <span class='ident'>n_folds</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>CrossValidation</span> {
 
-        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>n_folds</span> <span class='op'>&lt;</span> <span class='ident'>n_samples</span>, <span class='string'>&quot;Number of folds must be smaller than number of samples&quot;</span>);
+        <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>n_folds</span> <span class='op'>&lt;</span> <span class='ident'>n_samples</span>,
+                <span class='string'>&quot;Number of folds must be smaller than number of samples&quot;</span>);
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>n_folds</span> <span class='op'>&gt;</span> <span class='number'>1</span>, <span class='string'>&quot;Number of folds must be greater than one&quot;</span>);
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>indices</span> <span class='op'>=</span> (<span class='number'>0</span>..<span class='ident'>n_samples</span>).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>();
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rng</span> <span class='op'>=</span> <span class='ident'>rand</span>::<span class='ident'>StdRng</span>::<span class='ident'>new</span>().<span class='ident'>unwrap</span>();
 
         <span class='ident'>rng</span>.<span class='ident'>shuffle</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>indices</span>);
-        
-        <span class='ident'>CrossValidation</span> {<span class='ident'>n_samples</span>: <span class='ident'>n_samples</span>,
-                         <span class='ident'>n_folds</span>: <span class='ident'>n_folds</span>,
-                         <span class='ident'>indices</span>: <span class='ident'>indices</span>,
-                         <span class='ident'>iter</span>: <span class='number'>0</span>,
-                         <span class='ident'>rng</span>: <span class='ident'>rng</span>}
+
+        <span class='ident'>CrossValidation</span> {
+            <span class='ident'>n_samples</span>: <span class='ident'>n_samples</span>,
+            <span class='ident'>n_folds</span>: <span class='ident'>n_folds</span>,
+            <span class='ident'>indices</span>: <span class='ident'>indices</span>,
+            <span class='ident'>iter</span>: <span class='number'>0</span>,
+            <span class='ident'>rng</span>: <span class='ident'>rng</span>,
+        }
     }
 
     <span class='doccomment'>/// Fix the random number generator.</span>
@@ -269,13 +278,15 @@
                 <span class='kw'>let</span> <span class='ident'>validation_stop</span> <span class='op'>=</span> (<span class='self'>self</span>.<span class='ident'>iter</span> <span class='op'>+</span> <span class='number'>1</span>) <span class='op'>*</span> <span class='ident'>fold_step</span>;
 
                 <span class='kw'>let</span> <span class='ident'>train</span> <span class='op'>=</span> (<span class='number'>0</span>..<span class='ident'>validation_start</span>)
-                    .<span class='ident'>chain</span>(<span class='ident'>validation_stop</span>..<span class='self'>self</span>.<span class='ident'>indices</span>.<span class='ident'>len</span>())
-                    .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>i</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>indices</span>[<span class='ident'>i</span>]).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>();
+                                .<span class='ident'>chain</span>(<span class='ident'>validation_stop</span>..<span class='self'>self</span>.<span class='ident'>indices</span>.<span class='ident'>len</span>())
+                                .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>i</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>indices</span>[<span class='ident'>i</span>])
+                                .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>();
                 <span class='kw'>let</span> <span class='ident'>test</span> <span class='op'>=</span> (<span class='ident'>validation_start</span>..<span class='ident'>validation_stop</span>)
-                    .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>i</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>indices</span>[<span class='ident'>i</span>]).<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>();
+                               .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>i</span><span class='op'>|</span> <span class='self'>self</span>.<span class='ident'>indices</span>[<span class='ident'>i</span>])
+                               .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>();
 
                 <span class='prelude-val'>Some</span>((<span class='ident'>train</span>, <span class='ident'>test</span>))
-            },
+            }
             <span class='boolval'>false</span> <span class='op'>=&gt;</span> <span class='prelude-val'>None</span>,
         };
 
@@ -313,7 +324,7 @@
         <span class='kw'>for</span> (<span class='ident'>train</span>, <span class='ident'>test</span>) <span class='kw'>in</span> <span class='ident'>split</span> {
 
             <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>set</span> <span class='op'>=</span> <span class='ident'>HashSet</span>::<span class='ident'>new</span>();
-            
+
             <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>train</span>.<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>75</span>);
             <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>test</span>.<span class='ident'>len</span>() <span class='op'>==</span> <span class='number'>25</span>);
 
@@ -385,6 +396,6 @@
     <script src="../../../jquery.js"></script>
     <script src="../../../main.js"></script>
     
-    <script async src="../../../search-index.js"></script>
+    <script defer src="../../../search-index.js"></script>
 </body>
 </html>

@@ -1,11 +1,12 @@
 # Changelog
 
-## [unreleased][unreleased]
+## [0.3.0][2016-01-16]
 ### Added
 - added ROC AUC score metric
 
 ### Changed
 - moved newsgroups dataset code into a central module
+- made the utils module semi-public
 
 ## [0.2.0][2015-12-14]
 ### Added

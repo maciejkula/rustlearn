@@ -1,4 +1,9 @@
 //! Internal utils.
+//!
+//! Used mostly for checking the inputs to model fitting routines.
+//!
+//! Made public to make extending rustlearn easier, but should be treated as semi-public
+//! and subject to change.
 use rand::StdRng;
 use rustc_serialize::*;
 
@@ -34,6 +39,7 @@ impl Decodable for EncodableRng {
 }
 
 
+/// Check that the input array contains valid binary classification labels.
 pub fn check_valid_labels(y: &Array) -> Result<(), &'static str> {
 
     if y.cols() != 1 {
@@ -47,6 +53,7 @@ pub fn check_valid_labels(y: &Array) -> Result<(), &'static str> {
 }
 
 
+/// Check compatibility of the model dimensions and the number of columns in X.
 pub fn check_data_dimensionality<T: IndexableMatrix>(model_dim: usize,
                                                      X: &T)
                                                      -> Result<(), &'static str> {
@@ -57,6 +64,7 @@ pub fn check_data_dimensionality<T: IndexableMatrix>(model_dim: usize,
 }
 
 
+// Check that X and y have the same number of rows.
 pub fn check_matched_dimensions<T: IndexableMatrix>(X: &T, y: &Array) -> Result<(), &'static str> {
     match X.rows() == y.rows() {
         true => Ok(()),

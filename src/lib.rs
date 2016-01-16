@@ -162,7 +162,7 @@ pub mod feature_extraction;
 pub mod trees;
 pub mod traits;
 pub mod svm;
-mod utils;
+pub mod utils;
 
 
 #[allow(unused_imports)]

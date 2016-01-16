@@ -2,7 +2,10 @@
 
 ## [unreleased][unreleased]
 ### Added
-- added ROC AUC score metric	
+- added ROC AUC score metric
+
+### Changed
+- moved newsgroups dataset code into a central module
 
 ## [0.2.0][2015-12-14]
 ### Added

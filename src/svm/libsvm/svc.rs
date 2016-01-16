@@ -155,7 +155,7 @@ mod tests {
     use bincode;
 
     #[cfg(feature = "all_tests")]
-    use csv;
+    use datasets::newsgroups;
 
     macro_rules! test_iris_kernel {
         ($kernel:expr, $fn_name:ident) => {
@@ -291,27 +291,7 @@ mod tests {
     #[cfg(feature = "all_tests")]
     fn test_newsgroups() {
 
-        use feature_extraction::dict_vectorizer::*;
-
-        let mut rdr = csv::Reader::from_file("./test_data/newsgroups/data.csv")
-                          .unwrap()
-                          .has_headers(false);
-
-        let mut vectorizer = DictVectorizer::new();
-        let mut target = Vec::new();
-
-        for (row, record) in rdr.decode().enumerate() {
-            let (y, data): (f32, String) = record.unwrap();
-
-            for token in data.split_whitespace() {
-                vectorizer.partial_fit(row, token, 1.0);
-            }
-
-            target.push(y);
-        }
-
-        let target = Array::from(target);
-        let X = vectorizer.transform();
+        let (X, target) = newsgroups::load_data();
 
         let no_splits = 2;
         let mut test_accuracy = 0.0;

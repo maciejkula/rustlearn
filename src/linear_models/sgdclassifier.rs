@@ -367,7 +367,7 @@ mod tests {
     use bincode;
 
     #[cfg(feature = "all_tests")]
-    use csv;
+    use datasets::newsgroups;
 
     #[test]
     fn basic_updating() {
@@ -596,28 +596,7 @@ mod tests {
     #[cfg(feature = "all_tests")]
     fn test_sgdclassifier_newsgroups() {
 
-        use feature_extraction::dict_vectorizer::*;
-
-        let mut rdr = csv::Reader::from_file("./test_data/newsgroups/data.csv")
-                          .unwrap()
-                          .has_headers(false);
-
-        let mut vectorizer = DictVectorizer::new();
-        let mut target = Vec::new();
-
-        for (row, record) in rdr.decode().enumerate() {
-            let (y, data): (f32, String) = record.unwrap();
-
-            for token in data.split_whitespace() {
-                vectorizer.partial_fit(row, token, 1.0);
-            }
-
-            target.push(y);
-        }
-
-        let target = Array::from(target);
-
-        let X = vectorizer.transform();
+        let (X, target) = newsgroups::load_data();
 
         let no_splits = 2;
 

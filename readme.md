@@ -10,7 +10,7 @@ For full usage details, see the [API documentation](https://maciejkula.github.io
 ## Introduction
 
 This crate is mostly an excuse for me to learn Rust. Nevertheless, it contains reasonably effective
-implementations of a number of common machine learing algorithms.
+implementations of a number of common machine learning algorithms.
 
 At the moment, `rustlearn` uses its own basic dense and sparse array types, but I will be happy
 to use something more robust once a clear winner in that space emerges.

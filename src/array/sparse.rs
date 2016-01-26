@@ -410,23 +410,12 @@ impl<'a> ColumnIterable for &'a SparseColumnArray {
 }
 
 
-impl<'a> NonzeroIterable for &'a SparseArrayView<'a> {
-    type Output = SparseArrayViewIterator<'a>;
-    fn iter_nonzero(self) -> SparseArrayViewIterator<'a> {
-        SparseArrayViewIterator {
-            idx: 0,
-            view: (*self).clone(),
-        }
-    }
-}
-
-
 impl<'a> NonzeroIterable for SparseArrayView<'a> {
     type Output = SparseArrayViewIterator<'a>;
-    fn iter_nonzero(self) -> SparseArrayViewIterator<'a> {
+    fn iter_nonzero(&self) -> SparseArrayViewIterator<'a> {
         SparseArrayViewIterator {
             idx: 0,
-            view: self,
+            view: self.clone(),
         }
     }
 }

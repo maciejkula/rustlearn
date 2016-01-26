@@ -291,7 +291,7 @@ impl SGDClassifier {
         *self.gradsq.get_mut(idx, 0) += update.powi(2);
     }
 
-    fn update<T: NonzeroIterable>(&mut self, x: T, loss: f32) {
+    fn update<T: NonzeroIterable>(&mut self, x: &T, loss: f32) {
 
         for (idx, gradient) in x.iter_nonzero() {
 
@@ -338,7 +338,7 @@ impl SGDClassifier {
         *applied_l1 += l1_actual_update;
     }
 
-    fn compute_prediction<T: NonzeroIterable>(&self, row: T) -> f32 {
+    fn compute_prediction<T: NonzeroIterable>(&self, row: &T) -> f32 {
 
         let mut prediction = 0.0;
 

@@ -98,7 +98,7 @@ pub trait ColumnIterable {
 /// entries can be iterated over.
 pub trait NonzeroIterable {
     type Output: Iterator<Item = (usize, f32)>;
-    fn iter_nonzero(self) -> Self::Output;
+    fn iter_nonzero(&self) -> Self::Output;
 }
 
 

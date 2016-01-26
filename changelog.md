@@ -1,4 +1,7 @@
 # Changelog
+## [unreleased][unreleased]
+### Changed
+- NonzeroIterable now takes &self
 
 ## [0.3.0][2016-01-16]
 ### Added

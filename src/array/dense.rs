@@ -316,10 +316,10 @@ impl<'a> ArrayView<'a> {
 
 impl<'a> NonzeroIterable for &'a ArrayView<'a> {
     type Output = ArrayViewNonzeroIterator<'a>;
-    fn iter_nonzero(self) -> ArrayViewNonzeroIterator<'a> {
+    fn iter_nonzero(&self) -> ArrayViewNonzeroIterator<'a> {
         ArrayViewNonzeroIterator {
             idx: 0,
-            view: (*self).clone(),
+            view: (*(*self)).clone(),
         }
     }
 }
@@ -327,10 +327,10 @@ impl<'a> NonzeroIterable for &'a ArrayView<'a> {
 
 impl<'a> NonzeroIterable for ArrayView<'a> {
     type Output = ArrayViewNonzeroIterator<'a>;
-    fn iter_nonzero(self) -> ArrayViewNonzeroIterator<'a> {
+    fn iter_nonzero(&self) -> ArrayViewNonzeroIterator<'a> {
         ArrayViewNonzeroIterator {
             idx: 0,
-            view: self,
+            view: self.clone(),
         }
     }
 }

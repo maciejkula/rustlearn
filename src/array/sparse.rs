@@ -62,6 +62,17 @@ pub struct SparseColumnArray {
 }
 
 
+/// A sparse matrix with entries arranged row-wise.
+#[derive(RustcEncodable, RustcDecodable)]
+pub struct CompressedSparseRowArray {
+    rows: usize,
+    cols: usize,
+    indices: Vec<usize>,
+    indptr: Vec<usize>,
+    data: Vec<f32>,
+}
+
+
 /// A view into a row or a column of an existing sparse matrix.
 #[derive(Clone, Debug)]
 pub struct SparseArrayView<'a> {
@@ -83,6 +94,15 @@ pub struct SparseArrayIterator<'a> {
     dim: usize,
     indices: &'a Vec<Vec<usize>>,
     data: &'a Vec<Vec<f32>>,
+}
+
+
+pub struct CompressedSparseArrayIterator<'a> {
+    idx: usize,
+    dim: usize,
+    indptr: &'a [usize],
+    indices: &'a [usize],
+    data: &'a [f32]
 }
 
 
@@ -147,6 +167,59 @@ impl IndexableMatrix for SparseColumnArray {
 
     unsafe fn set_unchecked(&mut self, row: usize, column: usize, value: f32) {
 
+        if value != 0.0 {
+            *self.get_unchecked_mut(row, column) = value;
+        }
+    }
+}
+
+
+impl IndexableMatrix for CompressedSparseRowArray {
+    fn rows(&self) -> usize {
+        self.rows
+    }
+
+    fn cols(&self) -> usize {
+        self.cols
+    }
+
+    unsafe fn get_unchecked(&self, row: usize, column: usize) -> f32 {
+        let row_start = *self.indptr.get_unchecked(row);
+        let row_stop = *self.indptr.get_unchecked(row + 1);
+
+        let row_indices = &self.indices[row_start..row_stop];
+
+        match row_indices.binary_search(&column) {
+            Ok(idx) => *self.data[row_start..row_stop].get_unchecked(idx),
+            Err(_) => 0.0,
+        }
+    }
+
+    unsafe fn get_unchecked_mut(&mut self, row: usize, column: usize) -> &mut f32 {
+        let row_start = *self.indptr.get_unchecked(row);
+        let row_stop = *self.indptr.get_unchecked(row + 1);
+
+        let (found, index) = {
+            let row_indices = &self.indices[row_start..row_stop];
+            match row_indices.binary_search(&column) {
+                Ok(idx) => (true, row_start + idx),
+                Err(idx) => (false, row_start + idx),
+            }
+        };
+
+        if !found {
+            self.indices.insert(index, column);
+            self.data.insert(index, 0.0);
+
+            for elem in self.indptr[(row + 1)..].iter_mut() {
+                *elem += 1;
+            }
+        };
+
+        self.data.get_unchecked_mut(index)
+    }
+
+    unsafe fn set_unchecked(&mut self, row: usize, column: usize, value: f32) {
         if value != 0.0 {
             *self.get_unchecked_mut(row, column) = value;
         }
@@ -259,11 +332,81 @@ impl<'a> From<&'a Array> for SparseRowArray {
 
         for (row_idx, row) in array.iter_rows().enumerate() {
             for (col_idx, value) in row.iter().enumerate() {
-                sparse.set(row_idx, col_idx, value);
+                if value != 0.0 {
+                    sparse.set(row_idx, col_idx, value);
+                }
             }
         }
 
         sparse
+    }
+}
+
+
+impl CompressedSparseRowArray {
+    /// Initialise an empty (`rows` by `cols`) matrix.
+    pub fn zeros(rows: usize, cols: usize) -> CompressedSparseRowArray {
+
+        let indptr = vec![0; rows + 1];
+        let indices = Vec::new();
+        let data = Vec::new();
+
+        CompressedSparseRowArray {
+            rows: rows,
+            cols: cols,
+            indptr: indptr,
+            indices: indices,
+            data: data,
+        }
+    }
+
+    /// Return the number of nonzero entries.
+    pub fn nnz(&self) -> usize {
+        self.indices.len()
+    }
+
+    pub fn todense(&self) -> Array {
+        let mut dense = Array::zeros(self.rows, self.cols);
+
+        for (i, row) in self.iter_rows().enumerate() {
+            for (j, value) in row.iter_nonzero() {
+                dense.set(i, j, value);
+            }
+        }
+
+        dense
+    }
+}
+
+
+impl<'a> From<&'a Array> for CompressedSparseRowArray {
+    fn from(array: &Array) -> CompressedSparseRowArray {
+
+        let mut indptr = Vec::with_capacity(array.rows() * array.cols());
+        let mut indices = Vec::with_capacity(array.rows() * array.cols());
+        let mut data = Vec::with_capacity(array.rows() * array.cols());
+
+        let mut row_ptr = 0;
+
+        for row in array.iter_rows() {
+            indptr.push(row_ptr);
+            for (col, value) in row.iter_nonzero() {
+                if value != 0.0 {
+                    row_ptr += 1;
+                    indices.push(col);
+                    data.push(value);
+                }
+            }
+        }
+        indptr.push(row_ptr);
+
+        CompressedSparseRowArray {
+            rows: array.rows(),
+            cols: array.cols(),
+            indptr: indptr,
+            indices: indices,
+            data: data
+        }
     }
 }
 
@@ -275,7 +418,9 @@ impl<'a> From<&'a SparseColumnArray> for SparseRowArray {
 
         for (col_idx, col) in array.iter_columns().enumerate() {
             for (row_idx, value) in col.iter_nonzero() {
-                sparse.set(row_idx, col_idx, value);
+                if value != 0.0 {
+                    sparse.set(row_idx, col_idx, value);
+                }
             }
         }
 
@@ -301,6 +446,32 @@ impl<'a> RowIterable for &'a SparseRowArray {
         SparseArrayView {
             indices: &self.indices[idx],
             data: &self.data[idx],
+        }
+    }
+}
+
+
+impl<'a> RowIterable for &'a CompressedSparseRowArray {
+    type Item = SparseArrayView<'a>;
+    type Output = CompressedSparseArrayIterator<'a>;
+    fn iter_rows(self) -> CompressedSparseArrayIterator<'a> {
+        CompressedSparseArrayIterator {
+            idx: 0,
+            dim: self.rows,
+            indptr: &self.indptr[..],
+            indices: &self.indices[..],
+            data: &self.data[..],
+        }
+    }
+
+    fn view_row(self, idx: usize) -> SparseArrayView<'a> {
+
+        let start = self.indptr[idx];
+        let stop = self.indptr[idx + 1];
+
+        SparseArrayView {
+            indices: &self.indices[start..stop],
+            data: &self.data[start..stop],
         }
     }
 }
@@ -473,6 +644,31 @@ impl<'a> Iterator for SparseArrayIterator<'a> {
 }
 
 
+impl<'a> Iterator for CompressedSparseArrayIterator<'a> {
+    type Item = SparseArrayView<'a>;
+
+    fn next(&mut self) -> Option<SparseArrayView<'a>> {
+
+        let result = match self.idx < self.dim {
+            true => {
+                let start = self.indptr[self.idx];
+                let stop = self.indptr[self.idx + 1];
+
+                Some(SparseArrayView {
+                    indices: &self.indices[start..stop],
+                    data: &self.data[start..stop],
+                })
+            }
+            false => None,
+        };
+
+        self.idx += 1;
+
+        result
+    }
+}
+
+
 impl RowIndex<Vec<usize>> for SparseRowArray {
     type Output = SparseRowArray;
     fn get_rows(&self, index: &Vec<usize>) -> SparseRowArray {
@@ -508,6 +704,7 @@ mod tests {
 
         let dense_arr = Array::from(&vec![vec![0.0, 1.0], vec![2.0, 0.0]]);
         let arr = SparseRowArray::from(&dense_arr);
+        let carr = CompressedSparseRowArray::from(&dense_arr);
 
         assert!(arr.nnz() == 2);
         assert!(allclose(&arr.todense(), &dense_arr));
@@ -516,6 +713,14 @@ mod tests {
         assert!(arr.get(0, 1) == 1.0);
         assert!(arr.get(1, 0) == 2.0);
         assert!(arr.get(1, 1) == 0.0);
+
+        assert!(carr.nnz() == 2);
+        // assert!(allclose(&carr.todense(), &dense_arr));
+
+        assert!(carr.get(0, 0) == 0.0);
+        assert!(carr.get(0, 1) == 1.0);
+        assert!(carr.get(1, 0) == 2.0);
+        assert!(carr.get(1, 1) == 0.0);
     }
 
     #[test]
@@ -539,6 +744,22 @@ mod tests {
         let dense_arr = Array::from(&vec![vec![0.0, 1.0], vec![2.0, 0.0]]);
         let arr = SparseRowArray::from(&dense_arr);
         let mut target = SparseRowArray::zeros(2, 2);
+
+        for (row_idx, row) in arr.iter_rows().enumerate() {
+            for (col_idx, value) in row.iter_nonzero() {
+                target.set(row_idx, col_idx, value);
+            }
+        }
+
+        assert!(allclose(&dense_arr, &target.todense()));
+    }
+
+    #[test]
+    fn row_test_iteration_compressed() {
+
+        let dense_arr = Array::from(&vec![vec![0.0, 1.0], vec![2.0, 0.0]]);
+        let arr = CompressedSparseRowArray::from(&dense_arr);
+        let mut target = CompressedSparseRowArray::zeros(2, 2);
 
         for (row_idx, row) in arr.iter_rows().enumerate() {
             for (col_idx, value) in row.iter_nonzero() {

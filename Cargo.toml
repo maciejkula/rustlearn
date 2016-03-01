@@ -1,6 +1,6 @@
 [package]
 name = "rustlearn"
-version = "0.3.0"
+version = "0.3.1"
 description = "A machine learning package for Rust."
 documentation = "https://maciejkula.github.io/rustlearn/doc/rustlearn/"
 homepage = "https://github.com/maciejkula/rustlearn"
@@ -25,7 +25,7 @@ rustc-serialize = "0.3"
 gcc = "0.3"
 
 [dev-dependencies]
-bincode = "0.4.0"
+bincode = "0.4.1"
 csv = "0.14"
 hyper = "0.7.0"
 time = "0.1"

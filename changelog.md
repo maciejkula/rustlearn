@@ -1,7 +1,8 @@
 # Changelog
-## [unreleased][unreleased]
+## [0.3.1][2016-03-01]
 ### Changed
 - NonzeroIterable now takes &self
+- bincode version bumped to 0.4.1 to fix dependency breakage
 
 ## [0.3.0][2016-01-16]
 ### Added

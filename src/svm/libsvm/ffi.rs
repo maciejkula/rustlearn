@@ -115,8 +115,8 @@ impl SvmProblem {
         }
 
         let node_ptrs = nodes.iter()
-                             .map(|x| x.as_ptr())
-                             .collect::<Vec<_>>();
+            .map(|x| x.as_ptr())
+            .collect::<Vec<_>>();
 
         SvmProblem {
             nodes: nodes,
@@ -474,10 +474,9 @@ pub fn predict<'a, T>(model: &SvmModel, X: &'a T) -> (Array, Array)
     for (_, row) in X.iter_rows().enumerate() {
         let nodes = row_to_nodes(row);
         unsafe {
-            predicted_class.push(svm_predict_values(&mut libsvm_model as * mut LibsvmModel,
-                                                        nodes.as_ptr(),
-                                                        df_slice.as_ptr())
-                                     as f32);
+            predicted_class.push(svm_predict_values(&mut libsvm_model as *mut LibsvmModel,
+                                         nodes.as_ptr(),
+                                         df_slice.as_ptr()) as f32);
         }
         df_slice = &df_slice[ovo_num_classes..];
     }

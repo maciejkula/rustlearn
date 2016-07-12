@@ -13,13 +13,13 @@ pub trait SupervisedModel<T> {
         let decision_func = try!(self.decision_function(x));
 
         Ok(Array::from(decision_func.data()
-                                    .iter()
-                                    .map(|v| {
-                                        match v.partial_cmp(&0.5) {
-                                            Some(Ordering::Greater) => 1.0,
-                                            _ => 0.0,
-                                        }
-                                    })
-                                    .collect::<Vec<f32>>()))
+            .iter()
+            .map(|v| {
+                match v.partial_cmp(&0.5) {
+                    Some(Ordering::Greater) => 1.0,
+                    _ => 0.0,
+                }
+            })
+            .collect::<Vec<f32>>()))
     }
 }

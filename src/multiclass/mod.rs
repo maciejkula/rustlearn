@@ -46,7 +46,7 @@ impl<'a> OneVsRest<'a> {
             let mut decision_func_val = 0.0;
 
             for (&label, prediction_arr) in class_labels.iter()
-                                                        .zip(predictions.iter()) {
+                .zip(predictions.iter()) {
                 if prediction_arr.get(i, 0) > decision_func_val {
                     *prediction.get_mut(i, 0) = label;
                     decision_func_val = prediction_arr.get(i, 0);
@@ -66,16 +66,16 @@ impl<'a> Iterator for OneVsRest<'a> {
         let ret = if self.iter < self.classes.len() {
             let target_class = self.classes[self.iter];
             let binary_target = Array::from(self.y
-                                            .data()
-                                            .iter()
-                                            .map(|&v| {
-                                                if v == target_class {
-                                                    1.0
-                                                } else {
-                                                    0.0
-                                                }
-                                            })
-                                            .collect::<Vec<_>>());
+                .data()
+                .iter()
+                .map(|&v| {
+                    if v == target_class {
+                        1.0
+                    } else {
+                        0.0
+                    }
+                })
+                .collect::<Vec<_>>());
             Some((target_class, binary_target))
         } else {
             None
@@ -107,7 +107,7 @@ impl<T: Clone> OneVsRestWrapper<T> {
     fn get_model(&mut self, class_label: f32) -> &mut T {
         for (idx, label) in self.class_labels.iter().enumerate() {
             if let Some(Ordering::Equal) = class_label.partial_cmp(label) {
-                 return &mut self.models[idx]
+                return &mut self.models[idx];
             }
         }
 

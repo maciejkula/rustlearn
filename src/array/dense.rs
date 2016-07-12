@@ -247,7 +247,7 @@ impl<'a> Iterator for ArrayViewIterator<'a> {
                 } else {
                     None
                 }
-            },
+            }
             ArrayIteratorAxis::Column => {
                 if self.idx < self.view.array.rows {
                     unsafe { Some(self.view.array.get_unchecked(self.idx, self.view.idx)) }
@@ -276,8 +276,8 @@ impl<'a> Iterator for ArrayViewNonzeroIterator<'a> {
                     unsafe {
                         Some((self.idx,
                               self.view
-                              .array
-                              .get_unchecked(self.view.idx, self.idx)))
+                            .array
+                            .get_unchecked(self.view.idx, self.idx)))
                     }
                 } else {
                     None
@@ -288,8 +288,8 @@ impl<'a> Iterator for ArrayViewNonzeroIterator<'a> {
                     unsafe {
                         Some((self.idx,
                               self.view
-                              .array
-                              .get_unchecked(self.idx, self.view.idx)))
+                            .array
+                            .get_unchecked(self.idx, self.view.idx)))
                     }
                 } else {
                     None
@@ -545,9 +545,9 @@ impl ElementwiseArrayOps<f32> for Array {
             cols: self.cols,
             order: MatrixOrder::RowMajor,
             data: self.data
-                      .iter()
-                      .map(|&x| x + rhs)
-                      .collect::<Vec<f32>>(),
+                .iter()
+                .map(|&x| x + rhs)
+                .collect::<Vec<f32>>(),
         }
     }
 
@@ -571,9 +571,9 @@ impl ElementwiseArrayOps<f32> for Array {
             cols: self.cols,
             order: MatrixOrder::RowMajor,
             data: self.data
-                      .iter()
-                      .map(|&x| x * rhs)
-                      .collect::<Vec<f32>>(),
+                .iter()
+                .map(|&x| x * rhs)
+                .collect::<Vec<f32>>(),
         }
     }
 
@@ -589,9 +589,9 @@ impl ElementwiseArrayOps<f32> for Array {
             cols: self.cols,
             order: MatrixOrder::RowMajor,
             data: self.data
-                      .iter()
-                      .map(|&x| x / rhs)
-                      .collect::<Vec<f32>>(),
+                .iter()
+                .map(|&x| x / rhs)
+                .collect::<Vec<f32>>(),
         }
     }
 

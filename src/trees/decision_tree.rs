@@ -395,7 +395,7 @@ impl SupervisedModel<SparseColumnArray> for DecisionTree {
             Some(ref node) => {
                 let mut data = Vec::with_capacity(X.rows());
                 for row_idx in 0..X.rows() {
-                    data.push(self.query_tree_sparse(&node, X, row_idx));
+                    data.push(self.query_tree_sparse(node, X, row_idx));
                 }
                 Ok(Array::from(data))
             }
@@ -469,11 +469,8 @@ macro_rules! build_tree {
                 if left_indices.len() > 0 && right_indices.len() > 0 {
 
                     // Cannot split on binary feature more than one time
-                    match self.feature_types[best_feature_idx] {
-                        FeatureType::Binary => {
+                    if let FeatureType::Binary = self.feature_types[best_feature_idx] {
                             feature_indices.mark_as_used(best_feature_position);
-                        },
-                        _ => {}
                     }
 
                     let num_used_features = feature_indices.num_used;
@@ -560,8 +557,8 @@ impl DecisionTree {
             .iter()
             .enumerate()
             .filter(|&(_, feature_type)| {
-                match feature_type {
-                    &FeatureType::Constant => false,
+                match *feature_type {
+                    FeatureType::Constant => false,
                     _ => true,
                 }
             })
@@ -606,8 +603,7 @@ impl DecisionTree {
             let row_idx = indices[i];
 
             if X.get(row_idx, feature_idx) <= threshold {
-                indices[i] = indices[num_left];
-                indices[num_left] = row_idx;
+                indices.swap(i, num_left);
                 num_left += 1;
             }
         }
@@ -693,7 +689,7 @@ impl DecisionTree {
         let mut cumulative_count = 0.0;
         let mut cumulative_y = 0.0;
 
-        for &(x, y) in values.xy_pairs.iter() {
+        for &(x, y) in &values.xy_pairs {
 
             if x == 0.0 {
                 cumulative_count += values.zero_count as f32;
@@ -773,13 +769,10 @@ impl DecisionTree {
 
         let x_nnz = x.nnz() as f32;
 
-        match x_nnz * (indices.len() as f32).log(2.0) < x_nnz + indices.len() as f32 {
-            true => {
-                DecisionTree::get_values_sparse_by_search(x, y, num_positives, indices, values);
-            }
-            false => {
-                DecisionTree::get_values_sparse_by_iteration(x, y, num_positives, indices, values);
-            }
+        if x_nnz * (indices.len() as f32).log(2.0) < x_nnz + indices.len() as f32 {
+            DecisionTree::get_values_sparse_by_search(x, y, num_positives, indices, values);
+        } else {
+            DecisionTree::get_values_sparse_by_iteration(x, y, num_positives, indices, values);
         }
 
         values.sort();
@@ -797,36 +790,32 @@ impl DecisionTree {
         let mut indices_option = indices_iter.next();
         let mut nonzero_option = nonzero_iter.next();
 
-        loop {
-            if let Some(&indices_idx) = indices_option {
-                if let Some((nonzero_idx, nonzero_value)) = nonzero_option {
-                    match indices_idx.cmp(&nonzero_idx) {
-                        // Haven't reached the first nonzero in column
-                        Ordering::Less => {
-                            values.push(0.0, y.get(indices_idx, 0));
-                            indices_option = indices_iter.next();
-                        }
-                        // Reached a nonzero at index we are interested in
-                        Ordering::Equal => {
-                            values.push(nonzero_value, y.get(nonzero_idx, 0));
-                            indices_option = indices_iter.next();
-                            nonzero_option = nonzero_iter.next();
-                        }
-                        // Move to the next nonzero value
-                        Ordering::Greater => {
-                            nonzero_option = nonzero_iter.next();
-                        }
+        while let Some(&indices_idx) = indices_option {
+            if let Some((nonzero_idx, nonzero_value)) = nonzero_option {
+                match indices_idx.cmp(&nonzero_idx) {
+                    // Haven't reached the first nonzero in column
+                    Ordering::Less => {
+                        values.push(0.0, y.get(indices_idx, 0));
+                        indices_option = indices_iter.next();
                     }
-                } else {
-
-                    // We've exhausted all nonzero indices
-                    let remaining_zeros = indices.len() - values.count;
-                    let remaining_positives = num_positives as f32 - values.total_y;
-
-                    values.fill_remaining_zeros(remaining_zeros, remaining_positives);
-                    break;
+                    // Reached a nonzero at index we are interested in
+                    Ordering::Equal => {
+                        values.push(nonzero_value, y.get(nonzero_idx, 0));
+                        indices_option = indices_iter.next();
+                        nonzero_option = nonzero_iter.next();
+                    }
+                    // Move to the next nonzero value
+                    Ordering::Greater => {
+                        nonzero_option = nonzero_iter.next();
+                    }
                 }
             } else {
+
+                // We've exhausted all nonzero indices
+                let remaining_zeros = indices.len() - values.count;
+                let remaining_positives = num_positives as f32 - values.total_y;
+
+                values.fill_remaining_zeros(remaining_zeros, remaining_positives);
                 break;
             }
         }
@@ -853,30 +842,32 @@ impl DecisionTree {
     }
 
     fn query_tree(&self, node: &Node, x: &Array, row_idx: usize) -> f32 {
-        match node {
-            &Node::Interior {feature,
+        match *node {
+            Node::Interior {feature,
                              threshold,
                              ref children} => {
-                match x.get(row_idx, feature) <= threshold {
-                    true => self.query_tree(&children.0, x, row_idx),
-                    false => self.query_tree(&children.1, x, row_idx),
+                if x.get(row_idx, feature) <= threshold {
+                    self.query_tree(&children.0, x, row_idx)
+                } else {
+                    self.query_tree(&children.1, x, row_idx)
                 }
             }
-            &Node::Leaf {probability} => probability,
+            Node::Leaf {probability} => probability,
         }
     }
 
     fn query_tree_sparse(&self, node: &Node, x: &SparseColumnArray, row_idx: usize) -> f32 {
-        match node {
-            &Node::Interior {feature,
+        match *node {
+            Node::Interior {feature,
                              threshold,
                              ref children} => {
-                match x.get(row_idx, feature) <= threshold {
-                    true => self.query_tree_sparse(&children.0, x, row_idx),
-                    false => self.query_tree_sparse(&children.1, x, row_idx),
+                if x.get(row_idx, feature) <= threshold {
+                    self.query_tree_sparse(&children.0, x, row_idx)
+                } else {
+                    self.query_tree_sparse(&children.1, x, row_idx)
                 }
             }
-            &Node::Leaf {probability} => probability,
+            Node::Leaf {probability} => probability,
         }
     }
 }

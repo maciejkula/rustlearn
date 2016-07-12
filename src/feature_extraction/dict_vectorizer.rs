@@ -28,7 +28,7 @@ use std::collections::HashMap;
 use prelude::*;
 
 
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(RustcEncodable, RustcDecodable, Default)]
 pub struct DictVectorizer {
     dictionary: HashMap<String, (usize, usize)>,
     data: Vec<(usize, usize, f32)>,
@@ -63,7 +63,7 @@ impl DictVectorizer {
             }
         };
 
-        if insert == true {
+        if insert {
             self.dictionary.insert(name.to_string(), (col, 1));
         }
 
@@ -77,7 +77,7 @@ impl DictVectorizer {
 
         let mut array = SparseRowArray::zeros(rows, cols);
 
-        for &(row, col, value) in self.data.iter() {
+        for &(row, col, value) in &self.data {
             array.set(row, col, value);
         }
 

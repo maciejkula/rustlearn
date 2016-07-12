@@ -106,9 +106,8 @@ impl<T: Clone> OneVsRestWrapper<T> {
 
     fn get_model(&mut self, class_label: f32) -> &mut T {
         for (idx, label) in self.class_labels.iter().enumerate() {
-            match class_label.partial_cmp(label) {
-                Some(Ordering::Equal) => return &mut self.models[idx],
-                _ => {}
+            if let Some(Ordering::Equal) = class_label.partial_cmp(label) {
+                 return &mut self.models[idx]
             }
         }
 

@@ -298,11 +298,11 @@ impl SvmModel {
         SV_ptrs.clear();
         sv_coef_ptrs.clear();
 
-        for x in self.SV.iter() {
+        for x in &self.SV {
             SV_ptrs.push(x.as_ptr());
         }
 
-        for x in self.sv_coef.iter() {
+        for x in &self.sv_coef {
             sv_coef_ptrs.push(x.as_ptr());
         }
 
@@ -397,9 +397,10 @@ fn check(problem: *const LibsvmProblem, param: *const LibsvmParameter) -> Result
     unsafe {
         let message = svm_check_parameter(problem, param);
 
-        match message.is_null() {
-            true => Ok(()),
-            false => Err(CStr::from_ptr(message).to_str().unwrap().to_owned()),
+        if message.is_null() {
+            Ok(())
+        } else {
+            Err(CStr::from_ptr(message).to_str().unwrap().to_owned())
         }
     }
 }

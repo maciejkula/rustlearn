@@ -194,10 +194,7 @@ macro_rules! max {
 
 macro_rules! min {
     ($x:expr, $y:expr) => {{
-        match $x < $y {
-            true => $x,
-            false => $y,
-        }
+        if $x < $y { $x } else { $y }
     }}
 }
 

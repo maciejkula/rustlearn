@@ -204,7 +204,7 @@ enum FeatureType {
 }
 
 
-/// Hyperparameters for a DecisionTree model.
+/// Hyperparameters for a `DecisionTree` model.
 #[derive(RustcEncodable, RustcDecodable)]
 #[derive(Clone)]
 pub struct Hyperparameters {

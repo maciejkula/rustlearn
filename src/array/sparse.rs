@@ -70,7 +70,7 @@ pub struct SparseArrayView<'a> {
 }
 
 
-/// Iterator over nonzero entries of a SparseArrayView.
+/// Iterator over nonzero entries of a `SparseArrayView`.
 pub struct SparseArrayViewIterator<'a> {
     idx: usize,
     view: SparseArrayView<'a>,

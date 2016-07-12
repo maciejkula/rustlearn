@@ -63,7 +63,7 @@ use multiclass::OneVsRestWrapper;
 use utils::{check_data_dimensionality, check_matched_dimensions, check_valid_labels};
 
 
-/// Hyperparameters for a SGDClassifier model.
+/// Hyperparameters for a `SGDClassifier` model.
 #[derive(RustcEncodable, RustcDecodable)]
 pub struct Hyperparameters {
     dim: usize,

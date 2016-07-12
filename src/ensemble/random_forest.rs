@@ -122,7 +122,7 @@ impl SupervisedModel<Array> for RandomForest {
 
         let mut rng = self.rng.clone();
 
-        for tree in self.trees.iter_mut() {
+        for tree in &mut self.trees {
             let indices = RandomForest::bootstrap_indices(X.rows(), &mut rng.rng);
             try!(tree.fit(&X.get_rows(&indices), &y.get_rows(&indices)));
         }
@@ -136,7 +136,7 @@ impl SupervisedModel<Array> for RandomForest {
 
         let mut df = Array::zeros(X.rows(), 1);
 
-        for tree in self.trees.iter() {
+        for tree in &self.trees {
             df.add_inplace(&try!(tree.decision_function(X)));
         }
 
@@ -152,7 +152,7 @@ impl SupervisedModel<SparseRowArray> for RandomForest {
 
         let mut rng = self.rng.clone();
 
-        for tree in self.trees.iter_mut() {
+        for tree in &mut self.trees {
             let indices = RandomForest::bootstrap_indices(X.rows(), &mut rng.rng);
             let x = SparseColumnArray::from(&X.get_rows(&indices));
             try!(tree.fit(&x, &y.get_rows(&indices)));
@@ -169,7 +169,7 @@ impl SupervisedModel<SparseRowArray> for RandomForest {
 
         let x = SparseColumnArray::from(X);
 
-        for tree in self.trees.iter() {
+        for tree in &self.trees {
             df.add_inplace(&try!(tree.decision_function(&x)));
         }
 

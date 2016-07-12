@@ -57,8 +57,8 @@ fn rates_at_score(y_true: &[f32], y_hat: &[f32]) -> (Vec<f32>, Vec<f32>) {
 
     for (tp, fp) in true_positive_count.iter_mut()
         .zip(false_positive_count.iter_mut()) {
-            *tp = *tp / true_positives;
-            *fp = *fp / false_positives;
+            *tp /= true_positives;
+            *fp /= false_positives;
         }
 
     (true_positive_count, false_positive_count)

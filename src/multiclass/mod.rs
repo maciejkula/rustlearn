@@ -32,7 +32,7 @@ impl<'a> OneVsRest<'a> {
         }
     }
 
-    pub fn merge(class_labels: &Vec<f32>, predictions: &Vec<Array>) -> Array {
+    pub fn merge(class_labels: &[f32], predictions: &[Array]) -> Array {
 
         assert!(class_labels.len() > 0);
         assert!(class_labels.len() == predictions.len());
@@ -63,23 +63,22 @@ impl<'a> Iterator for OneVsRest<'a> {
     type Item = (f32, Array);
     fn next(&mut self) -> Option<(f32, Array)> {
 
-        let ret = match self.iter < self.classes.len() {
-            true => {
-                let target_class = self.classes[self.iter];
-                let binary_target = Array::from(self.y
-                                                    .data()
-                                                    .iter()
-                                                    .map(|&v| {
-                                                        if v == target_class {
-                                                            1.0
-                                                        } else {
-                                                            0.0
-                                                        }
-                                                    })
-                                                    .collect::<Vec<_>>());
-                Some((target_class, binary_target))
-            }
-            false => None,
+        let ret = if self.iter < self.classes.len() {
+            let target_class = self.classes[self.iter];
+            let binary_target = Array::from(self.y
+                                            .data()
+                                            .iter()
+                                            .map(|&v| {
+                                                if v == target_class {
+                                                    1.0
+                                                } else {
+                                                    0.0
+                                                }
+                                            })
+                                            .collect::<Vec<_>>());
+            Some((target_class, binary_target))
+        } else {
+            None
         };
 
         self.iter += 1;

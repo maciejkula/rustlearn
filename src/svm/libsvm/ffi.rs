@@ -444,7 +444,7 @@ pub fn fit<'a, T>(X: &'a T, y: &Array, parameters: &SvmParameter) -> Result<SvmM
 
 
 /// Call `libsvm` to get predictions (both predicted classes
-/// and OvO decision function values.
+/// and `OvO` decision function values.
 pub fn predict<'a, T>(model: &SvmModel, X: &'a T) -> (Array, Array)
     where T: IndexableMatrix,
           &'a T: RowIterable

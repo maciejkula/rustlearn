@@ -106,7 +106,7 @@ pub trait NonzeroIterable {
 /// to create a new matrix containing those rows.
 pub trait RowIndex<Rhs> {
     type Output;
-    fn get_rows<'a>(&self, index: &'a Rhs) -> Self::Output;
+    fn get_rows(&self, index: &Rhs) -> Self::Output;
 }
 
 

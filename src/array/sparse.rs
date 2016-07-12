@@ -156,8 +156,8 @@ impl IndexableMatrix for SparseColumnArray {
 
 unsafe fn get(row: usize,
               col: usize,
-              array_indices: &Vec<Vec<usize>>,
-              array_data: &Vec<Vec<f32>>,
+              array_indices: &[Vec<usize>],
+              array_data: &[Vec<f32>],
               order: MatrixOrder)
               -> f32 {
 
@@ -444,12 +444,13 @@ impl<'a> Iterator for SparseArrayViewIterator<'a> {
 
     fn next(&mut self) -> Option<(usize, f32)> {
 
-        let result = match self.idx < self.view.indices.len() {
-            true => unsafe {
-                Some((self.view.indices.get_unchecked(self.idx).clone(),
-                      self.view.data.get_unchecked(self.idx).clone()))
-            },
-            _ => None,
+        let result = if self.idx < self.view.indices.len() {
+            unsafe {
+                Some((*self.view.indices.get_unchecked(self.idx),
+                      *self.view.data.get_unchecked(self.idx)))
+            }
+        } else {
+            None
         };
 
         self.idx += 1;
@@ -464,14 +465,13 @@ impl<'a> Iterator for SparseArrayIterator<'a> {
 
     fn next(&mut self) -> Option<SparseArrayView<'a>> {
 
-        let result = match self.idx < self.dim {
-            true => {
-                Some(SparseArrayView {
-                    indices: &self.indices[self.idx][..],
-                    data: &self.data[self.idx][..],
-                })
-            }
-            false => None,
+        let result = if self.idx < self.dim {
+            Some(SparseArrayView {
+                indices: &self.indices[self.idx][..],
+                data: &self.data[self.idx][..],
+            })
+        } else {
+            None
         };
 
         self.idx += 1;

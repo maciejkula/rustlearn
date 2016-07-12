@@ -187,10 +187,7 @@ macro_rules! adagrad_updates {
 
 macro_rules! max {
     ($x:expr, $y:expr) => {{
-        match $x > $y {
-            true => $x,
-            false => $y,
-        }
+        if $x > $y { $x } else { $y }
     }}
 }
 
@@ -320,19 +317,16 @@ impl SGDClassifier {
         *coefficient *= 1.0 - (1.0 - l2_update) * local_learning_rate;
         *applied_l2 *= l2_update;
 
-        let pre_update_coeff = coefficient.clone();
+        let pre_update_coeff = *coefficient;
         let l1_potential_update = self.accumulated_l1 - *applied_l1;
 
-        match *coefficient > 0.0 {
-            true => {
-                *coefficient = max!(0.0,
-                                    *coefficient - local_learning_rate * l1_potential_update);
-            }
-            false => {
-                *coefficient = min!(0.0,
-                                    *coefficient + local_learning_rate * l1_potential_update)
-            }
-        }
+        if *coefficient > 0.0 {
+            *coefficient = max!(0.0,
+                                *coefficient - local_learning_rate * l1_potential_update);
+        } else {
+            *coefficient = min!(0.0,
+                                *coefficient + local_learning_rate * l1_potential_update)
+        };
 
         let l1_actual_update = (pre_update_coeff - *coefficient).abs();
         *applied_l1 += l1_actual_update;

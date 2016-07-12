@@ -74,14 +74,13 @@ impl Iterator for ShuffleSplit {
     type Item = (Vec<usize>, Vec<usize>);
     fn next(&mut self) -> Option<(Vec<usize>, Vec<usize>)> {
 
-        let ret = match self.iter < self.n_iter {
-            true => {
-                let split_idx: usize = (self.n as f32 * (1.0 - self.test_size)).floor() as usize;
-                let shuffled_indices = self.get_shuffled_indices();
-                let (train, test) = shuffled_indices.split_at(split_idx);
-                Some((train.to_owned(), test.to_owned()))
-            }
-            false => None,
+        let ret = if self.iter < self.n_iter {
+            let split_idx: usize = (self.n as f32 * (1.0 - self.test_size)).floor() as usize;
+            let shuffled_indices = self.get_shuffled_indices();
+            let (train, test) = shuffled_indices.split_at(split_idx);
+            Some((train.to_owned(), test.to_owned()))
+        } else {
+            None
         };
 
         self.iter += 1;

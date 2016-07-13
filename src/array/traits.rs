@@ -14,7 +14,6 @@ pub enum MatrixOrder {
 /// Trait representing a shaped matrix whose entries can be accessed
 /// at will using their row and column position.
 pub trait IndexableMatrix {
-
     /// Return the number of rows of the matrix.
     fn rows(&self) -> usize;
 
@@ -74,7 +73,7 @@ pub trait IndexableMatrix {
 /// a row-wise fashion.
 pub trait RowIterable {
     type Item: NonzeroIterable;
-    type Output: Iterator<Item=Self::Item>;
+    type Output: Iterator<Item = Self::Item>;
     /// Iterate over rows of the matrix.
     fn iter_rows(self) -> Self::Output;
     /// View a row of the matrix.
@@ -86,7 +85,7 @@ pub trait RowIterable {
 /// a column-wise fashion.
 pub trait ColumnIterable {
     type Item: NonzeroIterable;
-    type Output: Iterator<Item=Self::Item>;
+    type Output: Iterator<Item = Self::Item>;
     /// Iterate over columns of a the matrix.
     fn iter_columns(self) -> Self::Output;
     /// View a column of the matrix.
@@ -106,11 +105,12 @@ pub trait NonzeroIterable {
 /// to create a new matrix containing those rows.
 pub trait RowIndex<Rhs> {
     type Output;
-    fn get_rows<'a>(&self, index: &'a Rhs) -> Self::Output;
+    fn get_rows(&self, index: &Rhs) -> Self::Output;
 }
 
 
-impl<T> RowIndex<usize> for T where T: RowIndex<Vec<usize>>
+impl<T> RowIndex<usize> for T
+    where T: RowIndex<Vec<usize>>
 {
     type Output = T::Output;
     fn get_rows(&self, index: &usize) -> Self::Output {
@@ -119,7 +119,8 @@ impl<T> RowIndex<usize> for T where T: RowIndex<Vec<usize>>
 }
 
 
-impl<T> RowIndex<Range<usize>> for T where T: RowIndex<Vec<usize>>
+impl<T> RowIndex<Range<usize>> for T
+    where T: RowIndex<Vec<usize>>
 {
     type Output = T::Output;
     fn get_rows(&self, index: &Range<usize>) -> Self::Output {
@@ -128,7 +129,8 @@ impl<T> RowIndex<Range<usize>> for T where T: RowIndex<Vec<usize>>
 }
 
 
-impl<T> RowIndex<RangeFrom<usize>> for T where T: RowIndex<Range<usize>> + IndexableMatrix
+impl<T> RowIndex<RangeFrom<usize>> for T
+    where T: RowIndex<Range<usize>> + IndexableMatrix
 {
     type Output = T::Output;
     fn get_rows(&self, index: &RangeFrom<usize>) -> Self::Output {
@@ -137,7 +139,8 @@ impl<T> RowIndex<RangeFrom<usize>> for T where T: RowIndex<Range<usize>> + Index
 }
 
 
-impl<T> RowIndex<RangeTo<usize>> for T where T: RowIndex<Range<usize>> + IndexableMatrix
+impl<T> RowIndex<RangeTo<usize>> for T
+    where T: RowIndex<Range<usize>> + IndexableMatrix
 {
     type Output = T::Output;
     fn get_rows(&self, index: &RangeTo<usize>) -> Self::Output {
@@ -146,7 +149,8 @@ impl<T> RowIndex<RangeTo<usize>> for T where T: RowIndex<Range<usize>> + Indexab
 }
 
 
-impl<T> RowIndex<RangeFull> for T where T: RowIndex<Range<usize>> + IndexableMatrix
+impl<T> RowIndex<RangeFull> for T
+    where T: RowIndex<Range<usize>> + IndexableMatrix
 {
     type Output = T::Output;
     fn get_rows(&self, _: &RangeFull) -> Self::Output {

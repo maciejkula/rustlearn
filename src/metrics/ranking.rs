@@ -30,11 +30,11 @@ fn counts_at_score(y_true: &[f32], y_hat: &[f32]) -> (Vec<f32>, Vec<f32>) {
     for (i, &(score, label)) in pairs.iter().enumerate() {
 
         positive_counter += label;
-        
+
         if close(score, prev_score) {
             continue;
         }
-        
+
         scores.push(score);
         true_positives.push(positive_counter);
         false_positives.push((i as f32) + 1.0 - positive_counter);
@@ -49,17 +49,16 @@ fn counts_at_score(y_true: &[f32], y_hat: &[f32]) -> (Vec<f32>, Vec<f32>) {
 /// Both vectors are nondecreasing.
 fn rates_at_score(y_true: &[f32], y_hat: &[f32]) -> (Vec<f32>, Vec<f32>) {
 
-    let (mut true_positive_count,
-         mut false_positive_count) = counts_at_score(y_true, y_hat);
+    let (mut true_positive_count, mut false_positive_count) = counts_at_score(y_true, y_hat);
 
     let true_positives = true_positive_count[true_positive_count.len() - 1];
-    let false_positives = false_positive_count[false_positive_count.len() -1];
+    let false_positives = false_positive_count[false_positive_count.len() - 1];
 
     for (tp, fp) in true_positive_count.iter_mut()
         .zip(false_positive_count.iter_mut()) {
-            *tp = *tp / true_positives;
-            *fp = *fp / false_positives;
-        }
+        *tp /= true_positives;
+        *fp /= false_positives;
+    }
 
     (true_positive_count, false_positive_count)
 }
@@ -88,15 +87,15 @@ fn trapezoidal(x: &[f32], y: &[f32]) -> f32 {
 fn check_roc_auc_inputs(y_true: &Array, y_hat: &Array) -> Result<(), &'static str> {
 
     if y_true.cols() != 1 || y_hat.cols() != 1 {
-        return Err("Input array has more than one column.")
+        return Err("Input array has more than one column.");
     }
 
     if y_true.rows() != y_hat.rows() {
-        return Err("Unequal number of rows")
+        return Err("Unequal number of rows");
     }
 
     if y_true.rows() < 1 {
-        return Err("Inputs are empty.")
+        return Err("Inputs are empty.");
     }
 
     let mut pos_present = false;
@@ -104,14 +103,18 @@ fn check_roc_auc_inputs(y_true: &Array, y_hat: &Array) -> Result<(), &'static st
 
     for &y in y_true.data() {
         match y {
-            0.0 => { neg_present = true; },
-            1.0 => { pos_present = true; },
-            _ => { return Err("Invalid labels: target data is not either 0.0 or 1.0") }
+            0.0 => {
+                neg_present = true;
+            }
+            1.0 => {
+                pos_present = true;
+            }
+            _ => return Err("Invalid labels: target data is not either 0.0 or 1.0"),
         }
     }
 
     if !pos_present || !neg_present {
-        return Err("Both classes must be present.")
+        return Err("Both classes must be present.");
     }
 
     Ok(())
@@ -157,8 +160,8 @@ mod tests {
         assert!(allclose(&Array::from(x), &Array::from(x_expected)));
         assert!(allclose(&Array::from(y), &Array::from(y_expected)));
 
-        assert!(close(0.75, roc_auc_score(&Array::from(y_true),
-                                          &Array::from(y_hat)).unwrap()));
+        assert!(close(0.75,
+                      roc_auc_score(&Array::from(y_true), &Array::from(y_hat)).unwrap()));
     }
 
     #[test]
@@ -166,7 +169,7 @@ mod tests {
         let y_true = vec![1.0, 1.0, 0.0, 0.0];
         let y_hat = vec![0.5, 0.5, -1.0, 0.5];
 
-        assert!(close(0.75, roc_auc_score(&Array::from(y_true),
-                                          &Array::from(y_hat)).unwrap()));
+        assert!(close(0.75,
+                      roc_auc_score(&Array::from(y_true), &Array::from(y_hat)).unwrap()));
     }
 }

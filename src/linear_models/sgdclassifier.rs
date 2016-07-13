@@ -63,7 +63,7 @@ use multiclass::OneVsRestWrapper;
 use utils::{check_data_dimensionality, check_matched_dimensions, check_valid_labels};
 
 
-/// Hyperparameters for a SGDClassifier model.
+/// Hyperparameters for a `SGDClassifier` model.
 #[derive(RustcEncodable, RustcDecodable)]
 pub struct Hyperparameters {
     dim: usize,
@@ -187,20 +187,14 @@ macro_rules! adagrad_updates {
 
 macro_rules! max {
     ($x:expr, $y:expr) => {{
-        match $x > $y {
-            true => $x,
-            false => $y,
-        }
+        if $x > $y { $x } else { $y }
     }}
 }
 
 
 macro_rules! min {
     ($x:expr, $y:expr) => {{
-        match $x < $y {
-            true => $x,
-            false => $y,
-        }
+        if $x < $y { $x } else { $y }
     }}
 }
 
@@ -320,19 +314,16 @@ impl SGDClassifier {
         *coefficient *= 1.0 - (1.0 - l2_update) * local_learning_rate;
         *applied_l2 *= l2_update;
 
-        let pre_update_coeff = coefficient.clone();
+        let pre_update_coeff = *coefficient;
         let l1_potential_update = self.accumulated_l1 - *applied_l1;
 
-        match *coefficient > 0.0 {
-            true => {
-                *coefficient = max!(0.0,
-                                    *coefficient - local_learning_rate * l1_potential_update);
-            }
-            false => {
-                *coefficient = min!(0.0,
-                                    *coefficient + local_learning_rate * l1_potential_update)
-            }
-        }
+        if *coefficient > 0.0 {
+            *coefficient = max!(0.0,
+                                *coefficient - local_learning_rate * l1_potential_update);
+        } else {
+            *coefficient = min!(0.0,
+                                *coefficient + local_learning_rate * l1_potential_update)
+        };
 
         let l1_actual_update = (pre_update_coeff - *coefficient).abs();
         *applied_l1 += l1_actual_update;
@@ -373,10 +364,10 @@ mod tests {
     fn basic_updating() {
 
         let mut model = Hyperparameters::new(2)
-                            .learning_rate(0.01)
-                            .l2_penalty(0.0)
-                            .l1_penalty(0.0)
-                            .build();
+            .learning_rate(0.01)
+            .l2_penalty(0.0)
+            .l1_penalty(0.0)
+            .build();
 
         let y = Array::ones(1, 1);
         let X = Array::from(&vec![vec![1.0, -0.1]]);
@@ -398,10 +389,10 @@ mod tests {
     #[test]
     fn basic_regularization() {
         let mut model = Hyperparameters::new(2)
-                            .learning_rate(1.0)
-                            .l2_penalty(0.5)
-                            .l1_penalty(0.0)
-                            .build();
+            .learning_rate(1.0)
+            .l2_penalty(0.5)
+            .l1_penalty(0.0)
+            .build();
 
         let y = Array::ones(1, 1);
         let X = Array::from(&vec![vec![0.0, 0.0]]);
@@ -415,10 +406,10 @@ mod tests {
         assert!(model.coefficients.data()[1] == -0.5);
 
         let mut model = Hyperparameters::new(2)
-                            .learning_rate(1.0)
-                            .l2_penalty(0.0)
-                            .l1_penalty(0.5)
-                            .build();
+            .learning_rate(1.0)
+            .l2_penalty(0.0)
+            .l1_penalty(0.5)
+            .build();
 
         model.coefficients.as_mut_slice()[0] = 1.0;
         model.coefficients.as_mut_slice()[1] = -1.0;
@@ -440,10 +431,10 @@ mod tests {
     #[test]
     fn test_sparse_regularization() {
         let mut model = Hyperparameters::new(2)
-                            .learning_rate(1.0)
-                            .l2_penalty(0.001)
-                            .l1_penalty(0.00001)
-                            .build();
+            .learning_rate(1.0)
+            .l2_penalty(0.001)
+            .l1_penalty(0.00001)
+            .build();
 
         let y = Array::ones(1, 1);
         let X = SparseRowArray::from(&Array::from(&vec![vec![1.0, 0.0]]));
@@ -485,10 +476,10 @@ mod tests {
             let y_train = target.get_rows(&train_idx);
 
             let mut model = Hyperparameters::new(data.cols())
-                                .learning_rate(0.5)
-                                .l2_penalty(0.0)
-                                .l1_penalty(0.0)
-                                .one_vs_rest();
+                .learning_rate(0.5)
+                .l2_penalty(0.0)
+                .l1_penalty(0.0)
+                .one_vs_rest();
 
             for _ in 0..20 {
                 model.fit(&x_train, &y_train).unwrap();
@@ -525,17 +516,17 @@ mod tests {
             let y_train = target.get_rows(&train_idx);
 
             let mut model = Hyperparameters::new(data.cols())
-                                .learning_rate(0.5)
-                                .l2_penalty(0.0)
-                                .l1_penalty(0.0)
-                                .one_vs_rest();
+                .learning_rate(0.5)
+                .l2_penalty(0.0)
+                .l1_penalty(0.0)
+                .one_vs_rest();
 
             for _ in 0..20 {
                 model.fit(&x_train, &y_train).unwrap();
             }
 
             let encoded = bincode::rustc_serialize::encode(&model, bincode::SizeLimit::Infinite)
-                              .unwrap();
+                .unwrap();
             let decoded: OneVsRestWrapper<SGDClassifier> =
                 bincode::rustc_serialize::decode(&encoded).unwrap();
 
@@ -571,10 +562,10 @@ mod tests {
             let y_train = target.get_rows(&train_idx);
 
             let mut model = Hyperparameters::new(data.cols())
-                                .learning_rate(0.5)
-                                .l2_penalty(0.0)
-                                .l1_penalty(0.0)
-                                .one_vs_rest();
+                .learning_rate(0.5)
+                .l2_penalty(0.0)
+                .l1_penalty(0.0)
+                .one_vs_rest();
 
             for _ in 0..20 {
                 model.fit(&x_train, &y_train).unwrap();
@@ -613,10 +604,10 @@ mod tests {
             let y_train = target.get_rows(&train_idx);
 
             let mut model = Hyperparameters::new(X.cols())
-                                .learning_rate(0.05)
-                                .l2_penalty(0.000001)
-                                .l1_penalty(0.000001)
-                                .one_vs_rest();
+                .learning_rate(0.05)
+                .l2_penalty(0.000001)
+                .l1_penalty(0.000001)
+                .one_vs_rest();
 
             // Run 5 epochs of training
             for _ in 0..5 {

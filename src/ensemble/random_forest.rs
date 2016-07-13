@@ -40,7 +40,7 @@ use multiclass::OneVsRestWrapper;
 use utils::EncodableRng;
 
 use rand;
-use rand::{SeedableRng};
+use rand::SeedableRng;
 use rand::distributions::{IndependentSample, Range};
 
 
@@ -85,11 +85,9 @@ impl Hyperparameters {
             let range = Range::new(0, usize::MAX);
 
             let mut hyperparams = self.tree_hyperparameters.clone();
-            hyperparams.rng(
-                SeedableRng::from_seed(&(0..10)
-                                       .map(|_| range.ind_sample(&mut rng.rng))
-                                       .collect::<Vec<_>>()[..])
-                    );
+            hyperparams.rng(SeedableRng::from_seed(&(0..10)
+                .map(|_| range.ind_sample(&mut rng.rng))
+                .collect::<Vec<_>>()[..]));
 
             trees.push(hyperparams.build());
         }
@@ -122,7 +120,7 @@ impl SupervisedModel<Array> for RandomForest {
 
         let mut rng = self.rng.clone();
 
-        for tree in self.trees.iter_mut() {
+        for tree in &mut self.trees {
             let indices = RandomForest::bootstrap_indices(X.rows(), &mut rng.rng);
             try!(tree.fit(&X.get_rows(&indices), &y.get_rows(&indices)));
         }
@@ -136,7 +134,7 @@ impl SupervisedModel<Array> for RandomForest {
 
         let mut df = Array::zeros(X.rows(), 1);
 
-        for tree in self.trees.iter() {
+        for tree in &self.trees {
             df.add_inplace(&try!(tree.decision_function(X)));
         }
 
@@ -152,7 +150,7 @@ impl SupervisedModel<SparseRowArray> for RandomForest {
 
         let mut rng = self.rng.clone();
 
-        for tree in self.trees.iter_mut() {
+        for tree in &mut self.trees {
             let indices = RandomForest::bootstrap_indices(X.rows(), &mut rng.rng);
             let x = SparseColumnArray::from(&X.get_rows(&indices));
             try!(tree.fit(&x, &y.get_rows(&indices)));
@@ -169,7 +167,7 @@ impl SupervisedModel<SparseRowArray> for RandomForest {
 
         let x = SparseColumnArray::from(X);
 
-        for tree in self.trees.iter() {
+        for tree in &self.trees {
             df.add_inplace(&try!(tree.decision_function(&x)));
         }
 
@@ -234,12 +232,12 @@ mod tests {
 
             let mut tree_params = decision_tree::Hyperparameters::new(data.cols());
             tree_params.min_samples_split(10)
-                       .max_features(4)
-                       .rng(StdRng::from_seed(&[100]));
+                .max_features(4)
+                .rng(StdRng::from_seed(&[100]));
 
             let mut model = Hyperparameters::new(tree_params, 10)
-                                .rng(StdRng::from_seed(&[100]))
-                                .one_vs_rest();
+                .rng(StdRng::from_seed(&[100]))
+                .one_vs_rest();
 
             model.fit(&x_train, &y_train).unwrap();
 
@@ -275,12 +273,12 @@ mod tests {
 
             let mut tree_params = decision_tree::Hyperparameters::new(data.cols());
             tree_params.min_samples_split(10)
-                       .max_features(4)
-                       .rng(StdRng::from_seed(&[100]));
+                .max_features(4)
+                .rng(StdRng::from_seed(&[100]));
 
             let mut model = Hyperparameters::new(tree_params, 10)
-                                .rng(StdRng::from_seed(&[100]))
-                                .one_vs_rest();
+                .rng(StdRng::from_seed(&[100]))
+                .one_vs_rest();
 
             model.fit(&x_train, &y_train).unwrap();
 
@@ -321,7 +319,7 @@ mod tests {
 
             let mut tree_params = decision_tree::Hyperparameters::new(X.cols());
             tree_params.min_samples_split(5)
-                       .rng(StdRng::from_seed(&[100]));
+                .rng(StdRng::from_seed(&[100]));
 
             let mut model = Hyperparameters::new(tree_params, 20).one_vs_rest();
 
@@ -366,17 +364,17 @@ mod tests {
 
             let mut tree_params = decision_tree::Hyperparameters::new(data.cols());
             tree_params.min_samples_split(10)
-                       .max_features(4)
-                       .rng(StdRng::from_seed(&[100]));
+                .max_features(4)
+                .rng(StdRng::from_seed(&[100]));
 
             let mut model = Hyperparameters::new(tree_params, 10)
-                                .rng(StdRng::from_seed(&[100]))
-                                .one_vs_rest();
+                .rng(StdRng::from_seed(&[100]))
+                .one_vs_rest();
 
             model.fit(&x_train, &y_train).unwrap();
 
             let encoded = bincode::rustc_serialize::encode(&model, bincode::SizeLimit::Infinite)
-                              .unwrap();
+                .unwrap();
             let decoded: OneVsRestWrapper<RandomForest> =
                 bincode::rustc_serialize::decode(&encoded).unwrap();
 

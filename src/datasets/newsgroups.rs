@@ -2,7 +2,7 @@
 //!
 //! This is only available when running the full test suite.
 
- use csv;
+use csv;
 
 use prelude::*;
 use feature_extraction::dict_vectorizer::*;
@@ -19,11 +19,11 @@ pub fn load_data() -> (SparseRowArray, Array) {
 
     for (row, record) in rdr.decode().enumerate() {
         let (y, data): (f32, String) = record.unwrap();
-        
+
         for token in data.split_whitespace() {
             vectorizer.partial_fit(row, token, 1.0);
         }
-        
+
         target.push(y);
     }
 

@@ -115,8 +115,8 @@ impl SvmProblem {
         }
 
         let node_ptrs = nodes.iter()
-                             .map(|x| x.as_ptr())
-                             .collect::<Vec<_>>();
+            .map(|x| x.as_ptr())
+            .collect::<Vec<_>>();
 
         SvmProblem {
             nodes: nodes,
@@ -298,11 +298,11 @@ impl SvmModel {
         SV_ptrs.clear();
         sv_coef_ptrs.clear();
 
-        for x in self.SV.iter() {
+        for x in &self.SV {
             SV_ptrs.push(x.as_ptr());
         }
 
-        for x in self.sv_coef.iter() {
+        for x in &self.sv_coef {
             sv_coef_ptrs.push(x.as_ptr());
         }
 
@@ -397,9 +397,10 @@ fn check(problem: *const LibsvmProblem, param: *const LibsvmParameter) -> Result
     unsafe {
         let message = svm_check_parameter(problem, param);
 
-        match message.is_null() {
-            true => Ok(()),
-            false => Err(CStr::from_ptr(message).to_str().unwrap().to_owned()),
+        if message.is_null() {
+            Ok(())
+        } else {
+            Err(CStr::from_ptr(message).to_str().unwrap().to_owned())
         }
     }
 }
@@ -444,7 +445,7 @@ pub fn fit<'a, T>(X: &'a T, y: &Array, parameters: &SvmParameter) -> Result<SvmM
 
 
 /// Call `libsvm` to get predictions (both predicted classes
-/// and OvO decision function values.
+/// and `OvO` decision function values.
 pub fn predict<'a, T>(model: &SvmModel, X: &'a T) -> (Array, Array)
     where T: IndexableMatrix,
           &'a T: RowIterable
@@ -473,10 +474,9 @@ pub fn predict<'a, T>(model: &SvmModel, X: &'a T) -> (Array, Array)
     for (_, row) in X.iter_rows().enumerate() {
         let nodes = row_to_nodes(row);
         unsafe {
-            predicted_class.push(svm_predict_values(&mut libsvm_model as * mut LibsvmModel,
-                                                        nodes.as_ptr(),
-                                                        df_slice.as_ptr())
-                                     as f32);
+            predicted_class.push(svm_predict_values(&mut libsvm_model as *mut LibsvmModel,
+                                         nodes.as_ptr(),
+                                         df_slice.as_ptr()) as f32);
         }
         df_slice = &df_slice[ovo_num_classes..];
     }

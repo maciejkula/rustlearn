@@ -270,7 +270,7 @@ mod tests {
             model.fit(&x_train, &y_train).unwrap();
 
             let encoded = bincode::rustc_serialize::encode(&model, bincode::SizeLimit::Infinite)
-                              .unwrap();
+                .unwrap();
             let decoded: SVC = bincode::rustc_serialize::decode(&encoded).unwrap();
 
             let y_hat = decoded.predict(&x_test).unwrap();

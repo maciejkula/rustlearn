@@ -32,7 +32,7 @@ impl<'a> OneVsRest<'a> {
         }
     }
 
-    pub fn merge(class_labels: &Vec<f32>, predictions: &Vec<Array>) -> Array {
+    pub fn merge(class_labels: &[f32], predictions: &[Array]) -> Array {
 
         assert!(class_labels.len() > 0);
         assert!(class_labels.len() == predictions.len());
@@ -46,7 +46,7 @@ impl<'a> OneVsRest<'a> {
             let mut decision_func_val = 0.0;
 
             for (&label, prediction_arr) in class_labels.iter()
-                                                        .zip(predictions.iter()) {
+                .zip(predictions.iter()) {
                 if prediction_arr.get(i, 0) > decision_func_val {
                     *prediction.get_mut(i, 0) = label;
                     decision_func_val = prediction_arr.get(i, 0);
@@ -63,23 +63,22 @@ impl<'a> Iterator for OneVsRest<'a> {
     type Item = (f32, Array);
     fn next(&mut self) -> Option<(f32, Array)> {
 
-        let ret = match self.iter < self.classes.len() {
-            true => {
-                let target_class = self.classes[self.iter];
-                let binary_target = Array::from(self.y
-                                                    .data()
-                                                    .iter()
-                                                    .map(|&v| {
-                                                        if v == target_class {
-                                                            1.0
-                                                        } else {
-                                                            0.0
-                                                        }
-                                                    })
-                                                    .collect::<Vec<_>>());
-                Some((target_class, binary_target))
-            }
-            false => None,
+        let ret = if self.iter < self.classes.len() {
+            let target_class = self.classes[self.iter];
+            let binary_target = Array::from(self.y
+                .data()
+                .iter()
+                .map(|&v| {
+                    if v == target_class {
+                        1.0
+                    } else {
+                        0.0
+                    }
+                })
+                .collect::<Vec<_>>());
+            Some((target_class, binary_target))
+        } else {
+            None
         };
 
         self.iter += 1;
@@ -107,9 +106,8 @@ impl<T: Clone> OneVsRestWrapper<T> {
 
     fn get_model(&mut self, class_label: f32) -> &mut T {
         for (idx, label) in self.class_labels.iter().enumerate() {
-            match class_label.partial_cmp(label) {
-                Some(Ordering::Equal) => return &mut self.models[idx],
-                _ => {}
+            if let Some(Ordering::Equal) = class_label.partial_cmp(label) {
+                return &mut self.models[idx];
             }
         }
 

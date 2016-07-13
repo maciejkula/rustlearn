@@ -79,24 +79,23 @@ impl Iterator for CrossValidation {
 
     fn next(&mut self) -> Option<(Vec<usize>, Vec<usize>)> {
 
-        let ret = match self.iter < self.n_folds {
-            true => {
-                let fold_step = self.n_samples / self.n_folds;
+        let ret = if self.iter < self.n_folds {
+            let fold_step = self.n_samples / self.n_folds;
 
-                let validation_start = self.iter * fold_step;
-                let validation_stop = (self.iter + 1) * fold_step;
+            let validation_start = self.iter * fold_step;
+            let validation_stop = (self.iter + 1) * fold_step;
 
-                let train = (0..validation_start)
-                                .chain(validation_stop..self.indices.len())
-                                .map(|i| self.indices[i])
-                                .collect::<Vec<_>>();
-                let test = (validation_start..validation_stop)
-                               .map(|i| self.indices[i])
-                               .collect::<Vec<_>>();
+            let train = (0..validation_start)
+                .chain(validation_stop..self.indices.len())
+                .map(|i| self.indices[i])
+                .collect::<Vec<_>>();
+            let test = (validation_start..validation_stop)
+                .map(|i| self.indices[i])
+                .collect::<Vec<_>>();
 
-                Some((train, test))
-            }
-            false => None,
+            Some((train, test))
+        } else {
+            None
         };
 
         self.iter += 1;

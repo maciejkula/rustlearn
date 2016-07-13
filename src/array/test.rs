@@ -800,9 +800,8 @@ mod generated_tests {
     #[test]
     fn test_matmul_8() {
 
-        let mut arr1 = Array::from(vec![0.5271468808849665,
-                                        0.8043829147090844,
-                                        0.29507589390599864]);
+        let mut arr1 =
+            Array::from(vec![0.5271468808849665, 0.8043829147090844, 0.29507589390599864]);
         arr1.reshape(1, 3);
 
         let mut arr2 = Array::from(vec![0.18333855055950088,
@@ -1424,9 +1423,8 @@ mod generated_tests {
                                         0.15550074478902987]);
         arr2.reshape(3, 9);
 
-        let mut result = Array::from(vec![2.713178234584766,
-                                          2.601066146892677,
-                                          1.9062429546218687]);
+        let mut result =
+            Array::from(vec![2.713178234584766, 2.601066146892677, 1.9062429546218687]);
         result.reshape(1, 3);
 
         assert!(allclose(&arr1.dot(&(arr2.T())), &result));
@@ -6632,9 +6630,8 @@ mod generated_tests {
                                        0.18803787926140947]);
         arr.reshape(4, 3);
 
-        let mut result = Array::from(vec![0.8044103204618683,
-                                          0.014390653665222297,
-                                          0.2191313304598439]);
+        let mut result =
+            Array::from(vec![0.8044103204618683, 0.014390653665222297, 0.2191313304598439]);
         result.reshape(1, 3);
 
         let idx: usize = 1;
@@ -6974,9 +6971,8 @@ mod generated_tests {
         arr.reshape(3, 6);
         arr = arr.T();
 
-        let mut result = Array::from(vec![0.5745064605630149,
-                                          0.3129695667863188,
-                                          0.49922436813494864]);
+        let mut result =
+            Array::from(vec![0.5745064605630149, 0.3129695667863188, 0.49922436813494864]);
         result.reshape(1, 3);
 
         let idx: usize = 5;
@@ -7010,9 +7006,8 @@ mod generated_tests {
         arr.reshape(3, 5);
         arr = arr.T();
 
-        let mut result = Array::from(vec![0.36217549328710164,
-                                          0.43445879437479584,
-                                          0.30700592101137414]);
+        let mut result =
+            Array::from(vec![0.36217549328710164, 0.43445879437479584, 0.30700592101137414]);
         result.reshape(1, 3);
 
         let idx: usize = 2;
@@ -7157,9 +7152,8 @@ mod generated_tests {
         arr.reshape(3, 9);
         arr = arr.T();
 
-        let mut result = Array::from(vec![0.5744293231689495,
-                                          0.0022690198050676624,
-                                          0.37277204859284707]);
+        let mut result =
+            Array::from(vec![0.5744293231689495, 0.0022690198050676624, 0.37277204859284707]);
         result.reshape(1, 3);
 
         let idx: usize = 2;
@@ -7190,9 +7184,8 @@ mod generated_tests {
         arr.reshape(3, 4);
         arr = arr.T();
 
-        let mut result = Array::from(vec![0.6558098708625699,
-                                          0.9370667780812278,
-                                          0.4108022698020962]);
+        let mut result =
+            Array::from(vec![0.6558098708625699, 0.9370667780812278, 0.4108022698020962]);
         result.reshape(1, 3);
 
         let idx: usize = 0;
@@ -9908,19 +9901,16 @@ mod generated_tests {
     #[test]
     fn test_array_op_add_2() {
 
-        let mut arr1 = Array::from(vec![0.18118929862976074,
-                                        0.03301256150007248,
-                                        0.40168774127960205]);
+        let mut arr1 =
+            Array::from(vec![0.18118929862976074, 0.03301256150007248, 0.40168774127960205]);
         arr1.reshape(3, 1);
 
-        let mut arr2 = Array::from(vec![0.8023808002471924,
-                                        0.3789193034172058,
-                                        0.4163742959499359]);
+        let mut arr2 =
+            Array::from(vec![0.8023808002471924, 0.3789193034172058, 0.4163742959499359]);
         arr2.reshape(3, 1);
 
-        let mut result = Array::from(vec![0.9835700988769531,
-                                          0.4119318723678589,
-                                          0.8180620670318604]);
+        let mut result =
+            Array::from(vec![0.9835700988769531, 0.4119318723678589, 0.8180620670318604]);
         result.reshape(3, 1);
 
         assert!(allclose(&arr1.add(&arr2), &result));
@@ -9934,19 +9924,16 @@ mod generated_tests {
     #[test]
     fn test_array_op_sub_2() {
 
-        let mut arr1 = Array::from(vec![0.18118929862976074,
-                                        0.03301256150007248,
-                                        0.40168774127960205]);
+        let mut arr1 =
+            Array::from(vec![0.18118929862976074, 0.03301256150007248, 0.40168774127960205]);
         arr1.reshape(3, 1);
 
-        let mut arr2 = Array::from(vec![0.8023808002471924,
-                                        0.3789193034172058,
-                                        0.4163742959499359]);
+        let mut arr2 =
+            Array::from(vec![0.8023808002471924, 0.3789193034172058, 0.4163742959499359]);
         arr2.reshape(3, 1);
 
-        let mut result = Array::from(vec![-0.6211915016174316,
-                                          -0.34590673446655273,
-                                          -0.014686554670333862]);
+        let mut result =
+            Array::from(vec![-0.6211915016174316, -0.34590673446655273, -0.014686554670333862]);
         result.reshape(3, 1);
 
         assert!(allclose(&arr1.sub(&arr2), &result));
@@ -9960,19 +9947,16 @@ mod generated_tests {
     #[test]
     fn test_array_op_times_2() {
 
-        let mut arr1 = Array::from(vec![0.18118929862976074,
-                                        0.03301256150007248,
-                                        0.40168774127960205]);
+        let mut arr1 =
+            Array::from(vec![0.18118929862976074, 0.03301256150007248, 0.40168774127960205]);
         arr1.reshape(3, 1);
 
-        let mut arr2 = Array::from(vec![0.8023808002471924,
-                                        0.3789193034172058,
-                                        0.4163742959499359]);
+        let mut arr2 =
+            Array::from(vec![0.8023808002471924, 0.3789193034172058, 0.4163742959499359]);
         arr2.reshape(3, 1);
 
-        let mut result = Array::from(vec![0.145382821559906,
-                                          0.012509096413850784,
-                                          0.16725245118141174]);
+        let mut result =
+            Array::from(vec![0.145382821559906, 0.012509096413850784, 0.16725245118141174]);
         result.reshape(3, 1);
 
         assert!(allclose(&arr1.times(&arr2), &result));
@@ -9986,19 +9970,16 @@ mod generated_tests {
     #[test]
     fn test_array_op_div_2() {
 
-        let mut arr1 = Array::from(vec![0.18118929862976074,
-                                        0.03301256150007248,
-                                        0.40168774127960205]);
+        let mut arr1 =
+            Array::from(vec![0.18118929862976074, 0.03301256150007248, 0.40168774127960205]);
         arr1.reshape(3, 1);
 
-        let mut arr2 = Array::from(vec![0.8023808002471924,
-                                        0.3789193034172058,
-                                        0.4163742959499359]);
+        let mut arr2 =
+            Array::from(vec![0.8023808002471924, 0.3789193034172058, 0.4163742959499359]);
         arr2.reshape(3, 1);
 
-        let mut result = Array::from(vec![0.2258145958185196,
-                                          0.08712293207645416,
-                                          0.964727520942688]);
+        let mut result =
+            Array::from(vec![0.2258145958185196, 0.08712293207645416, 0.964727520942688]);
         result.reshape(3, 1);
 
         assert!(allclose(&arr1.div(&arr2), &result));
@@ -10700,19 +10681,16 @@ mod generated_tests {
     #[test]
     fn test_array_op_add_5() {
 
-        let mut arr1 = Array::from(vec![0.9063590168952942,
-                                        0.42833206057548523,
-                                        0.2654511630535126]);
+        let mut arr1 =
+            Array::from(vec![0.9063590168952942, 0.42833206057548523, 0.2654511630535126]);
         arr1.reshape(1, 3);
 
-        let mut arr2 = Array::from(vec![0.9844111800193787,
-                                        0.9482954144477844,
-                                        0.5508551597595215]);
+        let mut arr2 =
+            Array::from(vec![0.9844111800193787, 0.9482954144477844, 0.5508551597595215]);
         arr2.reshape(1, 3);
 
-        let mut result = Array::from(vec![1.8907701969146729,
-                                          1.3766274452209473,
-                                          0.8163063526153564]);
+        let mut result =
+            Array::from(vec![1.8907701969146729, 1.3766274452209473, 0.8163063526153564]);
         result.reshape(1, 3);
 
         assert!(allclose(&arr1.add(&arr2), &result));
@@ -10726,19 +10704,16 @@ mod generated_tests {
     #[test]
     fn test_array_op_sub_5() {
 
-        let mut arr1 = Array::from(vec![0.9063590168952942,
-                                        0.42833206057548523,
-                                        0.2654511630535126]);
+        let mut arr1 =
+            Array::from(vec![0.9063590168952942, 0.42833206057548523, 0.2654511630535126]);
         arr1.reshape(1, 3);
 
-        let mut arr2 = Array::from(vec![0.9844111800193787,
-                                        0.9482954144477844,
-                                        0.5508551597595215]);
+        let mut arr2 =
+            Array::from(vec![0.9844111800193787, 0.9482954144477844, 0.5508551597595215]);
         arr2.reshape(1, 3);
 
-        let mut result = Array::from(vec![-0.07805216312408447,
-                                          -0.5199633836746216,
-                                          -0.2854039967060089]);
+        let mut result =
+            Array::from(vec![-0.07805216312408447, -0.5199633836746216, -0.2854039967060089]);
         result.reshape(1, 3);
 
         assert!(allclose(&arr1.sub(&arr2), &result));
@@ -10752,19 +10727,16 @@ mod generated_tests {
     #[test]
     fn test_array_op_times_5() {
 
-        let mut arr1 = Array::from(vec![0.9063590168952942,
-                                        0.42833206057548523,
-                                        0.2654511630535126]);
+        let mut arr1 =
+            Array::from(vec![0.9063590168952942, 0.42833206057548523, 0.2654511630535126]);
         arr1.reshape(1, 3);
 
-        let mut arr2 = Array::from(vec![0.9844111800193787,
-                                        0.9482954144477844,
-                                        0.5508551597595215]);
+        let mut arr2 =
+            Array::from(vec![0.9844111800193787, 0.9482954144477844, 0.5508551597595215]);
         arr2.reshape(1, 3);
 
-        let mut result = Array::from(vec![0.8922299742698669,
-                                          0.4061853289604187,
-                                          0.14622513949871063]);
+        let mut result =
+            Array::from(vec![0.8922299742698669, 0.4061853289604187, 0.14622513949871063]);
         result.reshape(1, 3);
 
         assert!(allclose(&arr1.times(&arr2), &result));
@@ -10778,19 +10750,16 @@ mod generated_tests {
     #[test]
     fn test_array_op_div_5() {
 
-        let mut arr1 = Array::from(vec![0.9063590168952942,
-                                        0.42833206057548523,
-                                        0.2654511630535126]);
+        let mut arr1 =
+            Array::from(vec![0.9063590168952942, 0.42833206057548523, 0.2654511630535126]);
         arr1.reshape(1, 3);
 
-        let mut arr2 = Array::from(vec![0.9844111800193787,
-                                        0.9482954144477844,
-                                        0.5508551597595215]);
+        let mut arr2 =
+            Array::from(vec![0.9844111800193787, 0.9482954144477844, 0.5508551597595215]);
         arr2.reshape(1, 3);
 
-        let mut result = Array::from(vec![0.9207118153572083,
-                                          0.4516863226890564,
-                                          0.4818892180919647]);
+        let mut result =
+            Array::from(vec![0.9207118153572083, 0.4516863226890564, 0.4818892180919647]);
         result.reshape(1, 3);
 
         assert!(allclose(&arr1.div(&arr2), &result));
@@ -10932,19 +10901,16 @@ mod generated_tests {
     #[test]
     fn test_array_op_add_7() {
 
-        let mut arr1 = Array::from(vec![0.16539278626441956,
-                                        0.18947423994541168,
-                                        0.44509610533714294]);
+        let mut arr1 =
+            Array::from(vec![0.16539278626441956, 0.18947423994541168, 0.44509610533714294]);
         arr1.reshape(1, 3);
 
-        let mut arr2 = Array::from(vec![0.3894217014312744,
-                                        0.22505198419094086,
-                                        0.004766093101352453]);
+        let mut arr2 =
+            Array::from(vec![0.3894217014312744, 0.22505198419094086, 0.004766093101352453]);
         arr2.reshape(1, 3);
 
-        let mut result = Array::from(vec![0.5548144578933716,
-                                          0.41452622413635254,
-                                          0.44986221194267273]);
+        let mut result =
+            Array::from(vec![0.5548144578933716, 0.41452622413635254, 0.44986221194267273]);
         result.reshape(1, 3);
 
         assert!(allclose(&arr1.add(&arr2), &result));
@@ -10958,19 +10924,16 @@ mod generated_tests {
     #[test]
     fn test_array_op_sub_7() {
 
-        let mut arr1 = Array::from(vec![0.16539278626441956,
-                                        0.18947423994541168,
-                                        0.44509610533714294]);
+        let mut arr1 =
+            Array::from(vec![0.16539278626441956, 0.18947423994541168, 0.44509610533714294]);
         arr1.reshape(1, 3);
 
-        let mut arr2 = Array::from(vec![0.3894217014312744,
-                                        0.22505198419094086,
-                                        0.004766093101352453]);
+        let mut arr2 =
+            Array::from(vec![0.3894217014312744, 0.22505198419094086, 0.004766093101352453]);
         arr2.reshape(1, 3);
 
-        let mut result = Array::from(vec![-0.22402891516685486,
-                                          -0.035577744245529175,
-                                          0.44032999873161316]);
+        let mut result =
+            Array::from(vec![-0.22402891516685486, -0.035577744245529175, 0.44032999873161316]);
         result.reshape(1, 3);
 
         assert!(allclose(&arr1.sub(&arr2), &result));
@@ -10984,19 +10947,16 @@ mod generated_tests {
     #[test]
     fn test_array_op_times_7() {
 
-        let mut arr1 = Array::from(vec![0.16539278626441956,
-                                        0.18947423994541168,
-                                        0.44509610533714294]);
+        let mut arr1 =
+            Array::from(vec![0.16539278626441956, 0.18947423994541168, 0.44509610533714294]);
         arr1.reshape(1, 3);
 
-        let mut arr2 = Array::from(vec![0.3894217014312744,
-                                        0.22505198419094086,
-                                        0.004766093101352453]);
+        let mut arr2 =
+            Array::from(vec![0.3894217014312744, 0.22505198419094086, 0.004766093101352453]);
         arr2.reshape(1, 3);
 
-        let mut result = Array::from(vec![0.06440754234790802,
-                                          0.04264155402779579,
-                                          0.0021213695872575045]);
+        let mut result =
+            Array::from(vec![0.06440754234790802, 0.04264155402779579, 0.0021213695872575045]);
         result.reshape(1, 3);
 
         assert!(allclose(&arr1.times(&arr2), &result));
@@ -11010,19 +10970,16 @@ mod generated_tests {
     #[test]
     fn test_array_op_div_7() {
 
-        let mut arr1 = Array::from(vec![0.16539278626441956,
-                                        0.18947423994541168,
-                                        0.44509610533714294]);
+        let mut arr1 =
+            Array::from(vec![0.16539278626441956, 0.18947423994541168, 0.44509610533714294]);
         arr1.reshape(1, 3);
 
-        let mut arr2 = Array::from(vec![0.3894217014312744,
-                                        0.22505198419094086,
-                                        0.004766093101352453]);
+        let mut arr2 =
+            Array::from(vec![0.3894217014312744, 0.22505198419094086, 0.004766093101352453]);
         arr2.reshape(1, 3);
 
-        let mut result = Array::from(vec![0.4247138500213623,
-                                          0.8419132232666016,
-                                          93.38804626464844]);
+        let mut result =
+            Array::from(vec![0.4247138500213623, 0.8419132232666016, 93.38804626464844]);
         result.reshape(1, 3);
 
         assert!(allclose(&arr1.div(&arr2), &result));

@@ -70,7 +70,7 @@ pub struct SparseArrayView<'a> {
 }
 
 
-/// Iterator over nonzero entries of a SparseArrayView.
+/// Iterator over nonzero entries of a `SparseArrayView`.
 pub struct SparseArrayViewIterator<'a> {
     idx: usize,
     view: SparseArrayView<'a>,
@@ -156,21 +156,17 @@ impl IndexableMatrix for SparseColumnArray {
 
 unsafe fn get(row: usize,
               col: usize,
-              array_indices: &Vec<Vec<usize>>,
-              array_data: &Vec<Vec<f32>>,
+              array_indices: &[Vec<usize>],
+              array_data: &[Vec<f32>],
               order: MatrixOrder)
               -> f32 {
 
     let (index, indices, data) = match order {
         MatrixOrder::RowMajor => {
-            (col,
-             array_indices.get_unchecked(row),
-             array_data.get_unchecked(row))
+            (col, array_indices.get_unchecked(row), array_data.get_unchecked(row))
         }
         MatrixOrder::ColumnMajor => {
-            (row,
-             array_indices.get_unchecked(col),
-             array_data.get_unchecked(col))
+            (row, array_indices.get_unchecked(col), array_data.get_unchecked(col))
         }
     };
 
@@ -190,14 +186,10 @@ unsafe fn get_mut<'a>(row: usize,
 
     let (index, indices, data) = match order {
         MatrixOrder::RowMajor => {
-            (col,
-             array_indices.get_unchecked_mut(row),
-             array_data.get_unchecked_mut(row))
+            (col, array_indices.get_unchecked_mut(row), array_data.get_unchecked_mut(row))
         }
         MatrixOrder::ColumnMajor => {
-            (row,
-             array_indices.get_unchecked_mut(col),
-             array_data.get_unchecked_mut(col))
+            (row, array_indices.get_unchecked_mut(col), array_data.get_unchecked_mut(col))
         }
     };
 
@@ -246,11 +238,11 @@ impl SparseRowArray {
         let mut array = Array::zeros(self.rows, self.cols);
 
         for (row_idx, (row_indices, row_values)) in self.indices
-                                                        .iter()
-                                                        .zip(self.data.iter())
-                                                        .enumerate() {
+            .iter()
+            .zip(self.data.iter())
+            .enumerate() {
             for (&col_idx, &value) in row_indices.iter()
-                                                 .zip(row_values.iter()) {
+                .zip(row_values.iter()) {
                 array.set(row_idx, col_idx, value);
             }
         }
@@ -344,11 +336,11 @@ impl SparseColumnArray {
         let mut array = Array::zeros(self.rows, self.cols);
 
         for (col_idx, (col_indices, col_values)) in self.indices
-                                                        .iter()
-                                                        .zip(self.data.iter())
-                                                        .enumerate() {
+            .iter()
+            .zip(self.data.iter())
+            .enumerate() {
             for (&row_idx, &value) in col_indices.iter()
-                                                 .zip(col_values.iter()) {
+                .zip(col_values.iter()) {
                 array.set(row_idx, col_idx, value);
             }
         }
@@ -444,12 +436,13 @@ impl<'a> Iterator for SparseArrayViewIterator<'a> {
 
     fn next(&mut self) -> Option<(usize, f32)> {
 
-        let result = match self.idx < self.view.indices.len() {
-            true => unsafe {
-                Some((self.view.indices.get_unchecked(self.idx).clone(),
-                      self.view.data.get_unchecked(self.idx).clone()))
-            },
-            _ => None,
+        let result = if self.idx < self.view.indices.len() {
+            unsafe {
+                Some((*self.view.indices.get_unchecked(self.idx),
+                      *self.view.data.get_unchecked(self.idx)))
+            }
+        } else {
+            None
         };
 
         self.idx += 1;
@@ -464,14 +457,13 @@ impl<'a> Iterator for SparseArrayIterator<'a> {
 
     fn next(&mut self) -> Option<SparseArrayView<'a>> {
 
-        let result = match self.idx < self.dim {
-            true => {
-                Some(SparseArrayView {
-                    indices: &self.indices[self.idx][..],
-                    data: &self.data[self.idx][..],
-                })
-            }
-            false => None,
+        let result = if self.idx < self.dim {
+            Some(SparseArrayView {
+                indices: &self.indices[self.idx][..],
+                data: &self.data[self.idx][..],
+            })
+        } else {
+            None
         };
 
         self.idx += 1;

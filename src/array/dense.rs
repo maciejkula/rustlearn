@@ -160,15 +160,14 @@ impl<'a> Iterator for ArrayIterator<'a> {
             ArrayIteratorAxis::Column => self.array.cols,
         };
 
-        let result = match self.idx < bound {
-            true => {
-                Some(ArrayView {
-                    idx: self.idx,
-                    axis: self.axis,
-                    array: self.array,
-                })
-            }
-            false => None,
+        let result = if self.idx < bound {
+            Some(ArrayView {
+                idx: self.idx,
+                axis: self.axis,
+                array: self.array,
+            })
+        } else {
+            None
         };
 
         self.idx += 1;
@@ -185,7 +184,7 @@ impl<'a> RowIterable for &'a Array {
         ArrayIterator {
             idx: 0,
             axis: ArrayIteratorAxis::Row,
-            array: &self,
+            array: self,
         }
     }
 
@@ -194,7 +193,7 @@ impl<'a> RowIterable for &'a Array {
         ArrayView {
             idx: idx,
             axis: ArrayIteratorAxis::Row,
-            array: &self,
+            array: self,
         }
     }
 }
@@ -207,7 +206,7 @@ impl<'a> ColumnIterable for &'a Array {
         ArrayIterator {
             idx: 0,
             axis: ArrayIteratorAxis::Column,
-            array: &self,
+            array: self,
         }
     }
 
@@ -216,7 +215,7 @@ impl<'a> ColumnIterable for &'a Array {
         ArrayView {
             idx: idx,
             axis: ArrayIteratorAxis::Column,
-            array: &self,
+            array: self,
         }
     }
 }
@@ -243,15 +242,17 @@ impl<'a> Iterator for ArrayViewIterator<'a> {
 
         let result = match self.view.axis {
             ArrayIteratorAxis::Row => {
-                match self.idx < self.view.array.cols {
-                    true => unsafe { Some(self.view.array.get_unchecked(self.view.idx, self.idx)) },
-                    false => None,
+                if self.idx < self.view.array.cols {
+                    unsafe { Some(self.view.array.get_unchecked(self.view.idx, self.idx)) }
+                } else {
+                    None
                 }
             }
             ArrayIteratorAxis::Column => {
-                match self.idx < self.view.array.rows {
-                    true => unsafe { Some(self.view.array.get_unchecked(self.idx, self.view.idx)) },
-                    false => None,
+                if self.idx < self.view.array.rows {
+                    unsafe { Some(self.view.array.get_unchecked(self.idx, self.view.idx)) }
+                } else {
+                    None
                 }
             }
         };
@@ -271,27 +272,27 @@ impl<'a> Iterator for ArrayViewNonzeroIterator<'a> {
 
         let result = match self.view.axis {
             ArrayIteratorAxis::Row => {
-                match self.idx < self.view.array.cols {
-                    true => unsafe {
+                if self.idx < self.view.array.cols {
+                    unsafe {
                         Some((self.idx,
                               self.view
-                                  .array
-                                  .get_unchecked(self.view.idx, self.idx)
-                                  .clone()))
-                    },
-                    false => None,
+                            .array
+                            .get_unchecked(self.view.idx, self.idx)))
+                    }
+                } else {
+                    None
                 }
             }
             ArrayIteratorAxis::Column => {
-                match self.idx < self.view.array.cols {
-                    true => unsafe {
+                if self.idx < self.view.array.cols {
+                    unsafe {
                         Some((self.idx,
                               self.view
-                                  .array
-                                  .get_unchecked(self.idx, self.view.idx)
-                                  .clone()))
-                    },
-                    false => None,
+                            .array
+                            .get_unchecked(self.idx, self.view.idx)))
+                    }
+                } else {
+                    None
                 }
             }
         };
@@ -544,14 +545,14 @@ impl ElementwiseArrayOps<f32> for Array {
             cols: self.cols,
             order: MatrixOrder::RowMajor,
             data: self.data
-                      .iter()
-                      .map(|&x| x + rhs)
-                      .collect::<Vec<f32>>(),
+                .iter()
+                .map(|&x| x + rhs)
+                .collect::<Vec<f32>>(),
         }
     }
 
     fn add_inplace(&mut self, rhs: f32) {
-        for v in self.data.iter_mut() {
+        for v in &mut self.data {
             *v += rhs;
         }
     }
@@ -570,14 +571,14 @@ impl ElementwiseArrayOps<f32> for Array {
             cols: self.cols,
             order: MatrixOrder::RowMajor,
             data: self.data
-                      .iter()
-                      .map(|&x| x * rhs)
-                      .collect::<Vec<f32>>(),
+                .iter()
+                .map(|&x| x * rhs)
+                .collect::<Vec<f32>>(),
         }
     }
 
     fn times_inplace(&mut self, rhs: f32) {
-        for v in self.data.iter_mut() {
+        for v in &mut self.data {
             *v *= rhs;
         }
     }
@@ -588,14 +589,14 @@ impl ElementwiseArrayOps<f32> for Array {
             cols: self.cols,
             order: MatrixOrder::RowMajor,
             data: self.data
-                      .iter()
-                      .map(|&x| x / rhs)
-                      .collect::<Vec<f32>>(),
+                .iter()
+                .map(|&x| x / rhs)
+                .collect::<Vec<f32>>(),
         }
     }
 
     fn div_inplace(&mut self, rhs: f32) {
-        for v in self.data.iter_mut() {
+        for v in &mut self.data {
             *v /= rhs;
         }
     }
@@ -812,8 +813,8 @@ pub fn allclose(x: &Array, y: &Array) -> bool {
     let atol = 1e-08;
     let rtol = 1e-05;
 
-    match x.rows == y.rows && x.cols == y.cols {
-        true => unsafe {
+    if x.rows == y.rows && x.cols == y.cols {
+        unsafe {
             for i in 0..x.rows {
                 for j in 0..x.cols {
                     let a = x.get_unchecked(i, j);
@@ -824,8 +825,9 @@ pub fn allclose(x: &Array, y: &Array) -> bool {
                 }
             }
             true
-        },
-        false => false,
+        }
+    } else {
+        false
     }
 }
 

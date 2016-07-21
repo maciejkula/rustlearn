@@ -690,6 +690,45 @@ impl RowIndex<Vec<usize>> for SparseRowArray {
 }
 
 
+impl RowIndex<Vec<usize>> for CompressedSparseRowArray {
+    type Output = CompressedSparseRowArray;
+    fn get_rows(&self, index: &Vec<usize>) -> CompressedSparseRowArray {
+
+        let mut indptr = Vec::with_capacity(index.len() + 1);
+        let mut indices = Vec::new();
+        let mut data = Vec::new();
+
+        indptr.push(0);
+
+        let mut prev_indptr = 0;
+
+        for &row_idx in index.iter() {
+            let row_start = self.indptr[row_idx];
+            let row_stop = self.indptr[row_idx + 1];
+
+            for &idx in &self.indices[row_start..row_stop] {
+                indices.push(idx);
+            }
+
+            for &value in &self.data[row_start..row_stop] {
+                data.push(value);
+            }
+
+            prev_indptr += row_stop - row_start;
+            indptr.push(prev_indptr);
+        }
+
+        CompressedSparseRowArray {
+            rows: index.len(),
+            cols: self.cols,
+            indices: indices,
+            indptr: indptr,
+            data: data
+        }
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -787,12 +826,34 @@ mod tests {
         }
     }
 
+    macro_rules! row_indexing_test {
+        ($test_name:ident, $sparse_type:ident) => {
+
+            #[test]
+            fn $test_name() {
+
+                let (rows, cols) = (100, 10);
+
+                let dense = generate_dense_array(rows, cols, 0.5, &[100]);
+                let sparse = $sparse_type::from(&dense);
+
+                for row in 0..rows {
+                    assert!(allclose(&dense.get_rows(&(0..row).collect::<Vec<_>>()),
+                                     &sparse.get_rows(&(0..row).collect::<Vec<_>>()).todense()));
+                }
+            }
+        }
+    }
+
     indexing_test!(test_sparse_row_array_indexing, SparseRowArray);
     indexing_test!(test_sparse_column_array_indexing, SparseColumnArray);
     indexing_test!(test_compressed_sparse_row_array_indexing, CompressedSparseRowArray);
 
     row_iteration_test!(test_sparse_row_array_iteration, SparseRowArray);
     row_iteration_test!(test_compressed_sparse_row_array_iteration, CompressedSparseRowArray);
+
+    row_indexing_test!(test_sparse_row_array_row_indexing, SparseRowArray);
+    row_indexing_test!(test_compressed_sparse_row_array_row_indexing, CompressedSparseRowArray);
 
     #[test]
     fn row_construction_and_indexing() {

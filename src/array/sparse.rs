@@ -649,17 +649,16 @@ impl<'a> Iterator for CompressedSparseArrayIterator<'a> {
 
     fn next(&mut self) -> Option<SparseArrayView<'a>> {
 
-        let result = match self.idx < self.dim {
-            true => {
-                let start = self.indptr[self.idx];
-                let stop = self.indptr[self.idx + 1];
+        let result = if self.idx < self.dim {
+            let start = self.indptr[self.idx];
+            let stop = self.indptr[self.idx + 1];
 
-                Some(SparseArrayView {
-                    indices: &self.indices[start..stop],
-                    data: &self.data[start..stop],
-                })
-            }
-            false => None,
+            Some(SparseArrayView {
+                indices: &self.indices[start..stop],
+                data: &self.data[start..stop],
+            })
+        } else {
+            None
         };
 
         self.idx += 1;
@@ -698,6 +697,102 @@ mod tests {
     use array::traits::*;
 
     use bincode;
+
+    use rand::{Rng, SeedableRng, StdRng};
+    use rand::distributions::{IndependentSample, Range};
+
+    fn generate_dense_array(rows: usize, cols: usize, density: f32, seed: &[usize]) -> Array {
+        let mut rng = StdRng::from_seed(seed);
+
+        let mut array = Array::zeros(rows, cols);
+
+        for _ in 0..((density * ((rows * cols) as f32)) as usize) {
+
+            if rng.gen::<f32>() < density {
+                let row = Range::new(0, rows).ind_sample(&mut rng);
+                let col = Range::new(0, cols).ind_sample(&mut rng);
+                let value = Range::new(-1.0, 1.0).ind_sample(&mut rng);
+
+                array.set(row, col, value);
+            }
+        }
+
+        array
+    }
+
+    macro_rules! indexing_test {
+        ($test_name:ident, $sparse_type:ident) => {
+
+            #[test]
+            fn $test_name() {
+
+                let (rows, cols) = (100, 10);
+
+                let dense = generate_dense_array(rows, cols, 0.5, &[100]);
+                let mut sparse = $sparse_type::zeros(rows, cols);
+
+                for row in 0..rows {
+                    for col in 0..cols {
+                        let value = dense.get(row, col);
+
+                        if value != 0.0 {
+                            sparse.set(row, col, value);
+                        }
+                    }
+                }
+
+                for row in 0..rows {
+                    for col in 0..cols {
+                        assert_eq!(dense.get(row, col),
+                                   sparse.get(row, col));
+                    }
+                }
+
+                assert!(allclose(&dense, &sparse.todense()));
+            }
+        }
+    }
+
+    macro_rules! row_iteration_test {
+        ($test_name:ident, $sparse_type:ident) => {
+
+            #[test]
+            fn $test_name() {
+
+                let (rows, cols) = (100, 10);
+
+                let dense = generate_dense_array(rows, cols, 0.5, &[100]);
+                let mut sparse = $sparse_type::zeros(rows, cols);
+
+                for row in 0..rows {
+                    for col in 0..cols {
+                        let value = dense.get(row, col);
+
+                        if value != 0.0 {
+                            sparse.set(row, col, value);
+                        }
+                    }
+                }
+
+                for (row_idx, row) in sparse.iter_rows().enumerate() {
+                    for (col_idx, value) in row.iter_nonzero() {
+                        assert_eq!(dense.get(row_idx, col_idx),
+                                   value)
+                    }
+                }
+
+                assert_eq!(sparse.nnz(), dense.data().iter().fold(0, |acc, &x| acc + if x != 0.0 { 1 } else { 0 }));
+                assert!(allclose(&dense, &sparse.todense()));
+            }
+        }
+    }
+
+    indexing_test!(test_sparse_row_array_indexing, SparseRowArray);
+    indexing_test!(test_sparse_column_array_indexing, SparseColumnArray);
+    indexing_test!(test_compressed_sparse_row_array_indexing, CompressedSparseRowArray);
+
+    row_iteration_test!(test_sparse_row_array_iteration, SparseRowArray);
+    row_iteration_test!(test_compressed_sparse_row_array_iteration, CompressedSparseRowArray);
 
     #[test]
     fn row_construction_and_indexing() {

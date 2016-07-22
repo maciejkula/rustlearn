@@ -159,6 +159,7 @@ pub mod linear_models;
 pub mod metrics;
 pub mod multiclass;
 pub mod feature_extraction;
+pub mod factorization;
 pub mod trees;
 pub mod traits;
 pub mod svm;

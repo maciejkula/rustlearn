@@ -34,7 +34,7 @@ use multiclass::OneVsRestWrapper;
 use utils::{check_data_dimensionality, check_matched_dimensions, check_valid_labels, EncodableRng};
 
 use rand;
-use rand::distributions::{IndependentSample};
+use rand::distributions::IndependentSample;
 
 fn sigmoid(x: f32) -> f32 {
     1.0 / (1.0 + (-x).exp())
@@ -126,11 +126,11 @@ impl Hyperparameters {
     pub fn build(&self) -> FactorizationMachine {
 
         let mut rng = self.rng.clone();
-        
+
         FactorizationMachine {
             dim: self.dim,
             num_components: self.num_components,
-            
+
             learning_rate: self.learning_rate,
             l2_penalty: self.l2_penalty,
             l1_penalty: self.l1_penalty,
@@ -155,8 +155,9 @@ impl Hyperparameters {
 
         let mut data = Vec::with_capacity(self.dim * self.num_components);
         // let normal = rand::distributions::normal::Normal::new(0.0, 0.1 / ((self.dim * self.num_components) as f64).sqrt());
-        let normal = rand::distributions::normal::Normal::new(0.0, 1.0 / self.num_components as f64);
-           
+        let normal = rand::distributions::normal::Normal::new(0.0,
+                                                              1.0 / self.num_components as f64);
+
         for _ in 0..(self.dim * self.num_components) {
             data.push(normal.ind_sample(&mut rng.rng) as f32)
         }
@@ -202,8 +203,7 @@ pub struct FactorizationMachine {
 
 
 impl FactorizationMachine {
-    fn compute_prediction<T: NonzeroIterable>(&self, row: &T,
-                                              component_sum: &mut[f32]) -> f32 {
+    fn compute_prediction<T: NonzeroIterable>(&self, row: &T, component_sum: &mut [f32]) -> f32 {
 
         let mut result = 0.0;
 
@@ -217,8 +217,7 @@ impl FactorizationMachine {
             let mut component_sum_sq_elem = 0.0;
 
             for (feature_idx, feature_value) in row.iter_nonzero() {
-                let val = self.latent_factors.get(feature_idx,
-                                                       component_idx) * feature_value;
+                let val = self.latent_factors.get(feature_idx, component_idx) * feature_value;
                 component_sum_elem += val;
                 component_sum_sq_elem += val.powi(2);
             }
@@ -231,14 +230,18 @@ impl FactorizationMachine {
         result
     }
 
-    fn apply_regularization(parameter_value: &mut f32, applied_l2: &mut f32, applied_l1: &mut f32, local_learning_rate: f32,
-                            accumulated_l2: f32, accumulated_l1: f32) {
+    fn apply_regularization(parameter_value: &mut f32,
+                            applied_l2: &mut f32,
+                            applied_l1: &mut f32,
+                            local_learning_rate: f32,
+                            accumulated_l2: f32,
+                            accumulated_l1: f32) {
         let l2_update = accumulated_l2 / *applied_l2;
 
         *parameter_value *= 1.0 - (1.0 - l2_update) * local_learning_rate;
         *applied_l2 *= l2_update;
 
-        let l1_potential_update = accumulated_l1 - * applied_l1;
+        let l1_potential_update = accumulated_l1 - *applied_l1;
         let pre_update_coeff = parameter_value.clone();
 
         if *parameter_value > 0.0 {
@@ -253,9 +256,7 @@ impl FactorizationMachine {
         *applied_l1 += l1_actual_update;
     }
 
-    fn update<T: NonzeroIterable>(&mut self, row: T,
-                                  loss: f32,
-                                  component_sum: &[f32]) {
+    fn update<T: NonzeroIterable>(&mut self, row: T, loss: f32, component_sum: &[f32]) {
 
         for (feature_idx, feature_value) in (&row).iter_nonzero() {
 
@@ -283,27 +284,22 @@ impl FactorizationMachine {
             let slice_start = feature_idx * self.num_components;
             let slice_stop = slice_start + self.num_components;
 
-            let mut component_row = &mut self.latent_factors.as_mut_slice()
-                [slice_start..slice_stop];
-            let mut gradsq_row = &mut self.latent_gradsq.as_mut_slice()
-                [slice_start..slice_stop];
-            let mut applied_l2_row = &mut self.latent_applied_l2.as_mut_slice()
-                [slice_start..slice_stop];
-            let mut applied_l1_row = &mut self.latent_applied_l1.as_mut_slice()
-                [slice_start..slice_stop];
+            let mut component_row = &mut self.latent_factors
+                .as_mut_slice()[slice_start..slice_stop];
+            let mut gradsq_row = &mut self.latent_gradsq.as_mut_slice()[slice_start..slice_stop];
+            let mut applied_l2_row = &mut self.latent_applied_l2
+                .as_mut_slice()[slice_start..slice_stop];
+            let mut applied_l1_row = &mut self.latent_applied_l1
+                .as_mut_slice()[slice_start..slice_stop];
 
-            for (component_value,
-                 (gradsq,
-                 (applied_l2,
-                 (applied_l1, component_sum_value)))) in component_row.iter_mut().zip(
-                     gradsq_row.iter_mut().zip(
-                         applied_l2_row.iter_mut().zip(
-                             applied_l1_row.iter_mut().zip(
-                                 component_sum.iter())))) {
+            for (component_value, (gradsq, (applied_l2, (applied_l1, component_sum_value)))) in
+                component_row.iter_mut().zip(gradsq_row.iter_mut().zip(applied_l2_row.iter_mut()
+                .zip(applied_l1_row.iter_mut().zip(component_sum.iter())))) {
 
                 let local_learning_rate = self.learning_rate / gradsq.sqrt();
-                let update = loss * ((component_sum_value * feature_value)
-                                     - (*component_value * feature_value.powi(2)));
+                let update = loss *
+                             ((component_sum_value * feature_value) -
+                              (*component_value * feature_value.powi(2)));
 
                 *component_value -= local_learning_rate * update;
                 *gradsq += update.powi(2);
@@ -324,19 +320,18 @@ impl FactorizationMachine {
     }
 
     fn fit_sigmoid<'a, T>(&mut self, X: &'a T, y: &Array) -> Result<(), &'static str>
-        where T: IndexableMatrix, &'a T: RowIterable {
+        where T: IndexableMatrix,
+              &'a T: RowIterable
+    {
 
         let mut component_sum = &mut vec![0.0; self.num_components][..];
 
         for (row, &true_y) in X.iter_rows().zip(y.data().iter()) {
-            let y_hat = sigmoid(self.compute_prediction(&row,
-                                                        component_sum));
+            let y_hat = sigmoid(self.compute_prediction(&row, component_sum));
 
             let loss = logistic_loss(true_y, y_hat);
 
-            self.update(row,
-                        loss,
-                        component_sum);
+            self.update(row, loss, component_sum);
 
             self.accumulate_regularization();
         }
@@ -352,7 +347,9 @@ impl FactorizationMachine {
         let array = Array::ones(1, self.dim);
         let num_components = self.num_components;
 
-        self.update(&array.view_row(0), 0.0, &vec![0.0; num_components.clone()][..]);
+        self.update(&array.view_row(0),
+                    0.0,
+                    &vec![0.0; num_components.clone()][..]);
 
         self.accumulated_l2 = 1.0;
         self.accumulated_l1 = 0.0;
@@ -387,8 +384,7 @@ impl SupervisedModel<Array> for FactorizationMachine {
         let mut component_sum = &mut vec![0.0; self.num_components][..];
 
         for row in X.iter_rows() {
-            let prediction = self.compute_prediction(&row,
-                                                     component_sum);
+            let prediction = self.compute_prediction(&row, component_sum);
             data.push(sigmoid(prediction));
         }
 
@@ -416,8 +412,7 @@ impl SupervisedModel<SparseRowArray> for FactorizationMachine {
         let mut component_sum = &mut vec![0.0; self.num_components][..];
 
         for row in X.iter_rows() {
-            let prediction = self.compute_prediction(&row,
-                                                     component_sum);
+            let prediction = self.compute_prediction(&row, component_sum);
             data.push(sigmoid(prediction));
         }
 
@@ -434,7 +429,7 @@ mod tests {
 
     use cross_validation::cross_validation::CrossValidation;
     use datasets::iris::load_data;
-    use metrics::{accuracy_score};
+    use metrics::accuracy_score;
 
     #[cfg(feature = "all_tests")]
     use datasets::newsgroups;

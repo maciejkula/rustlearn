@@ -20,8 +20,9 @@
 //!
 //! - [logistic regression](linear_models/sgdclassifier/index.html) using stochastic gradient descent,
 //! - [support vector machines](svm/libsvm/svc/index.html) using the `libsvm` library,
-//! - [decision trees](trees/decision_tree/index.html) using the CART algorithm, and
-//! - [random forests](ensemble/random_forest/index.html) using CART decision trees.
+//! - [decision trees](trees/decision_tree/index.html) using the CART algorithm,
+//! - [random forests](ensemble/random_forest/index.html) using CART decision trees, and
+//! - [factorization machines](factorization/factorization_machines/index.html).
 //!
 //! All the models support fitting and prediction on both dense and sparse data, and the implementations
 //! should be roughly competitive with Python `sklearn` implementations, both in accuracy and performance.
@@ -159,6 +160,7 @@ pub mod linear_models;
 pub mod metrics;
 pub mod multiclass;
 pub mod feature_extraction;
+pub mod factorization;
 pub mod trees;
 pub mod traits;
 pub mod svm;

@@ -1,6 +1,6 @@
 [package]
 name = "rustlearn"
-version = "0.3.1"
+version = "0.4.0"
 description = "A machine learning package for Rust."
 documentation = "https://maciejkula.github.io/rustlearn/doc/rustlearn/"
 homepage = "https://github.com/maciejkula/rustlearn"

@@ -1,4 +1,31 @@
 //! A factorization machine model implemented using stochastic gradient descent.
+//!
+//! A [factorization machine](http://www.csie.ntu.edu.tw/~b97053/paper/Rendle2010FM.pdf) (Rendle 2008)
+//! model combines the advantages of linear and factorization models. In this implementation, it approximates
+//! second-order feature interactions (as in a quadratic SVM) via reduced-rank matrix factorization.
+//! This allows it to estimate feature interactions even in sparse datasets (like recommender systems) where
+//! traditional polynomial SVMs fail.
+//!
+//! The complexity of the model is controlled by the dimensionality of the factorization matrix:
+//! a higher setting will make the model more expressive at the expense of training time and
+//! risk of overfitting.
+//!
+//! # Examples
+//!
+//! ```
+//! use rustlearn::prelude::*;
+//! use rustlearn::factorization::factorization_machines::Hyperparameters;
+//! use rustlearn::datasets::iris;
+//!
+//! let (X, y) = iris::load_data();
+//!
+//! let mut model = Hyperparameters::new(4, 10)
+//!                                 .one_vs_rest();
+//!
+//! model.fit(&X, &y).unwrap();
+//!
+//! let prediction = model.predict(&X).unwrap();
+//! ```
 #![allow(non_snake_case)]
 
 use prelude::*;
@@ -39,21 +66,12 @@ macro_rules! min {
 }
 
 
-/// Loss types.
-#[derive(Clone, RustcEncodable, RustcDecodable)]
-pub enum Loss {
-    /// Logistic loss for binary classification.
-    Sigmoid,
-}
-
-
 /// Hyperparameters for a FactorizationMachine
 #[derive(RustcEncodable, RustcDecodable)]
 pub struct Hyperparameters {
     dim: usize,
     num_components: usize,
 
-    loss: Loss,
     learning_rate: f32,
     l2_penalty: f32,
     l1_penalty: f32,
@@ -63,11 +81,14 @@ pub struct Hyperparameters {
 
 impl Hyperparameters {
     /// Creates new Hyperparameters.
+    ///
+    /// The complexity of the model is controlled by the dimensionality of the factorization matrix:
+    /// a higher `num_components` setting will make the model more expressive
+    /// at the expense of training time and risk of overfitting.
     pub fn new(dim: usize, num_components: usize) -> Hyperparameters {
         Hyperparameters {
             dim: dim,
             num_components: num_components,
-            loss: Loss::Sigmoid,
             learning_rate: 0.05,
             l2_penalty: 0.0,
             l1_penalty: 0.0,
@@ -110,7 +131,6 @@ impl Hyperparameters {
             dim: self.dim,
             num_components: self.num_components,
             
-            loss: self.loss.clone(),
             learning_rate: self.learning_rate,
             l2_penalty: self.l2_penalty,
             l1_penalty: self.l1_penalty,
@@ -162,7 +182,6 @@ pub struct FactorizationMachine {
     dim: usize,
     num_components: usize,
 
-    loss: Loss,
     learning_rate: f32,
     l2_penalty: f32,
     l1_penalty: f32,
@@ -356,10 +375,7 @@ impl SupervisedModel<Array> for FactorizationMachine {
         try!(check_matched_dimensions(X, y));
         try!(check_valid_labels(y));
 
-        match self.loss {
-            Loss::Sigmoid => { self.fit_sigmoid(X, y) },
-        }
-
+        self.fit_sigmoid(X, y)
     }
 
     fn decision_function(&self, X: &Array) -> Result<Array, &'static str> {
@@ -388,10 +404,7 @@ impl SupervisedModel<SparseRowArray> for FactorizationMachine {
         try!(check_matched_dimensions(X, y));
         try!(check_valid_labels(y));
 
-        match self.loss {
-            Loss::Sigmoid => { self.fit_sigmoid(X, y) },
-        }
-
+        self.fit_sigmoid(X, y)
     }
 
     fn decision_function(&self, X: &SparseRowArray) -> Result<Array, &'static str> {

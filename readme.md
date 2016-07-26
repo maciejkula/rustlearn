@@ -26,8 +26,9 @@ to use something more robust once a clear winner in that space emerges.
 
 - [logistic regression](https://maciejkula.github.io/rustlearn/doc/rustlearn/linear_models/sgdclassifier/index.html) using stochastic gradient descent,
 - [support vector machines](https://maciejkula.github.io/rustlearn/doc/rustlearn/svm/libsvm/svc/index.html) using the `libsvm` library,
-- [decision trees](https://maciejkula.github.io/rustlearn/doc/rustlearn/trees/decision_tree/index.html) using the CART algorithm, and
-- [random forests](https://maciejkula.github.io/rustlearn/doc/rustlearn/ensemble/random_forest/index.html) using CART decision trees.
+- [decision trees](https://maciejkula.github.io/rustlearn/doc/rustlearn/trees/decision_tree/index.html) using the CART algorithm,
+- [random forests](https://maciejkula.github.io/rustlearn/doc/rustlearn/ensemble/random_forest/index.html) using CART decision trees, and
+- [factorization machines](https://maciejkula.github.io/rustlearn/doc/rustlearn/factorization/factorization_machines/index.html).
 
 All the models support fitting and prediction on both dense and sparse data, and the implementations
 should be roughly competitive with Python `sklearn` implementations, both in accuracy and performance.

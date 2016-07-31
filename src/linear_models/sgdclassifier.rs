@@ -57,6 +57,8 @@
 
 use std::iter::Iterator;
 
+use crossbeam;
+
 use prelude::*;
 
 use multiclass::OneVsRestWrapper;
@@ -234,6 +236,38 @@ impl SupervisedModel<Array> for SGDClassifier {
 }
 
 
+impl ParallelPredict<Array> for SGDClassifier {
+    fn decision_function_parallel(&self, X: &Array, num_threads: usize) -> Result<Array, &'static str> {
+        try!(check_data_dimensionality(self.dim, X));
+
+        let mut data = Vec::with_capacity(X.rows());
+
+        crossbeam::scope(|scope| {
+
+            let data_chunks = data.chunks_mut(num_threads).collect::<Vec<_>>();
+            let mut row_bounds = Vec::new();
+
+            let mut chunk_start = 0;
+
+            for chunk in &data_chunks {
+                row_bounds.push((chunk_start, chunk_start + chunk.len()));
+                chunk_start += chunk.len();
+            }
+
+            for (&(start, stop), out_chunk) in row_bounds.iter().zip(data_chunks) {
+                scope.spawn(move || {
+                    for (row_number, out) in (start..stop).zip(out_chunk) {
+                        *out = self.compute_prediction(&X.view_row(row_number));
+                    }
+                });
+            }
+        });
+
+        Ok(Array::from(data))
+    }
+}
+
+
 impl SupervisedModel<SparseRowArray> for SGDClassifier {
     fn fit(&mut self, X: &SparseRowArray, y: &Array) -> Result<(), &'static str> {
 
@@ -339,6 +373,8 @@ impl SGDClassifier {
 
         sigmoid(prediction)
     }
+
+
 }
 
 

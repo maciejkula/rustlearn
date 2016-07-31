@@ -254,6 +254,47 @@ mod tests {
     }
 
     #[test]
+    fn test_random_forest_iris_parallel() {
+        let (data, target) = load_data();
+
+        let mut test_accuracy = 0.0;
+
+        let no_splits = 10;
+
+        let mut cv = CrossValidation::new(data.rows(), no_splits);
+        cv.set_rng(StdRng::from_seed(&[100]));
+
+        for (train_idx, test_idx) in cv {
+
+            let x_train = data.get_rows(&train_idx);
+            let x_test = data.get_rows(&test_idx);
+
+            let y_train = target.get_rows(&train_idx);
+
+            let mut tree_params = decision_tree::Hyperparameters::new(data.cols());
+            tree_params.min_samples_split(10)
+                .max_features(4)
+                .rng(StdRng::from_seed(&[100]));
+
+            let mut model = Hyperparameters::new(tree_params, 10)
+                .rng(StdRng::from_seed(&[100]))
+                .one_vs_rest();
+
+            model.fit(&x_train, &y_train).unwrap();
+
+            let test_prediction = model.predict_parallel(&x_test, 2).unwrap();
+
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &test_prediction);
+        }
+
+        test_accuracy /= no_splits as f32;
+
+        println!("Accuracy {}", test_accuracy);
+
+        assert!(test_accuracy > 0.96);
+    }
+
+    #[test]
     fn test_random_forest_iris_sparse() {
         let (data, target) = load_data();
 

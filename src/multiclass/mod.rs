@@ -10,6 +10,8 @@ use array::traits::*;
 
 use traits::*;
 
+use crossbeam;
+
 
 pub struct OneVsRest<'a> {
     y: &'a Array,
@@ -127,151 +129,130 @@ impl<T: Clone> OneVsRestWrapper<T> {
 }
 
 
-impl<T: SupervisedModel<Array> + Clone> SupervisedModel<Array> for OneVsRestWrapper<T> {
-    fn fit(&mut self, X: &Array, y: &Array) -> Result<(), &'static str> {
+macro_rules! impl_multiclass_supervised_model {
+    ($t:ty) => {
+        impl<T: SupervisedModel<$t> + Clone> SupervisedModel<$t> for OneVsRestWrapper<T> {
+            fn fit(&mut self, X: &$t, y: &Array) -> Result<(), &'static str> {
 
-        for (class_label, binary_target) in OneVsRest::split(y) {
+                for (class_label, binary_target) in OneVsRest::split(y) {
 
-            let model = self.get_model(class_label);
-            try!(model.fit(X, &binary_target));
-        }
-        Ok(())
-    }
-
-    fn decision_function(&self, X: &Array) -> Result<Array, &'static str> {
-
-        let mut out = Array::zeros(X.rows(), self.class_labels.len());
-
-        for (col_idx, model) in self.models.iter().enumerate() {
-            let values = try!(model.decision_function(X));
-            for (row_idx, &val) in values.data().iter().enumerate() {
-                *out.get_mut(row_idx, col_idx) = val;
-            }
-        }
-
-        Ok(out)
-    }
-
-    fn predict(&self, X: &Array) -> Result<Array, &'static str> {
-
-        let decision = try!(self.decision_function(X));
-        let mut predictions = Vec::with_capacity(X.rows());
-
-        for row in decision.iter_rows() {
-
-            let mut max_value = f32::NEG_INFINITY;
-            let mut max_class = 0;
-
-            for (class_idx, val) in row.iter_nonzero() {
-                if val > max_value {
-                    max_value = val;
-                    max_class = class_idx;
+                    let model = self.get_model(class_label);
+                    try!(model.fit(X, &binary_target));
                 }
+                Ok(())
             }
 
-            predictions.push(self.class_labels[max_class]);
-        }
+            fn decision_function(&self, X: &$t) -> Result<Array, &'static str> {
 
-        Ok(Array::from(predictions))
-    }
+                let mut out = Array::zeros(X.rows(), self.class_labels.len());
+
+                for (col_idx, model) in self.models.iter().enumerate() {
+                    let values = try!(model.decision_function(X));
+                    for (row_idx, &val) in values.data().iter().enumerate() {
+                        *out.get_mut(row_idx, col_idx) = val;
+                    }
+                }
+
+                Ok(out)
+            }
+
+            fn predict(&self, X: &$t) -> Result<Array, &'static str> {
+
+                let decision = try!(self.decision_function(X));
+                let mut predictions = Vec::with_capacity(X.rows());
+
+                for row in decision.iter_rows() {
+
+                    let mut max_value = f32::NEG_INFINITY;
+                    let mut max_class = 0;
+
+                    for (class_idx, val) in row.iter_nonzero() {
+                        if val > max_value {
+                            max_value = val;
+                            max_class = class_idx;
+                        }
+                    }
+
+                    predictions.push(self.class_labels[max_class]);
+                }
+
+                Ok(Array::from(predictions))
+            }
+        }
+    };
 }
 
 
-impl<T> SupervisedModel<SparseRowArray> for OneVsRestWrapper<T>
-    where T: SupervisedModel<SparseRowArray> + Clone
-{
-    fn fit(&mut self, X: &SparseRowArray, y: &Array) -> Result<(), &'static str> {
-        for (class_label, binary_target) in OneVsRest::split(y) {
-            let model = self.get_model(class_label);
-            try!(model.fit(X, &binary_target));
-        }
-        Ok(())
-    }
+macro_rules! impl_multiclass_parallel_predict {
+    ($t:ty) => {
+        impl<T: SupervisedModel<$t> + Clone + Sync> ParallelPredict<$t> for OneVsRestWrapper<T> {
+            fn decision_function_parallel(&self, X: &$t, num_threads: usize) -> Result<Array, &'static str> {
 
-    fn decision_function(&self, X: &SparseRowArray) -> Result<Array, &'static str> {
+                let mut out = Array::zeros(X.rows(), self.class_labels.len());
 
-        let mut out = Array::zeros(X.rows(), self.class_labels.len());
+                let numbered_models = self.models.iter().enumerate().collect::<Vec<_>>();
 
-        for (col_idx, model) in self.models.iter().enumerate() {
-            let values = try!(model.decision_function(X));
-            for (row_idx, &val) in values.data().iter().enumerate() {
-                *out.get_mut(row_idx, col_idx) = val;
-            }
-        }
+                for slc in numbered_models.chunks(num_threads) {
 
-        Ok(out)
-    }
+                    let mut guards = Vec::new();
+                    
+                    crossbeam::scope(|scope| {
+                        for &(col_idx, model) in slc {
+                            guards.push(scope.spawn(move || {
+                                println!("running thread");
+                                (col_idx, model.decision_function(X))
+                            }));
+                        }
+                    });
 
-    fn predict(&self, X: &SparseRowArray) -> Result<Array, &'static str> {
-
-        let decision = try!(self.decision_function(X));
-        let mut predictions = Vec::with_capacity(X.rows());
-
-        for row in decision.iter_rows() {
-
-            let mut max_value = f32::NEG_INFINITY;
-            let mut max_class = 0;
-
-            for (class_idx, val) in row.iter_nonzero() {
-                if val > max_value {
-                    max_value = val;
-                    max_class = class_idx;
+                    println!("joingin");
+                    
+                    for guard in guards.into_iter() {
+                        let (col_idx, res) = guard.join();
+                        if res.is_ok() {
+                            for (row_idx, &value) in res.unwrap().as_slice().iter().enumerate() {
+                                out.set(row_idx, col_idx, value);
+                            }
+                        } else {
+                            return res;
+                        }
+                    }
                 }
+
+                Ok(out)
             }
 
-            predictions.push(self.class_labels[max_class]);
-        }
+            fn predict_parallel(&self, X: &$t, num_threads: usize) -> Result<Array, &'static str> {
 
-        Ok(Array::from(predictions))
-    }
+                let decision = try!(self.decision_function_parallel(X, num_threads));
+                let mut predictions = Vec::with_capacity(X.rows());
+
+                for row in decision.iter_rows() {
+
+                    let mut max_value = f32::NEG_INFINITY;
+                    let mut max_class = 0;
+
+                    for (class_idx, val) in row.iter_nonzero() {
+                        if val > max_value {
+                            max_value = val;
+                            max_class = class_idx;
+                        }
+                    }
+
+                    predictions.push(self.class_labels[max_class]);
+                }
+
+                Ok(Array::from(predictions))
+            }
+        }
+    };
 }
 
 
-impl<T> SupervisedModel<SparseColumnArray> for OneVsRestWrapper<T>
-    where T: SupervisedModel<SparseColumnArray> + Clone
-{
-    fn fit(&mut self, X: &SparseColumnArray, y: &Array) -> Result<(), &'static str> {
-        for (class_label, binary_target) in OneVsRest::split(y) {
-            let model = self.get_model(class_label);
-            try!(model.fit(X, &binary_target));
-        }
-        Ok(())
-    }
+impl_multiclass_supervised_model!(Array);
+impl_multiclass_supervised_model!(SparseRowArray);
+impl_multiclass_supervised_model!(SparseColumnArray);
 
-    fn decision_function(&self, X: &SparseColumnArray) -> Result<Array, &'static str> {
-
-        let mut out = Array::zeros(X.rows(), self.class_labels.len());
-
-        for (col_idx, model) in self.models.iter().enumerate() {
-            let values = try!(model.decision_function(X));
-            for (row_idx, &val) in values.data().iter().enumerate() {
-                *out.get_mut(row_idx, col_idx) = val;
-            }
-        }
-
-        Ok(out)
-    }
-
-    fn predict(&self, X: &SparseColumnArray) -> Result<Array, &'static str> {
-
-        let decision = try!(self.decision_function(X));
-        let mut predictions = Vec::with_capacity(X.rows());
-
-        for row in decision.iter_rows() {
-
-            let mut max_value = f32::NEG_INFINITY;
-            let mut max_class = 0;
-
-            for (class_idx, val) in row.iter_nonzero() {
-                if val > max_value {
-                    max_value = val;
-                    max_class = class_idx;
-                }
-            }
-
-            predictions.push(self.class_labels[max_class]);
-        }
-
-        Ok(Array::from(predictions))
-    }
-}
+impl_multiclass_parallel_predict!(Array);
+impl_multiclass_parallel_predict!(SparseRowArray);
+impl_multiclass_parallel_predict!(SparseColumnArray);

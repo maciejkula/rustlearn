@@ -150,6 +150,7 @@ extern crate csv;
 
 extern crate rand;
 extern crate rustc_serialize;
+extern crate crossbeam;
 
 
 pub mod array;

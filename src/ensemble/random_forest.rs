@@ -280,7 +280,7 @@ mod tests {
                 .rng(StdRng::from_seed(&[100]))
                 .one_vs_rest();
 
-            model.fit(&x_train, &y_train).unwrap();
+            model.fit_parallel(&x_train, &y_train, 2).unwrap();
 
             let test_prediction = model.predict_parallel(&x_test, 2).unwrap();
 

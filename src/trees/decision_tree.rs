@@ -1181,6 +1181,54 @@ mod tests {
 
         assert!(train_accuracy > 0.95);
     }
+
+    #[test]
+    #[cfg(feature = "all_tests")]
+    fn test_decision_tree_newsgroups_parallel() {
+
+        let (X, target) = newsgroups::load_data();
+
+        let no_splits = 2;
+
+        let mut test_accuracy = 0.0;
+        let mut train_accuracy = 0.0;
+
+        let mut cv = CrossValidation::new(X.rows(), no_splits);
+        cv.set_rng(StdRng::from_seed(&[100]));
+
+        for (train_idx, test_idx) in cv {
+
+            let x_train = SparseColumnArray::from(&X.get_rows(&train_idx));
+
+            let x_test = SparseColumnArray::from(&X.get_rows(&test_idx));
+            let y_train = target.get_rows(&train_idx);
+
+            let mut model = Hyperparameters::new(X.cols())
+                .min_samples_split(5)
+                .rng(StdRng::from_seed(&[100]))
+                .one_vs_rest();
+
+            let start = time::precise_time_ns();
+            for _ in 0..2 {
+                model.fit_parallel(&x_train, &y_train, 2).unwrap();
+            }
+            println!("Elapsed {}", time::precise_time_ns() - start);
+
+            let y_hat = model.predict_parallel(&x_test, 2).unwrap();
+            let y_hat_train = model.predict_parallel(&x_train, 2).unwrap();
+
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &y_hat);
+
+            train_accuracy += accuracy_score(&target.get_rows(&train_idx), &y_hat_train);
+        }
+
+        test_accuracy /= no_splits as f32;
+        train_accuracy /= no_splits as f32;
+        println!("{}", test_accuracy);
+        println!("train accuracy {}", train_accuracy);
+
+        assert!(train_accuracy > 0.95);
+    }
 }
 
 
@@ -1191,6 +1239,7 @@ mod bench {
     use prelude::*;
 
     use datasets::iris::load_data;
+    use datasets::newsgroups;
     use super::Hyperparameters;
 
     use rand::{Rng, StdRng, SeedableRng};
@@ -1341,6 +1390,7 @@ mod bench {
         let (X, target) = newsgroups::load_data();
 
         let x_train = SparseColumnArray::from(&X.get_rows(&(..500)));
+        let target = target.get_rows(&(..500));
 
         let mut model = Hyperparameters::new(X.cols())
             .min_samples_split(5)
@@ -1349,6 +1399,24 @@ mod bench {
 
         b.iter(|| {
             model.fit(&x_train, &target).unwrap();
+        });
+    }
+
+    #[bench]
+    fn bench_decision_tree_newsgroups_parallel(b: &mut Bencher) {
+
+        let (X, target) = newsgroups::load_data();
+
+        let x_train = SparseColumnArray::from(&X.get_rows(&(..500)));
+        let target = target.get_rows(&(..500));
+
+        let mut model = Hyperparameters::new(X.cols())
+            .min_samples_split(5)
+            .rng(StdRng::from_seed(&[100]))
+            .one_vs_rest();
+
+        b.iter(|| {
+            model.fit_parallel(&x_train, &target, 2).unwrap();
         });
     }
 }

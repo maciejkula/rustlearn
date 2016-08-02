@@ -88,6 +88,7 @@ impl<'a> Iterator for OneVsRest<'a> {
     }
 }
 
+
 /// Wraps simple two-class classifiers to implement one-vs-rest strategies.
 #[derive(RustcEncodable, RustcDecodable)]
 pub struct OneVsRestWrapper<T> {
@@ -117,6 +118,24 @@ impl<T: Clone> OneVsRestWrapper<T> {
         self.models.push(self.base_model.clone());
 
         &mut self.models[self.class_labels.len() - 1]
+    }
+
+    fn extract_model(&mut self, class_label: f32) -> T {
+
+        let mut model_idx = None;
+
+        for (idx, label) in self.class_labels.iter().enumerate() {
+            if let Some(Ordering::Equal) = class_label.partial_cmp(label) {
+                model_idx = Some(idx);
+            }
+        }
+
+        if let Some(idx) = model_idx {
+            self.class_labels.remove(idx);
+            return self.models.remove(idx);
+        }
+
+        self.base_model.clone()
     }
 
     pub fn models(&self) -> &Vec<T> {
@@ -199,14 +218,11 @@ macro_rules! impl_multiclass_parallel_predict {
                     crossbeam::scope(|scope| {
                         for &(col_idx, model) in slc {
                             guards.push(scope.spawn(move || {
-                                println!("running thread");
                                 (col_idx, model.decision_function(X))
                             }));
                         }
                     });
 
-                    println!("joingin");
-                    
                     for guard in guards.into_iter() {
                         let (col_idx, res) = guard.join();
                         if res.is_ok() {
@@ -249,6 +265,53 @@ macro_rules! impl_multiclass_parallel_predict {
 }
 
 
+macro_rules! impl_multiclass_parallel_supervised {
+    ($t:ty) => {
+        impl<T: SupervisedModel<$t> + Clone + Sync + Send> ParallelSupervisedModel<$t> for OneVsRestWrapper<T> {
+            fn fit_parallel(&mut self, X: &$t, y: &Array, num_threads: usize) -> Result<(), &'static str> {
+
+                let mut ovr = OneVsRest::split(y).collect::<Vec<_>>();
+
+                loop {
+                    let ovr_len = ovr.len();
+                    let chunk = ovr.drain((if num_threads > ovr_len { 0 } else { ovr_len - num_threads })
+                                          ..).collect::<Vec<_>>();
+
+                    if chunk.len() == 0 {
+                        break;
+                    }
+
+                    let mut guards = Vec::new();
+                    
+                    crossbeam::scope(|scope| {
+                        for (class_label, binary_target) in chunk {
+                            let mut model = self.extract_model(class_label);
+                            guards.push(scope.spawn(move || {
+                                let result = model.fit(X, &binary_target);
+                                (class_label, model, result)
+                            }));
+                        }
+                    });
+
+                    for guard in guards.into_iter() {
+                        let (class_label, model, result) = guard.join();
+
+                        if result.is_ok() {
+                            self.class_labels.push(class_label);
+                            self.models.push(model);
+                        } else {
+                            return result;
+                        }
+                    }
+                }
+
+                Ok(())
+            }
+        }
+    }
+}
+
+
 impl_multiclass_supervised_model!(Array);
 impl_multiclass_supervised_model!(SparseRowArray);
 impl_multiclass_supervised_model!(SparseColumnArray);
@@ -256,3 +319,7 @@ impl_multiclass_supervised_model!(SparseColumnArray);
 impl_multiclass_parallel_predict!(Array);
 impl_multiclass_parallel_predict!(SparseRowArray);
 impl_multiclass_parallel_predict!(SparseColumnArray);
+
+impl_multiclass_parallel_supervised!(Array);
+impl_multiclass_parallel_supervised!(SparseRowArray);
+impl_multiclass_parallel_supervised!(SparseColumnArray);

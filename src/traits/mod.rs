@@ -42,3 +42,8 @@ pub trait ParallelPredict<T> {
             .collect::<Vec<f32>>()))
     }
 }
+
+
+pub trait ParallelSupervisedModel<T> {
+    fn fit_parallel(&mut self, X: &T, y: &Array, num_threads: usize) -> Result<(), &'static str>;
+}

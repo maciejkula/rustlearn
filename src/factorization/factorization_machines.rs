@@ -603,12 +603,12 @@ mod bench {
 
     use test::Bencher;
 
-    use rustlearn::prelude::*;
+    use prelude::*;
 
-    use rustlearn::cross_validation::cross_validation::CrossValidation;
-    use rustlearn::datasets::iris::load_data;
-    use rustlearn::metrics::{accuracy_score, roc_auc_score};
-    use rustlearn::multiclass::OneVsRest;
+    use cross_validation::cross_validation::CrossValidation;
+    use datasets::iris::load_data;
+    use metrics::{accuracy_score, roc_auc_score};
+    use multiclass::OneVsRest;
 
     use super::*;
 

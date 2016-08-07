@@ -321,7 +321,7 @@ pub struct DecisionTree {
 }
 
 
-impl SupervisedModel<Array> for DecisionTree {
+impl<'a> SupervisedModel<&'a Array> for DecisionTree {
     fn fit(&mut self, X: &Array, y: &Array) -> Result<(), &'static str> {
 
         try!(check_data_dimensionality(self.dim, X));
@@ -363,7 +363,7 @@ impl SupervisedModel<Array> for DecisionTree {
 }
 
 
-impl SupervisedModel<SparseColumnArray> for DecisionTree {
+impl<'a> SupervisedModel<&'a SparseColumnArray> for DecisionTree {
     fn fit(&mut self, X: &SparseColumnArray, y: &Array) -> Result<(), &'static str> {
 
         try!(check_data_dimensionality(self.dim, X));

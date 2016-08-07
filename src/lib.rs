@@ -3,8 +3,8 @@
 //!
 //! # Introduction
 //!
-//! This crate is mostly an excuse for me to learn Rust. Nevertheless, it contains
-//! reasonably effective implementations of a number of common machine learing algorithms.
+//! This crate contains reasonably effective implementations
+//! of a number of common machine learing algorithms.
 //!
 //! At the moment, `rustlearn` uses its own basic dense and sparse array types, but I will be happy
 //! to use something more robust once a clear winner in that space emerges.
@@ -36,6 +36,10 @@
 //!
 //! - [accuracy](metrics/fn.accuracy_score.html)
 //! - [ROC AUC score](metrics/ranking/fn.roc_auc_score.html)
+//!
+//! ## Parallelization
+//!
+//! A number of models support both parallel model fitting and prediction.
 //!
 //! ## Model serialization
 //!

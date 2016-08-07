@@ -201,7 +201,7 @@ macro_rules! min {
 }
 
 
-impl SupervisedModel<Array> for SGDClassifier {
+impl<'a> SupervisedModel<&'a Array> for SGDClassifier {
     fn fit(&mut self, X: &Array, y: &Array) -> Result<(), &'static str> {
 
         try!(check_data_dimensionality(self.dim, X));
@@ -236,8 +236,11 @@ impl SupervisedModel<Array> for SGDClassifier {
 }
 
 
-impl ParallelPredict<Array> for SGDClassifier {
-    fn decision_function_parallel(&self, X: &Array, num_threads: usize) -> Result<Array, &'static str> {
+impl<'a> ParallelPredict<&'a Array> for SGDClassifier {
+    fn decision_function_parallel(&self,
+                                  X: &Array,
+                                  num_threads: usize)
+                                  -> Result<Array, &'static str> {
         try!(check_data_dimensionality(self.dim, X));
 
         let mut data = Vec::with_capacity(X.rows());
@@ -268,7 +271,7 @@ impl ParallelPredict<Array> for SGDClassifier {
 }
 
 
-impl SupervisedModel<SparseRowArray> for SGDClassifier {
+impl<'a> SupervisedModel<&'a SparseRowArray> for SGDClassifier {
     fn fit(&mut self, X: &SparseRowArray, y: &Array) -> Result<(), &'static str> {
 
         try!(check_data_dimensionality(self.dim, X));
@@ -373,8 +376,6 @@ impl SGDClassifier {
 
         sigmoid(prediction)
     }
-
-
 }
 
 

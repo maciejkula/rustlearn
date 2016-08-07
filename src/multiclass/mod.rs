@@ -150,8 +150,8 @@ impl<T: Clone> OneVsRestWrapper<T> {
 
 macro_rules! impl_multiclass_supervised_model {
     ($t:ty) => {
-        impl<T: SupervisedModel<$t> + Clone> SupervisedModel<$t> for OneVsRestWrapper<T> {
-            fn fit(&mut self, X: &$t, y: &Array) -> Result<(), &'static str> {
+        impl<'a, T: SupervisedModel<&'a $t> + Clone> SupervisedModel<&'a $t> for OneVsRestWrapper<T> {
+            fn fit(&mut self, X: &'a $t, y: &Array) -> Result<(), &'static str> {
 
                 for (class_label, binary_target) in OneVsRest::split(y) {
 
@@ -161,7 +161,7 @@ macro_rules! impl_multiclass_supervised_model {
                 Ok(())
             }
 
-            fn decision_function(&self, X: &$t) -> Result<Array, &'static str> {
+            fn decision_function(&self, X: &'a $t) -> Result<Array, &'static str> {
 
                 let mut out = Array::zeros(X.rows(), self.class_labels.len());
 
@@ -175,7 +175,7 @@ macro_rules! impl_multiclass_supervised_model {
                 Ok(out)
             }
 
-            fn predict(&self, X: &$t) -> Result<Array, &'static str> {
+            fn predict(&self, X: &'a $t) -> Result<Array, &'static str> {
 
                 let decision = try!(self.decision_function(X));
                 let mut predictions = Vec::with_capacity(X.rows());
@@ -204,8 +204,9 @@ macro_rules! impl_multiclass_supervised_model {
 
 macro_rules! impl_multiclass_parallel_predict {
     ($t:ty) => {
-        impl<T: SupervisedModel<$t> + Clone + Sync> ParallelPredict<$t> for OneVsRestWrapper<T> {
-            fn decision_function_parallel(&self, X: &$t, num_threads: usize) -> Result<Array, &'static str> {
+        impl<'a, T: SupervisedModel<&'a $t> + Clone + Sync> ParallelPredict<&'a $t> for OneVsRestWrapper<T> {
+            fn decision_function_parallel(&self, X: &'a $t, num_threads: usize)
+                                          -> Result<Array, &'static str> {
 
                 let mut out = Array::zeros(X.rows(), self.class_labels.len());
 
@@ -214,7 +215,7 @@ macro_rules! impl_multiclass_parallel_predict {
                 for slc in numbered_models.chunks(num_threads) {
 
                     let mut guards = Vec::new();
-                    
+
                     crossbeam::scope(|scope| {
                         for &(col_idx, model) in slc {
                             guards.push(scope.spawn(move || {
@@ -238,7 +239,7 @@ macro_rules! impl_multiclass_parallel_predict {
                 Ok(out)
             }
 
-            fn predict_parallel(&self, X: &$t, num_threads: usize) -> Result<Array, &'static str> {
+            fn predict_parallel(&self, X: &'a $t, num_threads: usize) -> Result<Array, &'static str> {
 
                 let decision = try!(self.decision_function_parallel(X, num_threads));
                 let mut predictions = Vec::with_capacity(X.rows());
@@ -267,22 +268,20 @@ macro_rules! impl_multiclass_parallel_predict {
 
 macro_rules! impl_multiclass_parallel_supervised {
     ($t:ty) => {
-        impl<T: SupervisedModel<$t> + Clone + Sync + Send> ParallelSupervisedModel<$t> for OneVsRestWrapper<T> {
-            fn fit_parallel(&mut self, X: &$t, y: &Array, num_threads: usize) -> Result<(), &'static str> {
+        impl<'a, T: SupervisedModel<&'a $t> + Clone + Sync + Send> ParallelSupervisedModel<&'a $t> for OneVsRestWrapper<T> {
+            fn fit_parallel(&mut self, X: &'a $t, y: &Array, num_threads: usize) -> Result<(), &'static str> {
 
-                let mut ovr = OneVsRest::split(y).collect::<Vec<_>>();
+                let mut ovr = OneVsRest::split(y);
 
                 loop {
-                    let ovr_len = ovr.len();
-                    let chunk = ovr.drain((if num_threads > ovr_len { 0 } else { ovr_len - num_threads })
-                                          ..).collect::<Vec<_>>();
+                    let chunk = ovr.by_ref().take(num_threads).collect::<Vec<_>>();
 
                     if chunk.len() == 0 {
                         break;
                     }
 
                     let mut guards = Vec::new();
-                    
+
                     crossbeam::scope(|scope| {
                         for (class_label, binary_target) in chunk {
                             let mut model = self.extract_model(class_label);

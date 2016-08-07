@@ -93,7 +93,7 @@ pub struct SVC {
 
 macro_rules! impl_supervised_model {
     ($x_type:ty) => {
-        impl SupervisedModel<$x_type> for SVC {
+        impl<'a> SupervisedModel<&'a $x_type> for SVC {
             fn fit(&mut self, X: &$x_type, y: &Array) -> Result<(), &'static str> {
 
                 try!(check_data_dimensionality(self.dim, X));

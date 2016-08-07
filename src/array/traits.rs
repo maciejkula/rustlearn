@@ -76,6 +76,8 @@ pub trait RowIterable {
     type Output: Iterator<Item = Self::Item>;
     /// Iterate over rows of the matrix.
     fn iter_rows(self) -> Self::Output;
+    /// Iterate over a subset of rows of the matrix.
+    fn iter_rows_range(self, range: Range<usize>) -> Self::Output;
     /// View a row of the matrix.
     fn view_row(self, idx: usize) -> Self::Item;
 }
@@ -88,6 +90,8 @@ pub trait ColumnIterable {
     type Output: Iterator<Item = Self::Item>;
     /// Iterate over columns of a the matrix.
     fn iter_columns(self) -> Self::Output;
+    /// Iterate over a subset of columns of the matrix.
+    fn iter_columns_range(self, range: Range<usize>) -> Self::Output;
     /// View a column of the matrix.
     fn view_column(self, idx: usize) -> Self::Item;
 }

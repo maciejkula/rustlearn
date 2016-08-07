@@ -107,15 +107,14 @@ impl Hyperparameters {
 }
 
 
-#[derive(RustcEncodable, RustcDecodable)]
-#[derive(Clone)]
+#[derive(RustcEncodable, RustcDecodable, Clone)]
 pub struct RandomForest {
     trees: Vec<decision_tree::DecisionTree>,
     rng: EncodableRng,
 }
 
 
-impl SupervisedModel<Array> for RandomForest {
+impl<'a> SupervisedModel<&'a Array> for RandomForest {
     fn fit(&mut self, X: &Array, y: &Array) -> Result<(), &'static str> {
 
         let mut rng = self.rng.clone();
@@ -145,7 +144,7 @@ impl SupervisedModel<Array> for RandomForest {
 }
 
 
-impl SupervisedModel<SparseRowArray> for RandomForest {
+impl<'a> SupervisedModel<&'a SparseRowArray> for RandomForest {
     fn fit(&mut self, X: &SparseRowArray, y: &Array) -> Result<(), &'static str> {
 
         let mut rng = self.rng.clone();

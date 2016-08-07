@@ -37,6 +37,7 @@
 //!
 //! ```
 use std::iter::Iterator;
+use std::ops::Range;
 
 use array::dense::*;
 use array::traits::*;
@@ -79,8 +80,8 @@ pub struct SparseArrayViewIterator<'a> {
 
 /// Iterator over row or column views of a sparse matrix.
 pub struct SparseArrayIterator<'a> {
+    stop: usize,
     idx: usize,
-    dim: usize,
     indices: &'a Vec<Vec<usize>>,
     data: &'a Vec<Vec<f32>>,
 }
@@ -290,7 +291,22 @@ impl<'a> RowIterable for &'a SparseRowArray {
     fn iter_rows(self) -> SparseArrayIterator<'a> {
         SparseArrayIterator {
             idx: 0,
-            dim: self.rows,
+            stop: self.rows,
+            indices: &self.indices,
+            data: &self.data,
+        }
+    }
+
+    fn iter_rows_range(self, range: Range<usize>) -> SparseArrayIterator<'a> {
+        let stop = if range.end > self.rows {
+            self.rows
+        } else {
+            range.end
+        };
+
+        SparseArrayIterator {
+            stop: stop,
+            idx: range.start,
             indices: &self.indices,
             data: &self.data,
         }
@@ -388,11 +404,27 @@ impl<'a> ColumnIterable for &'a SparseColumnArray {
     fn iter_columns(self) -> SparseArrayIterator<'a> {
         SparseArrayIterator {
             idx: 0,
-            dim: self.cols,
+            stop: self.cols,
             indices: &self.indices,
             data: &self.data,
         }
     }
+
+    fn iter_columns_range(self, range: Range<usize>) -> SparseArrayIterator<'a> {
+        let stop = if range.end > self.cols {
+            self.cols
+        } else {
+            range.end
+        };
+
+        SparseArrayIterator {
+            stop: stop,
+            idx: range.start,
+            indices: &self.indices,
+            data: &self.data,
+        }
+    }
+
     fn view_column(self, idx: usize) -> SparseArrayView<'a> {
         SparseArrayView {
             indices: &self.indices[idx],
@@ -457,7 +489,7 @@ impl<'a> Iterator for SparseArrayIterator<'a> {
 
     fn next(&mut self) -> Option<SparseArrayView<'a>> {
 
-        let result = if self.idx < self.dim {
+        let result = if self.idx < self.stop {
             Some(SparseArrayView {
                 indices: &self.indices[self.idx][..],
                 data: &self.data[self.idx][..],
@@ -594,5 +626,34 @@ mod tests {
         assert!(allclose(&arr.get_rows(&vec![1, 0]).todense(),
                          &dense_arr.get_rows(&vec![1, 0])));
         assert!(allclose(&arr.get_rows(&(..)).todense(), &dense_arr.get_rows(&(..))));
+    }
+
+    use datasets::iris;
+
+    #[test]
+    fn range_iteration() {
+        let (data, _) = iris::load_data();
+
+        let (start, stop) = (5, 10);
+
+        let data = SparseRowArray::from(&data);
+
+        for (row_num, row) in data.iter_rows_range(start..stop).enumerate() {
+            for (col_idx, value) in row.iter_nonzero() {
+                assert!(value == data.get(start + row_num, col_idx));
+            }
+
+            assert!(row_num < (stop - start));
+        }
+
+        let (start, stop) = (1, 3);
+
+        let data = SparseColumnArray::from(&data);
+
+        for (col_num, col) in data.iter_columns_range(start..stop).enumerate() {
+            for (row_idx, value) in col.iter_nonzero() {
+                assert!(value == data.get(row_idx, start + col_num));
+            }
+        }
     }
 }

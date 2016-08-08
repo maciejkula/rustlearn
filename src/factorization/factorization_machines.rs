@@ -354,6 +354,10 @@ impl FactorizationMachine {
     /// Perform a dummy update pass over all features to force regularization to be applied.
     fn regularize_all(&mut self) {
 
+        if self.l1_penalty == 0.0 && self.l2_penalty == 0.0 {
+            return;
+        }
+
         let array = Array::ones(1, self.dim);
         let num_components = self.num_components;
 

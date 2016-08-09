@@ -1,4 +1,10 @@
 # Changelog
+
+## [unreleased][unreleased]
+### Added
+- factorization machines
+- parallel fitting and prediction for one-vs-rest models
+
 ## [0.3.1][2016-03-01]
 ### Changed
 - NonzeroIterable now takes &self

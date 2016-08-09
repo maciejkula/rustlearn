@@ -3,5 +3,5 @@
 pub mod iris;
 
 #[cfg(test)]
-#[cfg(feature = "all_tests")]
+#[cfg(any(feature = "all_tests", feature = "bench"))]
 pub mod newsgroups;

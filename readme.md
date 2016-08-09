@@ -9,7 +9,7 @@ For full usage details, see the [API documentation](https://maciejkula.github.io
 
 ## Introduction
 
-This crate is mostly an excuse for me to learn Rust. Nevertheless, it contains reasonably effective
+This crate contains reasonably effective
 implementations of a number of common machine learning algorithms.
 
 At the moment, `rustlearn` uses its own basic dense and sparse array types, but I will be happy
@@ -42,6 +42,10 @@ should be roughly competitive with Python `sklearn` implementations, both in acc
 
 - [accuracy](https://maciejkula.github.io/rustlearn/doc/rustlearn/metrics/fn.accuracy_score.html)
 - [ROC AUC score](https://maciejkula.github.io/rustlearn/doc/rustlearn/metrics/ranking/fn.roc_auc_score.html)
+
+## Parallelization
+
+A number of models support both parallel model fitting and prediction.
 
 ### Model serialization
 

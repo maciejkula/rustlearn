@@ -10,6 +10,11 @@
 //! a higher setting will make the model more expressive at the expense of training time and
 //! risk of overfitting.
 //!
+//! # Parallelism
+//!
+//! The model supports multithreaded model fitting via asynchronous stochastic
+//! gradient descent (Hogwild).
+//!
 //! # Examples
 //!
 //! ```
@@ -28,6 +33,8 @@
 //! ```
 #![allow(non_snake_case)]
 
+use std::cmp;
+
 use prelude::*;
 
 use multiclass::OneVsRestWrapper;
@@ -35,6 +42,9 @@ use utils::{check_data_dimensionality, check_matched_dimensions, check_valid_lab
 
 use rand;
 use rand::distributions::IndependentSample;
+
+use crossbeam;
+
 
 fn sigmoid(x: f32) -> f32 {
     1.0 / (1.0 + (-x).exp())
@@ -344,6 +354,10 @@ impl FactorizationMachine {
     /// Perform a dummy update pass over all features to force regularization to be applied.
     fn regularize_all(&mut self) {
 
+        if self.l1_penalty == 0.0 && self.l2_penalty == 0.0 {
+            return;
+        }
+
         let array = Array::ones(1, self.dim);
         let num_components = self.num_components;
 
@@ -365,8 +379,11 @@ impl FactorizationMachine {
 }
 
 
-impl SupervisedModel<Array> for FactorizationMachine {
-    fn fit(&mut self, X: &Array, y: &Array) -> Result<(), &'static str> {
+impl<'a, T> SupervisedModel<&'a T> for FactorizationMachine
+    where &'a T: RowIterable,
+          T: IndexableMatrix
+{
+    fn fit(&mut self, X: &'a T, y: &Array) -> Result<(), &'static str> {
 
         try!(check_data_dimensionality(self.dim, X));
         try!(check_matched_dimensions(X, y));
@@ -375,7 +392,7 @@ impl SupervisedModel<Array> for FactorizationMachine {
         self.fit_sigmoid(X, y)
     }
 
-    fn decision_function(&self, X: &Array) -> Result<Array, &'static str> {
+    fn decision_function(&self, X: &'a T) -> Result<Array, &'static str> {
 
         try!(check_data_dimensionality(self.dim, X));
 
@@ -393,30 +410,53 @@ impl SupervisedModel<Array> for FactorizationMachine {
 }
 
 
-impl SupervisedModel<SparseRowArray> for FactorizationMachine {
-    fn fit(&mut self, X: &SparseRowArray, y: &Array) -> Result<(), &'static str> {
+impl<'a, T> ParallelSupervisedModel<&'a T> for FactorizationMachine
+    where &'a T: RowIterable,
+          T: IndexableMatrix + Sync
+{
+    fn fit_parallel(&mut self,
+                    X: &'a T,
+                    y: &Array,
+                    num_threads: usize)
+                    -> Result<(), &'static str> {
 
         try!(check_data_dimensionality(self.dim, X));
         try!(check_matched_dimensions(X, y));
         try!(check_valid_labels(y));
 
-        self.fit_sigmoid(X, y)
-    }
+        let rows_per_thread = X.rows() / num_threads + 1;
+        let num_components = self.num_components;
 
-    fn decision_function(&self, X: &SparseRowArray) -> Result<Array, &'static str> {
+        let model_ptr = unsafe { &*(self as *const FactorizationMachine) };
 
-        try!(check_data_dimensionality(self.dim, X));
+        crossbeam::scope(|scope| {
+            for thread_num in 0..num_threads {
+                scope.spawn(move || {
 
-        let mut data = Vec::with_capacity(X.rows());
+                    let start = thread_num * rows_per_thread;
+                    let stop = cmp::min((thread_num + 1) * rows_per_thread, X.rows());
 
-        let mut component_sum = &mut vec![0.0; self.num_components][..];
+                    let mut component_sum = vec![0.0; num_components];
 
-        for row in X.iter_rows() {
-            let prediction = self.compute_prediction(&row, component_sum);
-            data.push(sigmoid(prediction));
-        }
+                    let model = unsafe {
+                        &mut *(model_ptr as *const FactorizationMachine
+                                                as *mut FactorizationMachine)
+                    };
 
-        Ok(Array::from(data))
+                    for (row, &true_y) in X.iter_rows_range(start..stop)
+                        .zip(y.data()[start..stop].iter()) {
+                        let y_hat = sigmoid(model.compute_prediction(&row, &mut component_sum[..]));
+                        let loss = logistic_loss(true_y, y_hat);
+                        model.update(row, loss, &mut component_sum[..]);
+                        model.accumulate_regularization();
+                    }
+                });
+            }
+        });
+
+        self.regularize_all();
+
+        Ok(())
     }
 }
 
@@ -430,6 +470,7 @@ mod tests {
     use cross_validation::cross_validation::CrossValidation;
     use datasets::iris::load_data;
     use metrics::accuracy_score;
+    use multiclass::OneVsRest;
 
     #[cfg(feature = "all_tests")]
     use datasets::newsgroups;
@@ -547,6 +588,56 @@ mod tests {
     }
 
     #[test]
+    fn test_iris_parallel() {
+        let (data, target) = load_data();
+
+        // Get a binary target so that the parallelism
+        // goes through the FM model and not through the
+        // OvR wrapper.
+        let (_, target) = OneVsRest::split(&target).next().unwrap();
+
+        let mut test_accuracy = 0.0;
+        let mut train_accuracy = 0.0;
+
+        let no_splits = 10;
+
+        let mut cv = CrossValidation::new(data.rows(), no_splits);
+        cv.set_rng(StdRng::from_seed(&[100]));
+
+        for (train_idx, test_idx) in cv {
+
+            let x_train = data.get_rows(&train_idx);
+            let x_test = data.get_rows(&test_idx);
+
+            let y_train = target.get_rows(&train_idx);
+
+            let mut model = Hyperparameters::new(data.cols(), 5)
+                .learning_rate(0.05)
+                .l2_penalty(0.0)
+                .rng(StdRng::from_seed(&[100]))
+                .build();
+
+            for _ in 0..20 {
+                model.fit_parallel(&x_train, &y_train, 4).unwrap();
+            }
+
+            let y_hat = model.predict(&x_test).unwrap();
+            let y_hat_train = model.predict(&x_train).unwrap();
+
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &y_hat);
+            train_accuracy += accuracy_score(&target.get_rows(&train_idx), &y_hat_train);
+        }
+
+        test_accuracy /= no_splits as f32;
+        train_accuracy /= no_splits as f32;
+
+        println!("Accuracy {}", test_accuracy);
+        println!("Train accuracy {}", train_accuracy);
+
+        assert!(test_accuracy > 0.94);
+    }
+
+    #[test]
     #[cfg(feature = "all_tests")]
     fn test_fm_newsgroups() {
 
@@ -603,12 +694,13 @@ mod bench {
 
     use test::Bencher;
 
-    use rustlearn::prelude::*;
+    use prelude::*;
 
-    use rustlearn::cross_validation::cross_validation::CrossValidation;
-    use rustlearn::datasets::iris::load_data;
-    use rustlearn::metrics::{accuracy_score, roc_auc_score};
-    use rustlearn::multiclass::OneVsRest;
+    use cross_validation::cross_validation::CrossValidation;
+    use datasets::iris::load_data;
+    use datasets::newsgroups;
+    use metrics::{accuracy_score, roc_auc_score};
+    use multiclass::OneVsRest;
 
     use super::*;
 
@@ -627,6 +719,42 @@ mod bench {
 
         b.iter(|| {
             model.fit(&sparse_data, &target).unwrap();
+        });
+    }
+
+    #[bench]
+    fn bench_fm_newsgroups(b: &mut Bencher) {
+
+        let (X, target) = newsgroups::load_data();
+        let (_, target) = OneVsRest::split(&target).next().unwrap();
+
+        let X = X.get_rows(&(..500));
+        let target = target.get_rows(&(..500));
+
+        let mut model = Hyperparameters::new(X.cols(), 10)
+            .rng(StdRng::from_seed(&[100]))
+            .build();
+
+        b.iter(|| {
+            model.fit(&X, &target).unwrap();
+        });
+    }
+
+    #[bench]
+    fn bench_fm_newsgroups_parallel(b: &mut Bencher) {
+
+        let (X, target) = newsgroups::load_data();
+        let (_, target) = OneVsRest::split(&target).next().unwrap();
+
+        let X = X.get_rows(&(..500));
+        let target = target.get_rows(&(..500));
+
+        let mut model = Hyperparameters::new(X.cols(), 10)
+            .rng(StdRng::from_seed(&[100]))
+            .build();
+
+        b.iter(|| {
+            model.fit_parallel(&X, &target, 2).unwrap();
         });
     }
 }

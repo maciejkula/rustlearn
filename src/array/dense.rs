@@ -111,6 +111,7 @@
 
 
 use std::iter::Iterator;
+use std::ops::Range;
 
 use array::traits::*;
 
@@ -144,6 +145,7 @@ pub struct ArrayView<'a> {
 
 /// Iterator over row or column views of a dense matrix.
 pub struct ArrayIterator<'a> {
+    stop: usize,
     idx: usize,
     axis: ArrayIteratorAxis,
     array: &'a Array,
@@ -155,12 +157,7 @@ impl<'a> Iterator for ArrayIterator<'a> {
 
     fn next(&mut self) -> Option<ArrayView<'a>> {
 
-        let bound = match self.axis {
-            ArrayIteratorAxis::Row => self.array.rows,
-            ArrayIteratorAxis::Column => self.array.cols,
-        };
-
-        let result = if self.idx < bound {
+        let result = if self.idx < self.stop {
             Some(ArrayView {
                 idx: self.idx,
                 axis: self.axis,
@@ -182,6 +179,7 @@ impl<'a> RowIterable for &'a Array {
     type Output = ArrayIterator<'a>;
     fn iter_rows(self) -> ArrayIterator<'a> {
         ArrayIterator {
+            stop: self.rows(),
             idx: 0,
             axis: ArrayIteratorAxis::Row,
             array: self,
@@ -196,6 +194,21 @@ impl<'a> RowIterable for &'a Array {
             array: self,
         }
     }
+
+    fn iter_rows_range(self, range: Range<usize>) -> ArrayIterator<'a> {
+        let stop = if range.end > self.rows {
+            self.rows
+        } else {
+            range.end
+        };
+
+        ArrayIterator {
+            stop: stop,
+            idx: range.start,
+            axis: ArrayIteratorAxis::Row,
+            array: self,
+        }
+    }
 }
 
 
@@ -204,6 +217,7 @@ impl<'a> ColumnIterable for &'a Array {
     type Output = ArrayIterator<'a>;
     fn iter_columns(self) -> ArrayIterator<'a> {
         ArrayIterator {
+            stop: self.cols(),
             idx: 0,
             axis: ArrayIteratorAxis::Column,
             array: self,
@@ -214,6 +228,21 @@ impl<'a> ColumnIterable for &'a Array {
         assert!(idx < self.cols);
         ArrayView {
             idx: idx,
+            axis: ArrayIteratorAxis::Column,
+            array: self,
+        }
+    }
+
+    fn iter_columns_range(self, range: Range<usize>) -> ArrayIterator<'a> {
+        let stop = if range.end > self.cols {
+            self.cols
+        } else {
+            range.end
+        };
+
+        ArrayIterator {
+            stop: stop,
+            idx: range.start,
             axis: ArrayIteratorAxis::Column,
             array: self,
         }
@@ -1016,6 +1045,23 @@ mod tests {
             for (i, v) in col.iter().enumerate() {
                 assert!(v == arr.get(i, j));
             }
+        }
+    }
+
+    use datasets::iris;
+
+    #[test]
+    fn range_iteration() {
+        let (data, _) = iris::load_data();
+
+        let (start, stop) = (5, 10);
+
+        for (row_num, row) in data.iter_rows_range(start..stop).enumerate() {
+            for (col_idx, value) in row.iter_nonzero() {
+                assert!(value == data.get(start + row_num, col_idx));
+            }
+
+            assert!(row_num < (stop - start));
         }
     }
 }

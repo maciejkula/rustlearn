@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["SupervisedModel",""]]});
+initSidebarItems({"trait":[["ParallelPredict","Applies to models capable of making predictions in a parallel fashion."],["ParallelSupervisedModel","Applies to models capable of being trained in a parallel fashion."],["SupervisedModel","Trait describing supervised models."]]});

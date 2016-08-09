@@ -194,7 +194,6 @@
 <span id="151">151</span>
 <span id="152">152</span>
 <span id="153">153</span>
-<span id="154">154</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Validation via repeated random shuffling</span>
 <span class='doccomment'>//! of the data and splitting into a training and test set.</span>
@@ -226,7 +225,7 @@
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>iter</span>::<span class='ident'>Iterator</span>;
 
 <span class='kw'>use</span> <span class='ident'>rand</span>;
-<span class='kw'>use</span> <span class='ident'>rand</span>::{<span class='ident'>Rng</span>};
+<span class='kw'>use</span> <span class='ident'>rand</span>::<span class='ident'>Rng</span>;
 
 
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>ShuffleSplit</span> {
@@ -272,14 +271,13 @@
     <span class='kw'>type</span> <span class='ident'>Item</span> <span class='op'>=</span> (<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span>);
     <span class='kw'>fn</span> <span class='ident'>next</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span>(<span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>usize</span><span class='op'>&gt;</span>)<span class='op'>&gt;</span> {
 
-        <span class='kw'>let</span> <span class='ident'>ret</span> <span class='op'>=</span> <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>iter</span> <span class='op'>&lt;</span> <span class='self'>self</span>.<span class='ident'>n_iter</span> {
-            <span class='boolval'>true</span> <span class='op'>=&gt;</span> {
-                <span class='kw'>let</span> <span class='ident'>split_idx</span>: <span class='ident'>usize</span> <span class='op'>=</span> (<span class='self'>self</span>.<span class='ident'>n</span> <span class='kw'>as</span> <span class='ident'>f32</span> <span class='op'>*</span> (<span class='number'>1.0</span> <span class='op'>-</span> <span class='self'>self</span>.<span class='ident'>test_size</span>)).<span class='ident'>floor</span>() <span class='kw'>as</span> <span class='ident'>usize</span>;
-                <span class='kw'>let</span> <span class='ident'>shuffled_indices</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>get_shuffled_indices</span>();
-                <span class='kw'>let</span> (<span class='ident'>train</span>, <span class='ident'>test</span>) <span class='op'>=</span> <span class='ident'>shuffled_indices</span>.<span class='ident'>split_at</span>(<span class='ident'>split_idx</span>);
-                <span class='prelude-val'>Some</span>((<span class='ident'>train</span>.<span class='ident'>to_owned</span>(), <span class='ident'>test</span>.<span class='ident'>to_owned</span>()))
-            }
-            <span class='boolval'>false</span> <span class='op'>=&gt;</span> <span class='prelude-val'>None</span>,
+        <span class='kw'>let</span> <span class='ident'>ret</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>iter</span> <span class='op'>&lt;</span> <span class='self'>self</span>.<span class='ident'>n_iter</span> {
+            <span class='kw'>let</span> <span class='ident'>split_idx</span>: <span class='ident'>usize</span> <span class='op'>=</span> (<span class='self'>self</span>.<span class='ident'>n</span> <span class='kw'>as</span> <span class='ident'>f32</span> <span class='op'>*</span> (<span class='number'>1.0</span> <span class='op'>-</span> <span class='self'>self</span>.<span class='ident'>test_size</span>)).<span class='ident'>floor</span>() <span class='kw'>as</span> <span class='ident'>usize</span>;
+            <span class='kw'>let</span> <span class='ident'>shuffled_indices</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>get_shuffled_indices</span>();
+            <span class='kw'>let</span> (<span class='ident'>train</span>, <span class='ident'>test</span>) <span class='op'>=</span> <span class='ident'>shuffled_indices</span>.<span class='ident'>split_at</span>(<span class='ident'>split_idx</span>);
+            <span class='prelude-val'>Some</span>((<span class='ident'>train</span>.<span class='ident'>to_owned</span>(), <span class='ident'>test</span>.<span class='ident'>to_owned</span>()))
+        } <span class='kw'>else</span> {
+            <span class='prelude-val'>None</span>
         };
 
         <span class='self'>self</span>.<span class='ident'>iter</span> <span class='op'>+=</span> <span class='number'>1</span>;

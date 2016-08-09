@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Hyperparameters` struct in crate `rustlearn`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Hyperparameters">
+
+    <title>rustlearn::svm::libsvm::svc::Hyperparameters - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../../../index.html'>rustlearn</a>::<wbr><a href='../../index.html'>svm</a>::<wbr><a href='../index.html'>libsvm</a>::<wbr><a href='index.html'>svc</a></p><script>window.sidebarCurrent = {name: 'Hyperparameters', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../../../index.html'>rustlearn</a>::<wbr><a href='../../index.html'>svm</a>::<wbr><a href='../index.html'>libsvm</a>::<wbr><a href='index.html'>svc</a>::<wbr><a class='struct' href=''>Hyperparameters</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-3085' class='srclink' href='../../../../src/rustlearn/svm/libsvm/svc.rs.html#16-20' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Hyperparameters {
+    // some fields omitted
+}</pre><div class='docblock'><p>Hyperparameters for the SVC model.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../../../rustlearn/svm/libsvm/svc/struct.Hyperparameters.html' title='rustlearn::svm::libsvm::svc::Hyperparameters'>Hyperparameters</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(dim: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, kernel: <a class='enum' href='../../../../rustlearn/svm/libsvm/svc/enum.KernelType.html' title='rustlearn::svm::libsvm::svc::KernelType'>KernelType</a>, num_classes: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../../../rustlearn/svm/libsvm/svc/struct.Hyperparameters.html' title='rustlearn::svm::libsvm::svc::Hyperparameters'>Hyperparameters</a></code></h4>
+<h4 id='method.C' class='method'><code>fn <a href='#method.C' class='fnname'>C</a>(&amp;mut self, C: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>) -&gt; &amp;mut <a class='struct' href='../../../../rustlearn/svm/libsvm/svc/struct.Hyperparameters.html' title='rustlearn::svm::libsvm::svc::Hyperparameters'>Hyperparameters</a></code></h4>
+<div class='docblock'><p>Set the regularization parameter <code>C</code>; smaller values
+mean more regularization.
+Default is <code>1.0</code>.</p>
+</div><h4 id='method.degree' class='method'><code>fn <a href='#method.degree' class='fnname'>degree</a>(&amp;mut self, degree: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i32.html'>i32</a>) -&gt; &amp;mut <a class='struct' href='../../../../rustlearn/svm/libsvm/svc/struct.Hyperparameters.html' title='rustlearn::svm::libsvm::svc::Hyperparameters'>Hyperparameters</a></code></h4>
+<div class='docblock'><p>Set the degree of the polynomial kernel. No effect on other
+kernels. Default: 3.</p>
+</div><h4 id='method.gamma' class='method'><code>fn <a href='#method.gamma' class='fnname'>gamma</a>(&amp;mut self, gamma: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>) -&gt; &amp;mut <a class='struct' href='../../../../rustlearn/svm/libsvm/svc/struct.Hyperparameters.html' title='rustlearn::svm::libsvm::svc::Hyperparameters'>Hyperparameters</a></code></h4>
+<div class='docblock'><p>Set the gamma parameter of the RBF kernel.
+Default is <code>1 / self.dim</code>.</p>
+</div><h4 id='method.coef0' class='method'><code>fn <a href='#method.coef0' class='fnname'>coef0</a>(&amp;mut self, coef0: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>) -&gt; &amp;mut <a class='struct' href='../../../../rustlearn/svm/libsvm/svc/struct.Hyperparameters.html' title='rustlearn::svm::libsvm::svc::Hyperparameters'>Hyperparameters</a></code></h4>
+<div class='docblock'><p>Set the coef0 parameter for the sigmoid kernel.
+Default is <code>0.0</code>.</p>
+</div><h4 id='method.cache_size' class='method'><code>fn <a href='#method.cache_size' class='fnname'>cache_size</a>(&amp;mut self, cache_size: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f64.html'>f64</a>) -&gt; &amp;mut <a class='struct' href='../../../../rustlearn/svm/libsvm/svc/struct.Hyperparameters.html' title='rustlearn::svm::libsvm::svc::Hyperparameters'>Hyperparameters</a></code></h4>
+<div class='docblock'><p>Set the <code>libsvm</code> cache size, in megabytes.
+Default is <code>100.0</code>.</p>
+</div><h4 id='method.build' class='method'><code>fn <a href='#method.build' class='fnname'>build</a>(&amp;self) -&gt; <a class='struct' href='../../../../rustlearn/svm/libsvm/svc/struct.SVC.html' title='rustlearn::svm::libsvm::svc::SVC'>SVC</a></code></h4>
+<div class='docblock'><p>Build the SVC model. <code>libsvm</code> natively supports multiclass
+problems via one-vs-one (OvO) estimation, so no one-vs-rest
+wrapper is provided.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../../../../rustlearn/svm/libsvm/svc/struct.Hyperparameters.html' title='rustlearn::svm::libsvm::svc::Hyperparameters'>Hyperparameters</a></code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../../../../rustlearn/svm/libsvm/svc/struct.Hyperparameters.html' title='rustlearn::svm::libsvm::svc::Hyperparameters'>Hyperparameters</a></code></h4>
+<h4 id='method.clone_from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Decodable.html' title='rustc_serialize::serialize::Decodable'>Decodable</a> for <a class='struct' href='../../../../rustlearn/svm/libsvm/svc/struct.Hyperparameters.html' title='rustlearn::svm::libsvm::svc::Hyperparameters'>Hyperparameters</a></code></h3><div class='impl-items'><h4 id='method.decode' class='method'><code>fn <a href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Decodable.html#method.decode' class='fnname'>decode</a>&lt;__D: <a class='trait' href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Decoder.html' title='rustc_serialize::serialize::Decoder'>Decoder</a>&gt;(__arg_0: &amp;mut __D) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../../../../rustlearn/svm/libsvm/svc/struct.Hyperparameters.html' title='rustlearn::svm::libsvm::svc::Hyperparameters'>Hyperparameters</a>, __D::Error&gt;</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Encodable.html' title='rustc_serialize::serialize::Encodable'>Encodable</a> for <a class='struct' href='../../../../rustlearn/svm/libsvm/svc/struct.Hyperparameters.html' title='rustlearn::svm::libsvm::svc::Hyperparameters'>Hyperparameters</a></code></h3><div class='impl-items'><h4 id='method.encode' class='method'><code>fn <a href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Encodable.html#method.encode' class='fnname'>encode</a>&lt;__S: <a class='trait' href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Encoder.html' title='rustc_serialize::serialize::Encoder'>Encoder</a>&gt;(&amp;self, __arg_0: &amp;mut __S) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, __S::Error&gt;</code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../../";
+        window.currentCrate = "rustlearn";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../../../jquery.js"></script>
+    <script src="../../../../main.js"></script>
+    
+    <script defer src="../../../../search-index.js"></script>
+</body>
+</html>

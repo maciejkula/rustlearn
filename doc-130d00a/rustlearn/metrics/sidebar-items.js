@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["accuracy_score","Measure classifier accuracy"],["roc_auc_score","Compute the ROC AUC score for a binary classification problem."]]});

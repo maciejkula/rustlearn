@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../main.css">
+    
 
     
     
@@ -43,10 +44,10 @@
 
     <section id='main' class="content trait">
 <h1 class='fqn'><span class='in-band'>Trait <a href='../../index.html'>rustlearn</a>::<wbr><a href='../index.html'>array</a>::<wbr><a href='index.html'>traits</a>::<wbr><a class='trait' href=''>IndexableMatrix</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-804' class='srclink' href='../../../src/rustlearn/array/traits.rs.html#16-70' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-724' class='srclink' href='../../../src/rustlearn/src/array/traits.rs.html#16-69' title='goto source code'>[src]</a></span></h1>
 <pre class='rust trait'>pub trait IndexableMatrix {
     fn <a href='#tymethod.rows' class='fnname'>rows</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>;
     fn <a href='#tymethod.cols' class='fnname'>cols</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>;
@@ -86,12 +87,12 @@ without bounds checking.</p>
 </div></div>
         <h2 id='implementors'>Implementors</h2>
         <ul class='item-list' id='implementors-list'>
-    <li><code>impl <a class='trait' href='../../../rustlearn/array/traits/trait.IndexableMatrix.html' title='rustlearn::array::traits::IndexableMatrix'>IndexableMatrix</a> for <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></li>
-<li><code>impl <a class='trait' href='../../../rustlearn/array/traits/trait.IndexableMatrix.html' title='rustlearn::array::traits::IndexableMatrix'>IndexableMatrix</a> for <a class='struct' href='../../../rustlearn/array/sparse/struct.SparseRowArray.html' title='rustlearn::array::sparse::SparseRowArray'>SparseRowArray</a></code></li>
-<li><code>impl <a class='trait' href='../../../rustlearn/array/traits/trait.IndexableMatrix.html' title='rustlearn::array::traits::IndexableMatrix'>IndexableMatrix</a> for <a class='struct' href='../../../rustlearn/array/sparse/struct.SparseColumnArray.html' title='rustlearn::array::sparse::SparseColumnArray'>SparseColumnArray</a></code></li>
+    <li><code>impl IndexableMatrix for <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></li>
+<li><code>impl IndexableMatrix for <a class='struct' href='../../../rustlearn/array/sparse/struct.SparseRowArray.html' title='rustlearn::array::sparse::SparseRowArray'>SparseRowArray</a></code></li>
+<li><code>impl IndexableMatrix for <a class='struct' href='../../../rustlearn/array/sparse/struct.SparseColumnArray.html' title='rustlearn::array::sparse::SparseColumnArray'>SparseColumnArray</a></code></li>
 </ul><script type="text/javascript" async
-                              src="../../../implementors/rustlearn/array/traits/trait.IndexableMatrix.js">
-                      </script></section>
+                         src="../../../implementors/rustlearn/array/traits/trait.IndexableMatrix.js">
+                 </script></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -114,6 +115,8 @@ without bounds checking.</p>
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 
@@ -134,7 +137,7 @@ without bounds checking.</p>
 
                 <p>
                     Search functions by type signature (e.g.
-                    <code>vec -> usize</code>)
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
                 </p>
             </div>
         </div>

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["KernelType","Type of the kernel used by the SVM."]]});

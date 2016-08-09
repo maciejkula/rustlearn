@@ -124,6 +124,11 @@
             focusSearchBar();
             break;
 
+        case "+":
+            ev.preventDefault();
+            toggleAllDocs();
+            break;
+
         case "?":
             if (ev.shiftKey && $("#help").hasClass("hidden")) {
                 ev.preventDefault();
@@ -280,7 +285,7 @@
                 var parts = val.split("->").map(trimmer);
                 var input = parts[0];
                 // sort inputs so that order does not matter
-                var inputs = input.split(",").map(trimmer).sort();
+                var inputs = input.split(",").map(trimmer).sort().toString();
                 var output = parts[1];
 
                 for (var i = 0; i < nSearchWords; ++i) {
@@ -296,8 +301,8 @@
 
                     // allow searching for void (no output) functions as well
                     var typeOutput = type.output ? type.output.name : "";
-                    if (inputs.toString() === typeInputs.toString() &&
-                        output == typeOutput) {
+                    if ((inputs === "*" || inputs === typeInputs.toString()) &&
+                        (output === "*" || output == typeOutput)) {
                         results.push({id: i, index: -1, dontValidate: true});
                     }
                 }
@@ -580,6 +585,9 @@
                         displayPath = "";
                         href = rootPath + item.path.replace(/::/g, '/') +
                                '/' + type + '.' + name + '.html';
+                    } else if (type === "externcrate") {
+                        displayPath = "";
+                        href = rootPath + name + '/index.html';
                     } else if (item.parent !== undefined) {
                         var myparent = item.parent;
                         var anchor = '#' + type + '.' + name;
@@ -678,6 +686,16 @@
             for (var crate in rawSearchIndex) {
                 if (!rawSearchIndex.hasOwnProperty(crate)) { continue; }
 
+                searchWords.push(crate);
+                searchIndex.push({
+                    crate: crate,
+                    ty: 1, // == ExternCrate
+                    name: crate,
+                    path: "",
+                    desc: rawSearchIndex[crate].doc,
+                    type: null,
+                });
+
                 // an array of [(Number) item type,
                 //              (String) name,
                 //              (String) full path or empty string for previous path,
@@ -727,7 +745,9 @@
             $(".search-input").on("keyup input",function() {
                 clearTimeout(searchTimeout);
                 if ($(this).val().length === 0) {
-                    window.history.replaceState("", "std - Rust", "?search=");
+                    if (browserSupportsHistoryApi()) {
+                        history.replaceState("", "std - Rust", "?search=");
+                    }
                     $('#main.content').removeClass('hidden');
                     $('#search.content').addClass('hidden');
                 } else {
@@ -864,12 +884,16 @@
             sidebar.append(div);
         }
 
+        block("primitive", "Primitive Types");
         block("mod", "Modules");
+        block("macro", "Macros");
         block("struct", "Structs");
         block("enum", "Enums");
+        block("constant", "Constants");
+        block("static", "Statics");
         block("trait", "Traits");
         block("fn", "Functions");
-        block("macro", "Macros");
+        block("type", "Type Definitions");
     }
 
     window.initSidebarItems = initSidebarItems;
@@ -916,7 +940,7 @@
         return "\u2212"; // "\u2212" is '−' minus sign
     }
 
-    $("#toggle-all-docs").on("click", function() {
+    function toggleAllDocs() {
         var toggle = $("#toggle-all-docs");
         if (toggle.hasClass("will-expand")) {
             toggle.removeClass("will-expand");
@@ -935,7 +959,9 @@
             $(".toggle-wrapper").addClass("collapsed");
             $(".collapse-toggle").children(".inner").text(labelForToggleButton(true));
         }
-    });
+    }
+
+    $("#toggle-all-docs").on("click", toggleAllDocs);
 
     $(document).on("click", ".collapse-toggle", function() {
         var toggle = $(this);
@@ -966,7 +992,7 @@
         $(".method").each(function() {
             if ($(this).next().is(".docblock") ||
                 ($(this).next().is(".stability") && $(this).next().next().is(".docblock"))) {
-                    $(this).children().first().after(toggle.clone());
+                    $(this).children().last().after(toggle.clone());
             }
         });
 
@@ -983,7 +1009,7 @@
         var prev_id = 0;
 
         function set_fragment(name) {
-            if (history.replaceState) {
+            if (browserSupportsHistoryApi()) {
                 history.replaceState(null, null, '#' + name);
                 $(window).trigger('hashchange');
             } else {

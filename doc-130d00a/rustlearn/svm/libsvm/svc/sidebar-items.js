@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["KernelType","Type of the kernel used by the SVM."]],"struct":[["Hyperparameters","Hyperparameters for the SVC model."],["SVC","Support Vector Classifier provided by the `libsvm` library."]]});

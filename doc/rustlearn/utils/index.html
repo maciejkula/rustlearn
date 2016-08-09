@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     
     
@@ -43,10 +44,10 @@
 
     <section id='main' class="content mod">
 <h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>rustlearn</a>::<wbr><a class='mod' href=''>utils</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-3245' class='srclink' href='../../src/rustlearn/utils/mod.rs.html#1-73' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-3649' class='srclink' href='../../src/rustlearn/src/utils/mod.rs.html#1-83' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'><p>Internal utils.</p>
 
 <p>Used mostly for checking the inputs to model fitting routines.</p>
@@ -55,44 +56,37 @@
 and subject to change.</p>
 </div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
-                    <tr class=' module-item'>
-                        <td><a class='struct' href='struct.EncodableRng.html'
-                               title='rustlearn::utils::EncodableRng'>EncodableRng</a></td>
-                        <td class='docblock short'>
-                             <p>Wrapper for making random number generators serializable.
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.EncodableRng.html'
+                                  title='rustlearn::utils::EncodableRng'>EncodableRng</a></td>
+                           <td class='docblock short'>
+                                <p>Wrapper for making random number generators serializable.
 Does no actual encoding, and merely creates a new
 generator on decoding.</p>
-
-                        </td>
-                    </tr>
-                </table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+                           </td>
+                       </tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
 <table>
-                    <tr class=' module-item'>
-                        <td><a class='fn' href='fn.check_data_dimensionality.html'
-                               title='rustlearn::utils::check_data_dimensionality'>check_data_dimensionality</a></td>
-                        <td class='docblock short'>
-                             <p>Check compatibility of the model dimensions and the number of columns in X.</p>
-
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='fn' href='fn.check_matched_dimensions.html'
-                               title='rustlearn::utils::check_matched_dimensions'>check_matched_dimensions</a></td>
-                        <td class='docblock short'>
-                             
-                        </td>
-                    </tr>
-                
-                    <tr class=' module-item'>
-                        <td><a class='fn' href='fn.check_valid_labels.html'
-                               title='rustlearn::utils::check_valid_labels'>check_valid_labels</a></td>
-                        <td class='docblock short'>
-                             <p>Check that the input array contains valid binary classification labels.</p>
-
-                        </td>
-                    </tr>
-                </table></section>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.check_data_dimensionality.html'
+                                  title='rustlearn::utils::check_data_dimensionality'>check_data_dimensionality</a></td>
+                           <td class='docblock short'>
+                                <p>Check compatibility of the model dimensions and the number of columns in X.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.check_matched_dimensions.html'
+                                  title='rustlearn::utils::check_matched_dimensions'>check_matched_dimensions</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='fn' href='fn.check_valid_labels.html'
+                                  title='rustlearn::utils::check_valid_labels'>check_valid_labels</a></td>
+                           <td class='docblock short'>
+                                <p>Check that the input array contains valid binary classification labels.</p>
+                           </td>
+                       </tr></table></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -115,6 +109,8 @@ generator on decoding.</p>
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 
@@ -135,7 +131,7 @@ generator on decoding.</p>
 
                 <p>
                     Search functions by type signature (e.g.
-                    <code>vec -> usize</code>)
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
                 </p>
             </div>
         </div>

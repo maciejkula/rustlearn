@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../main.css">
+    
 
     
     
@@ -43,23 +44,29 @@
 
     <section id='main' class="content struct">
 <h1 class='fqn'><span class='in-band'>Struct <a href='../../index.html'>rustlearn</a>::<wbr><a href='../index.html'>feature_extraction</a>::<wbr><a href='index.html'>dict_vectorizer</a>::<wbr><a class='struct' href=''>DictVectorizer</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-1762' class='srclink' href='../../../src/rustlearn/feature_extraction/dict_vectorizer.rs.html#32-35' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-1828' class='srclink' href='../../../src/rustlearn/src/feature_extraction/dict_vectorizer.rs.html#32-35' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct DictVectorizer {
     // some fields omitted
-}</pre><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../../rustlearn/feature_extraction/dict_vectorizer/struct.DictVectorizer.html' title='rustlearn::feature_extraction::dict_vectorizer::DictVectorizer'>DictVectorizer</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class='struct' href='../../../rustlearn/feature_extraction/dict_vectorizer/struct.DictVectorizer.html' title='rustlearn::feature_extraction::dict_vectorizer::DictVectorizer'>DictVectorizer</a></code></h4>
+}</pre><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../../../rustlearn/feature_extraction/dict_vectorizer/struct.DictVectorizer.html' title='rustlearn::feature_extraction::dict_vectorizer::DictVectorizer'>DictVectorizer</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-1831' class='srclink' href='../../../src/rustlearn/src/feature_extraction/dict_vectorizer.rs.html#38-92' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class='struct' href='../../../rustlearn/feature_extraction/dict_vectorizer/struct.DictVectorizer.html' title='rustlearn::feature_extraction::dict_vectorizer::DictVectorizer'>DictVectorizer</a></code></h4>
 <div class='docblock'><p>Create a new <code>DictVectorizer</code>.</p>
 </div><h4 id='method.partial_fit' class='method'><code>fn <a href='#method.partial_fit' class='fnname'>partial_fit</a>(&amp;mut self, row: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, name: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>, value: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.f32.html'>f32</a>)</code></h4>
 <div class='docblock'><p>Set the feature value of a named feature in a given row.</p>
 </div><h4 id='method.transform' class='method'><code>fn <a href='#method.transform' class='fnname'>transform</a>(&amp;self) -&gt; <a class='struct' href='../../../rustlearn/array/sparse/struct.SparseRowArray.html' title='rustlearn::array::sparse::SparseRowArray'>SparseRowArray</a></code></h4>
 <div class='docblock'><p>Transform the accumulated data into a sparse array.</p>
-</div><h4 id='method.dictionary' class='method'><code>fn <a href='#method.dictionary' class='fnname'>dictionary</a>(&amp;self) -&gt; &amp;<a class='struct' href='https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html' title='std::collections::hash::map::HashMap'>HashMap</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>)</a>&gt;</code></h4>
+</div><h4 id='method.dictionary' class='method'><code>fn <a href='#method.dictionary' class='fnname'>dictionary</a>(&amp;self) -&gt; &amp;<a class='struct' href='https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html' title='std::collections::hash::map::HashMap'>HashMap</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,&nbsp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a>&gt;</code></h4>
 <div class='docblock'><p>Return a reference to the feature dictionary, mapping
 feature names to their (column index, occurrence count).</p>
-</div></div><h2 id='implementations'>Trait Implementations</h2><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Decodable.html' title='rustc_serialize::serialize::Decodable'>Decodable</a> for <a class='struct' href='../../../rustlearn/feature_extraction/dict_vectorizer/struct.DictVectorizer.html' title='rustlearn::feature_extraction::dict_vectorizer::DictVectorizer'>DictVectorizer</a></code></h3><div class='impl-items'><h4 id='method.decode' class='method'><code>fn <a href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Decodable.html#method.decode' class='fnname'>decode</a>&lt;__D: <a class='trait' href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Decoder.html' title='rustc_serialize::serialize::Decoder'>Decoder</a>&gt;(__arg_0: &amp;mut __D) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../../../rustlearn/feature_extraction/dict_vectorizer/struct.DictVectorizer.html' title='rustlearn::feature_extraction::dict_vectorizer::DictVectorizer'>DictVectorizer</a>, __D::Error&gt;</code></h4>
-</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Encodable.html' title='rustc_serialize::serialize::Encodable'>Encodable</a> for <a class='struct' href='../../../rustlearn/feature_extraction/dict_vectorizer/struct.DictVectorizer.html' title='rustlearn::feature_extraction::dict_vectorizer::DictVectorizer'>DictVectorizer</a></code></h3><div class='impl-items'><h4 id='method.encode' class='method'><code>fn <a href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Encodable.html#method.encode' class='fnname'>encode</a>&lt;__S: <a class='trait' href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Encoder.html' title='rustc_serialize::serialize::Encoder'>Encoder</a>&gt;(&amp;self, __arg_0: &amp;mut __S) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, __S::Error&gt;</code></h4>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html' title='core::default::Default'>Default</a> for <a class='struct' href='../../../rustlearn/feature_extraction/dict_vectorizer/struct.DictVectorizer.html' title='rustlearn::feature_extraction::dict_vectorizer::DictVectorizer'>DictVectorizer</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-1801' class='srclink' href='../../../src/rustlearn/src/feature_extraction/dict_vectorizer.rs.html#31' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.default' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default' class='fnname'>default</a>() -&gt; <a class='struct' href='../../../rustlearn/feature_extraction/dict_vectorizer/struct.DictVectorizer.html' title='rustlearn::feature_extraction::dict_vectorizer::DictVectorizer'>DictVectorizer</a></code></h4>
+<div class='docblock'><p>Returns the &quot;default value&quot; for a type. <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default">Read more</a></p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='../../../rustc_serialize/serialize/trait.Decodable.html' title='rustc_serialize::serialize::Decodable'>Decodable</a> for <a class='struct' href='../../../rustlearn/feature_extraction/dict_vectorizer/struct.DictVectorizer.html' title='rustlearn::feature_extraction::dict_vectorizer::DictVectorizer'>DictVectorizer</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-1803' class='srclink' href='../../../src/rustlearn/src/feature_extraction/dict_vectorizer.rs.html#31' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.decode' class='method'><code>fn <a href='../../../rustc_serialize/serialize/trait.Decodable.html#tymethod.decode' class='fnname'>decode</a>&lt;__D:&nbsp;<a class='trait' href='../../../rustc_serialize/serialize/trait.Decoder.html' title='rustc_serialize::serialize::Decoder'>Decoder</a>&gt;(__arg_0: &amp;mut __D) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../../../rustlearn/feature_extraction/dict_vectorizer/struct.DictVectorizer.html' title='rustlearn::feature_extraction::dict_vectorizer::DictVectorizer'>DictVectorizer</a>,&nbsp;__D::Error&gt;</code></h4>
+</div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='../../../rustc_serialize/serialize/trait.Encodable.html' title='rustc_serialize::serialize::Encodable'>Encodable</a> for <a class='struct' href='../../../rustlearn/feature_extraction/dict_vectorizer/struct.DictVectorizer.html' title='rustlearn::feature_extraction::dict_vectorizer::DictVectorizer'>DictVectorizer</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-1813' class='srclink' href='../../../src/rustlearn/src/feature_extraction/dict_vectorizer.rs.html#31' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.encode' class='method'><code>fn <a href='../../../rustc_serialize/serialize/trait.Encodable.html#tymethod.encode' class='fnname'>encode</a>&lt;__S:&nbsp;<a class='trait' href='../../../rustc_serialize/serialize/trait.Encoder.html' title='rustc_serialize::serialize::Encoder'>Encoder</a>&gt;(&amp;self, __arg_0: &amp;mut __S) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>,&nbsp;__S::Error&gt;</code></h4>
 </div></section>
     <section id='search' class="content hidden"></section>
 
@@ -83,6 +90,8 @@ feature names to their (column index, occurrence count).</p>
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 
@@ -103,7 +112,7 @@ feature names to their (column index, occurrence count).</p>
 
                 <p>
                     Search functions by type signature (e.g.
-                    <code>vec -> usize</code>)
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
                 </p>
             </div>
         </div>

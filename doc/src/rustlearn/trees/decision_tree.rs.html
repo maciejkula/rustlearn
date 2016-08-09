@@ -1395,20 +1395,6 @@
 <span id="1352">1352</span>
 <span id="1353">1353</span>
 <span id="1354">1354</span>
-<span id="1355">1355</span>
-<span id="1356">1356</span>
-<span id="1357">1357</span>
-<span id="1358">1358</span>
-<span id="1359">1359</span>
-<span id="1360">1360</span>
-<span id="1361">1361</span>
-<span id="1362">1362</span>
-<span id="1363">1363</span>
-<span id="1364">1364</span>
-<span id="1365">1365</span>
-<span id="1366">1366</span>
-<span id="1367">1367</span>
-<span id="1368">1368</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! A two-class decision tree classifer.</span>
 <span class='doccomment'>//!</span>
@@ -1575,8 +1561,8 @@
     <span class='kw'>fn</span> <span class='ident'>sort</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
         <span class='self'>self</span>.<span class='ident'>xy_pairs</span>.<span class='ident'>sort_by</span>(<span class='op'>|</span><span class='ident'>a</span>, <span class='ident'>b</span><span class='op'>|</span> {
             <span class='ident'>a</span>.<span class='number'>0</span>
-             .<span class='ident'>partial_cmp</span>(<span class='kw-2'>&amp;</span><span class='ident'>b</span>.<span class='number'>0</span>)
-             .<span class='ident'>unwrap_or</span>(<span class='ident'>Ordering</span>::<span class='ident'>Equal</span>)
+                .<span class='ident'>partial_cmp</span>(<span class='kw-2'>&amp;</span><span class='ident'>b</span>.<span class='number'>0</span>)
+                .<span class='ident'>unwrap_or</span>(<span class='ident'>Ordering</span>::<span class='ident'>Equal</span>)
         });
     }
 
@@ -1616,7 +1602,7 @@
 }
 
 
-<span class='doccomment'>/// Hyperparameters for a DecisionTree model.</span>
+<span class='doccomment'>/// Hyperparameters for a `DecisionTree` model.</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>RustcEncodable</span>, <span class='ident'>RustcDecodable</span>)]</span>
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>)]</span>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Hyperparameters</span> {
@@ -1807,7 +1793,7 @@
             <span class='prelude-val'>Some</span>(<span class='kw-2'>ref</span> <span class='ident'>node</span>) <span class='op'>=&gt;</span> {
                 <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>data</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>with_capacity</span>(<span class='ident'>X</span>.<span class='ident'>rows</span>());
                 <span class='kw'>for</span> <span class='ident'>row_idx</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>X</span>.<span class='ident'>rows</span>() {
-                    <span class='ident'>data</span>.<span class='ident'>push</span>(<span class='self'>self</span>.<span class='ident'>query_tree_sparse</span>(<span class='kw-2'>&amp;</span><span class='ident'>node</span>, <span class='ident'>X</span>, <span class='ident'>row_idx</span>));
+                    <span class='ident'>data</span>.<span class='ident'>push</span>(<span class='self'>self</span>.<span class='ident'>query_tree_sparse</span>(<span class='ident'>node</span>, <span class='ident'>X</span>, <span class='ident'>row_idx</span>));
                 }
                 <span class='prelude-val'>Ok</span>(<span class='ident'>Array</span>::<span class='ident'>from</span>(<span class='ident'>data</span>))
             }
@@ -1840,7 +1826,7 @@
                     <span class='kw'>return</span> <span class='ident'>Node</span>::<span class='ident'>Leaf</span>{<span class='ident'>probability</span>: <span class='ident'>probability</span>};
                 }
 
-            <span class='comment'>// Multiple attemps to perform a split.</span>
+<span class='comment'>// Multiple attemps to perform a split.</span>
             <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='number'>10</span> {
 
                 <span class='ident'>feature_indices</span>.<span class='ident'>sample_indices</span>(<span class='ident'>candidate_features</span>,
@@ -1873,19 +1859,17 @@
                     }
                 }
 
-                <span class='kw'>let</span> (<span class='ident'>left_indices</span>, <span class='ident'>right_indices</span>) <span class='op'>=</span> <span class='ident'>DecisionTree</span>::<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>split_indices</span>(<span class='ident'>X</span>,
-                                                                                 <span class='ident'>indices</span>,
-                                                                                 <span class='ident'>best_feature_idx</span>,
-                                                                                 <span class='ident'>best_feature_threshold</span>);
+                <span class='kw'>let</span> (<span class='ident'>left_indices</span>, <span class='ident'>right_indices</span>) <span class='op'>=</span>
+                    <span class='ident'>DecisionTree</span>::<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>split_indices</span>(<span class='ident'>X</span>,
+                                                 <span class='ident'>indices</span>,
+                                                 <span class='ident'>best_feature_idx</span>,
+                                                 <span class='ident'>best_feature_threshold</span>);
 
                 <span class='kw'>if</span> <span class='ident'>left_indices</span>.<span class='ident'>len</span>() <span class='op'>&gt;</span> <span class='number'>0</span> <span class='op'>&amp;&amp;</span> <span class='ident'>right_indices</span>.<span class='ident'>len</span>() <span class='op'>&gt;</span> <span class='number'>0</span> {
 
-                    <span class='comment'>// Cannot split on binary feature more than one time</span>
-                    <span class='kw'>match</span> <span class='self'>self</span>.<span class='ident'>feature_types</span>[<span class='ident'>best_feature_idx</span>] {
-                        <span class='ident'>FeatureType</span>::<span class='ident'>Binary</span> <span class='op'>=&gt;</span> {
+<span class='comment'>// Cannot split on binary feature more than one time</span>
+                    <span class='kw'>if</span> <span class='kw'>let</span> <span class='ident'>FeatureType</span>::<span class='ident'>Binary</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>feature_types</span>[<span class='ident'>best_feature_idx</span>] {
                             <span class='ident'>feature_indices</span>.<span class='ident'>mark_as_used</span>(<span class='ident'>best_feature_position</span>);
-                        },
-                        _ <span class='op'>=&gt;</span> {}
                     }
 
                     <span class='kw'>let</span> <span class='ident'>num_used_features</span> <span class='op'>=</span> <span class='ident'>feature_indices</span>.<span class='ident'>num_used</span>;
@@ -1946,8 +1930,8 @@
         <span class='kw'>for</span> <span class='ident'>col</span> <span class='kw'>in</span> <span class='ident'>X</span>.<span class='ident'>iter_columns</span>() {
 
             <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>values</span> <span class='op'>=</span> <span class='ident'>col</span>.<span class='ident'>iter_nonzero</span>()
-                                .<span class='ident'>map</span>(<span class='op'>|</span>(_, <span class='ident'>val</span>)<span class='op'>|</span> <span class='ident'>val</span>)
-                                .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>();
+                .<span class='ident'>map</span>(<span class='op'>|</span>(_, <span class='ident'>val</span>)<span class='op'>|</span> <span class='ident'>val</span>)
+                .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>();
 
             <span class='comment'>// Add zero as a distrinct value</span>
             <span class='kw'>if</span> <span class='ident'>values</span>.<span class='ident'>len</span>() <span class='op'>&lt;</span> <span class='ident'>X</span>.<span class='ident'>rows</span>() {
@@ -1972,8 +1956,8 @@
             .<span class='ident'>iter</span>()
             .<span class='ident'>enumerate</span>()
             .<span class='ident'>filter</span>(<span class='op'>|</span><span class='kw-2'>&amp;</span>(_, <span class='ident'>feature_type</span>)<span class='op'>|</span> {
-                <span class='kw'>match</span> <span class='ident'>feature_type</span> {
-                    <span class='kw-2'>&amp;</span><span class='ident'>FeatureType</span>::<span class='ident'>Constant</span> <span class='op'>=&gt;</span> <span class='boolval'>false</span>,
+                <span class='kw'>match</span> <span class='op'>*</span><span class='ident'>feature_type</span> {
+                    <span class='ident'>FeatureType</span>::<span class='ident'>Constant</span> <span class='op'>=&gt;</span> <span class='boolval'>false</span>,
                     _ <span class='op'>=&gt;</span> <span class='boolval'>true</span>,
                 }
             })
@@ -2018,8 +2002,7 @@
             <span class='kw'>let</span> <span class='ident'>row_idx</span> <span class='op'>=</span> <span class='ident'>indices</span>[<span class='ident'>i</span>];
 
             <span class='kw'>if</span> <span class='ident'>X</span>.<span class='ident'>get</span>(<span class='ident'>row_idx</span>, <span class='ident'>feature_idx</span>) <span class='op'>&lt;=</span> <span class='ident'>threshold</span> {
-                <span class='ident'>indices</span>[<span class='ident'>i</span>] <span class='op'>=</span> <span class='ident'>indices</span>[<span class='ident'>num_left</span>];
-                <span class='ident'>indices</span>[<span class='ident'>num_left</span>] <span class='op'>=</span> <span class='ident'>row_idx</span>;
+                <span class='ident'>indices</span>.<span class='ident'>swap</span>(<span class='ident'>i</span>, <span class='ident'>num_left</span>);
                 <span class='ident'>num_left</span> <span class='op'>+=</span> <span class='number'>1</span>;
             }
         }
@@ -2105,7 +2088,7 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>cumulative_count</span> <span class='op'>=</span> <span class='number'>0.0</span>;
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>cumulative_y</span> <span class='op'>=</span> <span class='number'>0.0</span>;
 
-        <span class='kw'>for</span> <span class='kw-2'>&amp;</span>(<span class='ident'>x</span>, <span class='ident'>y</span>) <span class='kw'>in</span> <span class='ident'>values</span>.<span class='ident'>xy_pairs</span>.<span class='ident'>iter</span>() {
+        <span class='kw'>for</span> <span class='kw-2'>&amp;</span>(<span class='ident'>x</span>, <span class='ident'>y</span>) <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='ident'>values</span>.<span class='ident'>xy_pairs</span> {
 
             <span class='kw'>if</span> <span class='ident'>x</span> <span class='op'>==</span> <span class='number'>0.0</span> {
                 <span class='ident'>cumulative_count</span> <span class='op'>+=</span> <span class='ident'>values</span>.<span class='ident'>zero_count</span> <span class='kw'>as</span> <span class='ident'>f32</span>;
@@ -2185,13 +2168,10 @@
 
         <span class='kw'>let</span> <span class='ident'>x_nnz</span> <span class='op'>=</span> <span class='ident'>x</span>.<span class='ident'>nnz</span>() <span class='kw'>as</span> <span class='ident'>f32</span>;
 
-        <span class='kw'>match</span> <span class='ident'>x_nnz</span> <span class='op'>*</span> (<span class='ident'>indices</span>.<span class='ident'>len</span>() <span class='kw'>as</span> <span class='ident'>f32</span>).<span class='ident'>log</span>(<span class='number'>2.0</span>) <span class='op'>&lt;</span> <span class='ident'>x_nnz</span> <span class='op'>+</span> <span class='ident'>indices</span>.<span class='ident'>len</span>() <span class='kw'>as</span> <span class='ident'>f32</span> {
-            <span class='boolval'>true</span> <span class='op'>=&gt;</span> {
-                <span class='ident'>DecisionTree</span>::<span class='ident'>get_values_sparse_by_search</span>(<span class='ident'>x</span>, <span class='ident'>y</span>, <span class='ident'>num_positives</span>, <span class='ident'>indices</span>, <span class='ident'>values</span>);
-            }
-            <span class='boolval'>false</span> <span class='op'>=&gt;</span> {
-                <span class='ident'>DecisionTree</span>::<span class='ident'>get_values_sparse_by_iteration</span>(<span class='ident'>x</span>, <span class='ident'>y</span>, <span class='ident'>num_positives</span>, <span class='ident'>indices</span>, <span class='ident'>values</span>);
-            }
+        <span class='kw'>if</span> <span class='ident'>x_nnz</span> <span class='op'>*</span> (<span class='ident'>indices</span>.<span class='ident'>len</span>() <span class='kw'>as</span> <span class='ident'>f32</span>).<span class='ident'>log</span>(<span class='number'>2.0</span>) <span class='op'>&lt;</span> <span class='ident'>x_nnz</span> <span class='op'>+</span> <span class='ident'>indices</span>.<span class='ident'>len</span>() <span class='kw'>as</span> <span class='ident'>f32</span> {
+            <span class='ident'>DecisionTree</span>::<span class='ident'>get_values_sparse_by_search</span>(<span class='ident'>x</span>, <span class='ident'>y</span>, <span class='ident'>num_positives</span>, <span class='ident'>indices</span>, <span class='ident'>values</span>);
+        } <span class='kw'>else</span> {
+            <span class='ident'>DecisionTree</span>::<span class='ident'>get_values_sparse_by_iteration</span>(<span class='ident'>x</span>, <span class='ident'>y</span>, <span class='ident'>num_positives</span>, <span class='ident'>indices</span>, <span class='ident'>values</span>);
         }
 
         <span class='ident'>values</span>.<span class='ident'>sort</span>();
@@ -2209,36 +2189,32 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>indices_option</span> <span class='op'>=</span> <span class='ident'>indices_iter</span>.<span class='ident'>next</span>();
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>nonzero_option</span> <span class='op'>=</span> <span class='ident'>nonzero_iter</span>.<span class='ident'>next</span>();
 
-        <span class='kw'>loop</span> {
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='ident'>indices_idx</span>) <span class='op'>=</span> <span class='ident'>indices_option</span> {
-                <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>nonzero_idx</span>, <span class='ident'>nonzero_value</span>)) <span class='op'>=</span> <span class='ident'>nonzero_option</span> {
-                    <span class='kw'>match</span> <span class='ident'>indices_idx</span>.<span class='ident'>cmp</span>(<span class='kw-2'>&amp;</span><span class='ident'>nonzero_idx</span>) {
-                        <span class='comment'>// Haven&#39;t reached the first nonzero in column</span>
-                        <span class='ident'>Ordering</span>::<span class='ident'>Less</span> <span class='op'>=&gt;</span> {
-                            <span class='ident'>values</span>.<span class='ident'>push</span>(<span class='number'>0.0</span>, <span class='ident'>y</span>.<span class='ident'>get</span>(<span class='ident'>indices_idx</span>, <span class='number'>0</span>));
-                            <span class='ident'>indices_option</span> <span class='op'>=</span> <span class='ident'>indices_iter</span>.<span class='ident'>next</span>();
-                        }
-                        <span class='comment'>// Reached a nonzero at index we are interested in</span>
-                        <span class='ident'>Ordering</span>::<span class='ident'>Equal</span> <span class='op'>=&gt;</span> {
-                            <span class='ident'>values</span>.<span class='ident'>push</span>(<span class='ident'>nonzero_value</span>, <span class='ident'>y</span>.<span class='ident'>get</span>(<span class='ident'>nonzero_idx</span>, <span class='number'>0</span>));
-                            <span class='ident'>indices_option</span> <span class='op'>=</span> <span class='ident'>indices_iter</span>.<span class='ident'>next</span>();
-                            <span class='ident'>nonzero_option</span> <span class='op'>=</span> <span class='ident'>nonzero_iter</span>.<span class='ident'>next</span>();
-                        }
-                        <span class='comment'>// Move to the next nonzero value</span>
-                        <span class='ident'>Ordering</span>::<span class='ident'>Greater</span> <span class='op'>=&gt;</span> {
-                            <span class='ident'>nonzero_option</span> <span class='op'>=</span> <span class='ident'>nonzero_iter</span>.<span class='ident'>next</span>();
-                        }
+        <span class='kw'>while</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='ident'>indices_idx</span>) <span class='op'>=</span> <span class='ident'>indices_option</span> {
+            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Some</span>((<span class='ident'>nonzero_idx</span>, <span class='ident'>nonzero_value</span>)) <span class='op'>=</span> <span class='ident'>nonzero_option</span> {
+                <span class='kw'>match</span> <span class='ident'>indices_idx</span>.<span class='ident'>cmp</span>(<span class='kw-2'>&amp;</span><span class='ident'>nonzero_idx</span>) {
+                    <span class='comment'>// Haven&#39;t reached the first nonzero in column</span>
+                    <span class='ident'>Ordering</span>::<span class='ident'>Less</span> <span class='op'>=&gt;</span> {
+                        <span class='ident'>values</span>.<span class='ident'>push</span>(<span class='number'>0.0</span>, <span class='ident'>y</span>.<span class='ident'>get</span>(<span class='ident'>indices_idx</span>, <span class='number'>0</span>));
+                        <span class='ident'>indices_option</span> <span class='op'>=</span> <span class='ident'>indices_iter</span>.<span class='ident'>next</span>();
                     }
-                } <span class='kw'>else</span> {
-
-                    <span class='comment'>// We&#39;ve exhausted all nonzero indices</span>
-                    <span class='kw'>let</span> <span class='ident'>remaining_zeros</span> <span class='op'>=</span> <span class='ident'>indices</span>.<span class='ident'>len</span>() <span class='op'>-</span> <span class='ident'>values</span>.<span class='ident'>count</span>;
-                    <span class='kw'>let</span> <span class='ident'>remaining_positives</span> <span class='op'>=</span> <span class='ident'>num_positives</span> <span class='kw'>as</span> <span class='ident'>f32</span> <span class='op'>-</span> <span class='ident'>values</span>.<span class='ident'>total_y</span>;
-
-                    <span class='ident'>values</span>.<span class='ident'>fill_remaining_zeros</span>(<span class='ident'>remaining_zeros</span>, <span class='ident'>remaining_positives</span>);
-                    <span class='kw'>break</span>;
+                    <span class='comment'>// Reached a nonzero at index we are interested in</span>
+                    <span class='ident'>Ordering</span>::<span class='ident'>Equal</span> <span class='op'>=&gt;</span> {
+                        <span class='ident'>values</span>.<span class='ident'>push</span>(<span class='ident'>nonzero_value</span>, <span class='ident'>y</span>.<span class='ident'>get</span>(<span class='ident'>nonzero_idx</span>, <span class='number'>0</span>));
+                        <span class='ident'>indices_option</span> <span class='op'>=</span> <span class='ident'>indices_iter</span>.<span class='ident'>next</span>();
+                        <span class='ident'>nonzero_option</span> <span class='op'>=</span> <span class='ident'>nonzero_iter</span>.<span class='ident'>next</span>();
+                    }
+                    <span class='comment'>// Move to the next nonzero value</span>
+                    <span class='ident'>Ordering</span>::<span class='ident'>Greater</span> <span class='op'>=&gt;</span> {
+                        <span class='ident'>nonzero_option</span> <span class='op'>=</span> <span class='ident'>nonzero_iter</span>.<span class='ident'>next</span>();
+                    }
                 }
             } <span class='kw'>else</span> {
+
+                <span class='comment'>// We&#39;ve exhausted all nonzero indices</span>
+                <span class='kw'>let</span> <span class='ident'>remaining_zeros</span> <span class='op'>=</span> <span class='ident'>indices</span>.<span class='ident'>len</span>() <span class='op'>-</span> <span class='ident'>values</span>.<span class='ident'>count</span>;
+                <span class='kw'>let</span> <span class='ident'>remaining_positives</span> <span class='op'>=</span> <span class='ident'>num_positives</span> <span class='kw'>as</span> <span class='ident'>f32</span> <span class='op'>-</span> <span class='ident'>values</span>.<span class='ident'>total_y</span>;
+
+                <span class='ident'>values</span>.<span class='ident'>fill_remaining_zeros</span>(<span class='ident'>remaining_zeros</span>, <span class='ident'>remaining_positives</span>);
                 <span class='kw'>break</span>;
             }
         }
@@ -2265,30 +2241,28 @@
     }
 
     <span class='kw'>fn</span> <span class='ident'>query_tree</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>node</span>: <span class='kw-2'>&amp;</span><span class='ident'>Node</span>, <span class='ident'>x</span>: <span class='kw-2'>&amp;</span><span class='ident'>Array</span>, <span class='ident'>row_idx</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>f32</span> {
-        <span class='kw'>match</span> <span class='ident'>node</span> {
-            <span class='kw-2'>&amp;</span><span class='ident'>Node</span>::<span class='ident'>Interior</span> {<span class='ident'>feature</span>,
-                             <span class='ident'>threshold</span>,
-                             <span class='kw-2'>ref</span> <span class='ident'>children</span>} <span class='op'>=&gt;</span> {
-                <span class='kw'>match</span> <span class='ident'>x</span>.<span class='ident'>get</span>(<span class='ident'>row_idx</span>, <span class='ident'>feature</span>) <span class='op'>&lt;=</span> <span class='ident'>threshold</span> {
-                    <span class='boolval'>true</span> <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>query_tree</span>(<span class='kw-2'>&amp;</span><span class='ident'>children</span>.<span class='number'>0</span>, <span class='ident'>x</span>, <span class='ident'>row_idx</span>),
-                    <span class='boolval'>false</span> <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>query_tree</span>(<span class='kw-2'>&amp;</span><span class='ident'>children</span>.<span class='number'>1</span>, <span class='ident'>x</span>, <span class='ident'>row_idx</span>),
+        <span class='kw'>match</span> <span class='op'>*</span><span class='ident'>node</span> {
+            <span class='ident'>Node</span>::<span class='ident'>Interior</span> { <span class='ident'>feature</span>, <span class='ident'>threshold</span>, <span class='kw-2'>ref</span> <span class='ident'>children</span> } <span class='op'>=&gt;</span> {
+                <span class='kw'>if</span> <span class='ident'>x</span>.<span class='ident'>get</span>(<span class='ident'>row_idx</span>, <span class='ident'>feature</span>) <span class='op'>&lt;=</span> <span class='ident'>threshold</span> {
+                    <span class='self'>self</span>.<span class='ident'>query_tree</span>(<span class='kw-2'>&amp;</span><span class='ident'>children</span>.<span class='number'>0</span>, <span class='ident'>x</span>, <span class='ident'>row_idx</span>)
+                } <span class='kw'>else</span> {
+                    <span class='self'>self</span>.<span class='ident'>query_tree</span>(<span class='kw-2'>&amp;</span><span class='ident'>children</span>.<span class='number'>1</span>, <span class='ident'>x</span>, <span class='ident'>row_idx</span>)
                 }
             }
-            <span class='kw-2'>&amp;</span><span class='ident'>Node</span>::<span class='ident'>Leaf</span> {<span class='ident'>probability</span>} <span class='op'>=&gt;</span> <span class='ident'>probability</span>,
+            <span class='ident'>Node</span>::<span class='ident'>Leaf</span> { <span class='ident'>probability</span> } <span class='op'>=&gt;</span> <span class='ident'>probability</span>,
         }
     }
 
     <span class='kw'>fn</span> <span class='ident'>query_tree_sparse</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>node</span>: <span class='kw-2'>&amp;</span><span class='ident'>Node</span>, <span class='ident'>x</span>: <span class='kw-2'>&amp;</span><span class='ident'>SparseColumnArray</span>, <span class='ident'>row_idx</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>f32</span> {
-        <span class='kw'>match</span> <span class='ident'>node</span> {
-            <span class='kw-2'>&amp;</span><span class='ident'>Node</span>::<span class='ident'>Interior</span> {<span class='ident'>feature</span>,
-                             <span class='ident'>threshold</span>,
-                             <span class='kw-2'>ref</span> <span class='ident'>children</span>} <span class='op'>=&gt;</span> {
-                <span class='kw'>match</span> <span class='ident'>x</span>.<span class='ident'>get</span>(<span class='ident'>row_idx</span>, <span class='ident'>feature</span>) <span class='op'>&lt;=</span> <span class='ident'>threshold</span> {
-                    <span class='boolval'>true</span> <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>query_tree_sparse</span>(<span class='kw-2'>&amp;</span><span class='ident'>children</span>.<span class='number'>0</span>, <span class='ident'>x</span>, <span class='ident'>row_idx</span>),
-                    <span class='boolval'>false</span> <span class='op'>=&gt;</span> <span class='self'>self</span>.<span class='ident'>query_tree_sparse</span>(<span class='kw-2'>&amp;</span><span class='ident'>children</span>.<span class='number'>1</span>, <span class='ident'>x</span>, <span class='ident'>row_idx</span>),
+        <span class='kw'>match</span> <span class='op'>*</span><span class='ident'>node</span> {
+            <span class='ident'>Node</span>::<span class='ident'>Interior</span> { <span class='ident'>feature</span>, <span class='ident'>threshold</span>, <span class='kw-2'>ref</span> <span class='ident'>children</span> } <span class='op'>=&gt;</span> {
+                <span class='kw'>if</span> <span class='ident'>x</span>.<span class='ident'>get</span>(<span class='ident'>row_idx</span>, <span class='ident'>feature</span>) <span class='op'>&lt;=</span> <span class='ident'>threshold</span> {
+                    <span class='self'>self</span>.<span class='ident'>query_tree_sparse</span>(<span class='kw-2'>&amp;</span><span class='ident'>children</span>.<span class='number'>0</span>, <span class='ident'>x</span>, <span class='ident'>row_idx</span>)
+                } <span class='kw'>else</span> {
+                    <span class='self'>self</span>.<span class='ident'>query_tree_sparse</span>(<span class='kw-2'>&amp;</span><span class='ident'>children</span>.<span class='number'>1</span>, <span class='ident'>x</span>, <span class='ident'>row_idx</span>)
                 }
             }
-            <span class='kw-2'>&amp;</span><span class='ident'>Node</span>::<span class='ident'>Leaf</span> {<span class='ident'>probability</span>} <span class='op'>=&gt;</span> <span class='ident'>probability</span>,
+            <span class='ident'>Node</span>::<span class='ident'>Leaf</span> { <span class='ident'>probability</span> } <span class='op'>=&gt;</span> <span class='ident'>probability</span>,
         }
     }
 }
@@ -2367,10 +2341,8 @@
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>test_indices_split</span>() {
-        <span class='kw'>let</span> <span class='ident'>x</span> <span class='op'>=</span> <span class='ident'>Array</span>::<span class='ident'>from</span>(<span class='kw-2'>&amp;</span><span class='macro'>vec</span><span class='macro'>!</span>[<span class='macro'>vec</span><span class='macro'>!</span>[<span class='op'>-</span><span class='number'>1.0</span>, <span class='number'>1.0</span>],
-                                  <span class='macro'>vec</span><span class='macro'>!</span>[<span class='op'>-</span><span class='number'>0.5</span>, <span class='number'>1.0</span>],
-                                  <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0.5</span>, <span class='number'>0.0</span>],
-                                  <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>1.0</span>, <span class='number'>0.0</span>]]);
+        <span class='kw'>let</span> <span class='ident'>x</span> <span class='op'>=</span>
+            <span class='ident'>Array</span>::<span class='ident'>from</span>(<span class='kw-2'>&amp;</span><span class='macro'>vec</span><span class='macro'>!</span>[<span class='macro'>vec</span><span class='macro'>!</span>[<span class='op'>-</span><span class='number'>1.0</span>, <span class='number'>1.0</span>], <span class='macro'>vec</span><span class='macro'>!</span>[<span class='op'>-</span><span class='number'>0.5</span>, <span class='number'>1.0</span>], <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0.5</span>, <span class='number'>0.0</span>], <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>1.0</span>, <span class='number'>0.0</span>]]);
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>indices</span> <span class='op'>=</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0</span>, <span class='number'>1</span>, <span class='number'>2</span>, <span class='number'>3</span>];
         <span class='kw'>let</span> (<span class='ident'>left</span>, <span class='ident'>right</span>) <span class='op'>=</span> <span class='ident'>DecisionTree</span>::<span class='ident'>split_indices</span>(<span class='kw-2'>&amp;</span><span class='ident'>x</span>, <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>indices</span>[..], <span class='number'>0</span>, <span class='op'>-</span><span class='number'>0.5</span>);
         <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>left</span>.<span class='ident'>to_owned</span>() <span class='op'>==</span> <span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0</span>, <span class='number'>1</span>]);
@@ -2462,10 +2434,10 @@
             <span class='kw'>let</span> <span class='ident'>y_train</span> <span class='op'>=</span> <span class='ident'>target</span>.<span class='ident'>get_rows</span>(<span class='kw-2'>&amp;</span><span class='ident'>train_idx</span>);
 
             <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>model</span> <span class='op'>=</span> <span class='ident'>Hyperparameters</span>::<span class='ident'>new</span>(<span class='ident'>data</span>.<span class='ident'>cols</span>())
-                                .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
-                                .<span class='ident'>max_features</span>(<span class='number'>4</span>)
-                                .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
-                                .<span class='ident'>one_vs_rest</span>();
+                .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
+                .<span class='ident'>max_features</span>(<span class='number'>4</span>)
+                .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
+                .<span class='ident'>one_vs_rest</span>();
 
             <span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>x_train</span>, <span class='kw-2'>&amp;</span><span class='ident'>y_train</span>).<span class='ident'>unwrap</span>();
 
@@ -2500,10 +2472,10 @@
             <span class='kw'>let</span> <span class='ident'>y_train</span> <span class='op'>=</span> <span class='ident'>target</span>.<span class='ident'>get_rows</span>(<span class='kw-2'>&amp;</span><span class='ident'>train_idx</span>);
 
             <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>model</span> <span class='op'>=</span> <span class='ident'>Hyperparameters</span>::<span class='ident'>new</span>(<span class='ident'>data</span>.<span class='ident'>cols</span>())
-                                .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
-                                .<span class='ident'>max_features</span>(<span class='number'>4</span>)
-                                .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
-                                .<span class='ident'>one_vs_rest</span>();
+                .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
+                .<span class='ident'>max_features</span>(<span class='number'>4</span>)
+                .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
+                .<span class='ident'>one_vs_rest</span>();
 
             <span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>x_train</span>, <span class='kw-2'>&amp;</span><span class='ident'>y_train</span>).<span class='ident'>unwrap</span>();
 
@@ -2538,15 +2510,15 @@
             <span class='kw'>let</span> <span class='ident'>y_train</span> <span class='op'>=</span> <span class='ident'>target</span>.<span class='ident'>get_rows</span>(<span class='kw-2'>&amp;</span><span class='ident'>train_idx</span>);
 
             <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>model</span> <span class='op'>=</span> <span class='ident'>Hyperparameters</span>::<span class='ident'>new</span>(<span class='ident'>data</span>.<span class='ident'>cols</span>())
-                                .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
-                                .<span class='ident'>max_features</span>(<span class='number'>4</span>)
-                                .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
-                                .<span class='ident'>one_vs_rest</span>();
+                .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
+                .<span class='ident'>max_features</span>(<span class='number'>4</span>)
+                .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
+                .<span class='ident'>one_vs_rest</span>();
 
             <span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>x_train</span>, <span class='kw-2'>&amp;</span><span class='ident'>y_train</span>).<span class='ident'>unwrap</span>();
 
             <span class='kw'>let</span> <span class='ident'>encoded</span> <span class='op'>=</span> <span class='ident'>bincode</span>::<span class='ident'>rustc_serialize</span>::<span class='ident'>encode</span>(<span class='kw-2'>&amp;</span><span class='ident'>model</span>, <span class='ident'>bincode</span>::<span class='ident'>SizeLimit</span>::<span class='ident'>Infinite</span>)
-                              .<span class='ident'>unwrap</span>();
+                .<span class='ident'>unwrap</span>();
             <span class='kw'>let</span> <span class='ident'>decoded</span>: <span class='ident'>OneVsRestWrapper</span><span class='op'>&lt;</span><span class='ident'>DecisionTree</span><span class='op'>&gt;</span> <span class='op'>=</span>
                 <span class='ident'>bincode</span>::<span class='ident'>rustc_serialize</span>::<span class='ident'>decode</span>(<span class='kw-2'>&amp;</span><span class='ident'>encoded</span>).<span class='ident'>unwrap</span>();
 
@@ -2584,9 +2556,9 @@
             <span class='kw'>let</span> <span class='ident'>y_train</span> <span class='op'>=</span> <span class='ident'>target</span>.<span class='ident'>get_rows</span>(<span class='kw-2'>&amp;</span><span class='ident'>train_idx</span>);
 
             <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>model</span> <span class='op'>=</span> <span class='ident'>Hyperparameters</span>::<span class='ident'>new</span>(<span class='ident'>X</span>.<span class='ident'>cols</span>())
-                                .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
-                                .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
-                                .<span class='ident'>one_vs_rest</span>();
+                .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
+                .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
+                .<span class='ident'>one_vs_rest</span>();
 
             <span class='kw'>let</span> <span class='ident'>start</span> <span class='op'>=</span> <span class='ident'>time</span>::<span class='ident'>precise_time_ns</span>();
             <span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>x_train</span>, <span class='kw-2'>&amp;</span><span class='ident'>y_train</span>).<span class='ident'>unwrap</span>();
@@ -2632,18 +2604,18 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rng</span> <span class='op'>=</span> <span class='ident'>StdRng</span>::<span class='ident'>new</span>().<span class='ident'>unwrap</span>();
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>X</span> <span class='op'>=</span> <span class='ident'>Array</span>::<span class='ident'>from</span>((<span class='number'>0</span>..(<span class='ident'>rows</span> <span class='op'>*</span> <span class='ident'>cols</span>))
-                                    .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>rng</span>.<span class='ident'>next_f32</span>())
-                                    .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
+            .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>rng</span>.<span class='ident'>next_f32</span>())
+            .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
         <span class='ident'>X</span>.<span class='ident'>reshape</span>(<span class='ident'>rows</span>, <span class='ident'>cols</span>);
 
         <span class='kw'>let</span> <span class='ident'>y</span> <span class='op'>=</span> <span class='ident'>Array</span>::<span class='ident'>from</span>((<span class='number'>0</span>..<span class='ident'>rows</span>)
-                                .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='op'>*</span><span class='ident'>rng</span>.<span class='ident'>choose</span>(<span class='kw-2'>&amp;</span><span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0.0</span>, <span class='number'>1.0</span>][..]).<span class='ident'>unwrap</span>())
-                                .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
+            .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='op'>*</span><span class='ident'>rng</span>.<span class='ident'>choose</span>(<span class='kw-2'>&amp;</span><span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0.0</span>, <span class='number'>1.0</span>][..]).<span class='ident'>unwrap</span>())
+            .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>model</span> <span class='op'>=</span> <span class='ident'>Hyperparameters</span>::<span class='ident'>new</span>(<span class='ident'>cols</span>)
-                            .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
-                            .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
-                            .<span class='ident'>build</span>();
+            .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
+            .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
+            .<span class='ident'>build</span>();
 
         <span class='ident'>b</span>.<span class='ident'>iter</span>(<span class='op'>||</span> {
             <span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>X</span>, <span class='kw-2'>&amp;</span><span class='ident'>y</span>).<span class='ident'>unwrap</span>();
@@ -2659,19 +2631,19 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rng</span> <span class='op'>=</span> <span class='ident'>StdRng</span>::<span class='ident'>new</span>().<span class='ident'>unwrap</span>();
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>X</span> <span class='op'>=</span> <span class='ident'>Array</span>::<span class='ident'>from</span>((<span class='number'>0</span>..(<span class='ident'>rows</span> <span class='op'>*</span> <span class='ident'>cols</span>))
-                                    .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>rng</span>.<span class='ident'>next_f32</span>())
-                                    .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
+            .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='ident'>rng</span>.<span class='ident'>next_f32</span>())
+            .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
         <span class='ident'>X</span>.<span class='ident'>reshape</span>(<span class='ident'>rows</span>, <span class='ident'>cols</span>);
 
         <span class='kw'>let</span> <span class='ident'>y</span> <span class='op'>=</span> <span class='ident'>Array</span>::<span class='ident'>from</span>((<span class='number'>0</span>..<span class='ident'>rows</span>)
-                                .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='op'>*</span><span class='ident'>rng</span>.<span class='ident'>choose</span>(<span class='kw-2'>&amp;</span><span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0.0</span>, <span class='number'>1.0</span>][..]).<span class='ident'>unwrap</span>())
-                                .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
+            .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='op'>*</span><span class='ident'>rng</span>.<span class='ident'>choose</span>(<span class='kw-2'>&amp;</span><span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0.0</span>, <span class='number'>1.0</span>][..]).<span class='ident'>unwrap</span>())
+            .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
 
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>model</span> <span class='op'>=</span> <span class='ident'>Hyperparameters</span>::<span class='ident'>new</span>(<span class='ident'>cols</span>)
-                            .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
-                            .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
-                            .<span class='ident'>build</span>();
+            .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
+            .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
+            .<span class='ident'>build</span>();
 
         <span class='ident'>b</span>.<span class='ident'>iter</span>(<span class='op'>||</span> {
             <span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>X</span>, <span class='kw-2'>&amp;</span><span class='ident'>y</span>).<span class='ident'>unwrap</span>();
@@ -2687,25 +2659,25 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rng</span> <span class='op'>=</span> <span class='ident'>StdRng</span>::<span class='ident'>new</span>().<span class='ident'>unwrap</span>();
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>X</span> <span class='op'>=</span> <span class='ident'>Array</span>::<span class='ident'>from</span>((<span class='number'>0</span>..(<span class='ident'>rows</span> <span class='op'>*</span> <span class='ident'>cols</span>))
-                                    .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> {
-                                        <span class='kw'>match</span> <span class='ident'>rng</span>.<span class='ident'>gen_weighted_bool</span>(<span class='number'>4</span>) {
-                                            <span class='boolval'>true</span> <span class='op'>=&gt;</span> <span class='ident'>rng</span>.<span class='ident'>next_f32</span>(),
-                                            <span class='boolval'>false</span> <span class='op'>=&gt;</span> <span class='number'>0.0</span>,
-                                        }
-                                    })
-                                    .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
+            .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> {
+                <span class='kw'>match</span> <span class='ident'>rng</span>.<span class='ident'>gen_weighted_bool</span>(<span class='number'>4</span>) {
+                    <span class='boolval'>true</span> <span class='op'>=&gt;</span> <span class='ident'>rng</span>.<span class='ident'>next_f32</span>(),
+                    <span class='boolval'>false</span> <span class='op'>=&gt;</span> <span class='number'>0.0</span>,
+                }
+            })
+            .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
         <span class='ident'>X</span>.<span class='ident'>reshape</span>(<span class='ident'>rows</span>, <span class='ident'>cols</span>);
 
         <span class='kw'>let</span> <span class='ident'>X</span> <span class='op'>=</span> <span class='ident'>SparseColumnArray</span>::<span class='ident'>from</span>(<span class='kw-2'>&amp;</span><span class='ident'>X</span>);
 
         <span class='kw'>let</span> <span class='ident'>y</span> <span class='op'>=</span> <span class='ident'>Array</span>::<span class='ident'>from</span>((<span class='number'>0</span>..<span class='ident'>rows</span>)
-                                .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='op'>*</span><span class='ident'>rng</span>.<span class='ident'>choose</span>(<span class='kw-2'>&amp;</span><span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0.0</span>, <span class='number'>1.0</span>][..]).<span class='ident'>unwrap</span>())
-                                .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
+            .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='op'>*</span><span class='ident'>rng</span>.<span class='ident'>choose</span>(<span class='kw-2'>&amp;</span><span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0.0</span>, <span class='number'>1.0</span>][..]).<span class='ident'>unwrap</span>())
+            .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>model</span> <span class='op'>=</span> <span class='ident'>Hyperparameters</span>::<span class='ident'>new</span>(<span class='ident'>cols</span>)
-                            .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
-                            .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
-                            .<span class='ident'>build</span>();
+            .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
+            .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
+            .<span class='ident'>build</span>();
 
         <span class='ident'>b</span>.<span class='ident'>iter</span>(<span class='op'>||</span> {
             <span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>X</span>, <span class='kw-2'>&amp;</span><span class='ident'>y</span>).<span class='ident'>unwrap</span>();
@@ -2721,25 +2693,25 @@
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>rng</span> <span class='op'>=</span> <span class='ident'>StdRng</span>::<span class='ident'>new</span>().<span class='ident'>unwrap</span>();
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>X</span> <span class='op'>=</span> <span class='ident'>Array</span>::<span class='ident'>from</span>((<span class='number'>0</span>..(<span class='ident'>rows</span> <span class='op'>*</span> <span class='ident'>cols</span>))
-                                    .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> {
-                                        <span class='kw'>match</span> <span class='ident'>rng</span>.<span class='ident'>gen_weighted_bool</span>(<span class='number'>4</span>) {
-                                            <span class='boolval'>true</span> <span class='op'>=&gt;</span> <span class='ident'>rng</span>.<span class='ident'>next_f32</span>(),
-                                            <span class='boolval'>false</span> <span class='op'>=&gt;</span> <span class='number'>0.0</span>,
-                                        }
-                                    })
-                                    .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
+            .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> {
+                <span class='kw'>match</span> <span class='ident'>rng</span>.<span class='ident'>gen_weighted_bool</span>(<span class='number'>4</span>) {
+                    <span class='boolval'>true</span> <span class='op'>=&gt;</span> <span class='ident'>rng</span>.<span class='ident'>next_f32</span>(),
+                    <span class='boolval'>false</span> <span class='op'>=&gt;</span> <span class='number'>0.0</span>,
+                }
+            })
+            .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
         <span class='ident'>X</span>.<span class='ident'>reshape</span>(<span class='ident'>rows</span>, <span class='ident'>cols</span>);
 
         <span class='kw'>let</span> <span class='ident'>X</span> <span class='op'>=</span> <span class='ident'>SparseColumnArray</span>::<span class='ident'>from</span>(<span class='kw-2'>&amp;</span><span class='ident'>X</span>);
 
         <span class='kw'>let</span> <span class='ident'>y</span> <span class='op'>=</span> <span class='ident'>Array</span>::<span class='ident'>from</span>((<span class='number'>0</span>..<span class='ident'>rows</span>)
-                                .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='op'>*</span><span class='ident'>rng</span>.<span class='ident'>choose</span>(<span class='kw-2'>&amp;</span><span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0.0</span>, <span class='number'>1.0</span>][..]).<span class='ident'>unwrap</span>())
-                                .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
+            .<span class='ident'>map</span>(<span class='op'>|</span>_<span class='op'>|</span> <span class='op'>*</span><span class='ident'>rng</span>.<span class='ident'>choose</span>(<span class='kw-2'>&amp;</span><span class='macro'>vec</span><span class='macro'>!</span>[<span class='number'>0.0</span>, <span class='number'>1.0</span>][..]).<span class='ident'>unwrap</span>())
+            .<span class='ident'>collect</span>::<span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span>_<span class='op'>&gt;&gt;</span>());
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>model</span> <span class='op'>=</span> <span class='ident'>Hyperparameters</span>::<span class='ident'>new</span>(<span class='ident'>cols</span>)
-                            .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
-                            .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
-                            .<span class='ident'>build</span>();
+            .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
+            .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
+            .<span class='ident'>build</span>();
 
         <span class='ident'>b</span>.<span class='ident'>iter</span>(<span class='op'>||</span> {
             <span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>X</span>, <span class='kw-2'>&amp;</span><span class='ident'>y</span>).<span class='ident'>unwrap</span>();
@@ -2751,10 +2723,10 @@
         <span class='kw'>let</span> (<span class='ident'>data</span>, <span class='ident'>target</span>) <span class='op'>=</span> <span class='ident'>load_data</span>();
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>model</span> <span class='op'>=</span> <span class='ident'>Hyperparameters</span>::<span class='ident'>new</span>(<span class='ident'>data</span>.<span class='ident'>cols</span>())
-                            .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
-                            .<span class='ident'>max_features</span>(<span class='number'>4</span>)
-                            .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
-                            .<span class='ident'>one_vs_rest</span>();
+            .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
+            .<span class='ident'>max_features</span>(<span class='number'>4</span>)
+            .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
+            .<span class='ident'>one_vs_rest</span>();
 
         <span class='ident'>b</span>.<span class='ident'>iter</span>(<span class='op'>||</span> {
             <span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>data</span>, <span class='kw-2'>&amp;</span><span class='ident'>target</span>).<span class='ident'>unwrap</span>();
@@ -2769,9 +2741,9 @@
         <span class='kw'>let</span> <span class='ident'>x_train</span> <span class='op'>=</span> <span class='ident'>SparseColumnArray</span>::<span class='ident'>from</span>(<span class='kw-2'>&amp;</span><span class='ident'>X</span>.<span class='ident'>get_rows</span>(<span class='kw-2'>&amp;</span>(..<span class='number'>500</span>)));
 
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>model</span> <span class='op'>=</span> <span class='ident'>Hyperparameters</span>::<span class='ident'>new</span>(<span class='ident'>X</span>.<span class='ident'>cols</span>())
-                            .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
-                            .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
-                            .<span class='ident'>one_vs_rest</span>();
+            .<span class='ident'>min_samples_split</span>(<span class='number'>5</span>)
+            .<span class='ident'>rng</span>(<span class='ident'>StdRng</span>::<span class='ident'>from_seed</span>(<span class='kw-2'>&amp;</span>[<span class='number'>100</span>]))
+            .<span class='ident'>one_vs_rest</span>();
 
         <span class='ident'>b</span>.<span class='ident'>iter</span>(<span class='op'>||</span> {
             <span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>x_train</span>, <span class='kw-2'>&amp;</span><span class='ident'>target</span>).<span class='ident'>unwrap</span>();

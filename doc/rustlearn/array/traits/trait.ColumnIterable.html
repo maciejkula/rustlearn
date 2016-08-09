@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../main.css">
+    
 
     
     
@@ -43,33 +44,35 @@
 
     <section id='main' class="content trait">
 <h1 class='fqn'><span class='in-band'>Trait <a href='../../index.html'>rustlearn</a>::<wbr><a href='../index.html'>array</a>::<wbr><a href='index.html'>traits</a>::<wbr><a class='trait' href=''>ColumnIterable</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-849' class='srclink' href='../../../src/rustlearn/array/traits.rs.html#87-94' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-772' class='srclink' href='../../../src/rustlearn/src/array/traits.rs.html#88-97' title='goto source code'>[src]</a></span></h1>
 <pre class='rust trait'>pub trait ColumnIterable {
-    type Item: <a class='trait' href='../../../rustlearn/array/traits/trait.NonzeroIterable.html' title='rustlearn::array::traits::NonzeroIterable'>NonzeroIterable</a>;
-    type Output: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/trait.Iterator.html' title='core::iter::Iterator'>Iterator</a>&lt;Item=Self::<a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>Item</a>&gt;;
-    fn <a href='#tymethod.iter_columns' class='fnname'>iter_columns</a>(self) -&gt; Self::<a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>Output</a>;
-    fn <a href='#tymethod.view_column' class='fnname'>view_column</a>(self, idx: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; Self::<a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>Item</a>;
+    type <a href='#associatedtype.Item' class='type'>Item</a>: <a class='trait' href='../../../rustlearn/array/traits/trait.NonzeroIterable.html' title='rustlearn::array::traits::NonzeroIterable'>NonzeroIterable</a>;
+    type <a href='#associatedtype.Output' class='type'>Output</a>: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a>&lt;Item=Self::Item&gt;;
+    fn <a href='#tymethod.iter_columns' class='fnname'>iter_columns</a>(self) -&gt; Self::Output;
+    fn <a href='#tymethod.iter_columns_range' class='fnname'>iter_columns_range</a>(self, range: <a class='struct' href='https://doc.rust-lang.org/nightly/core/ops/struct.Range.html' title='core::ops::Range'>Range</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>&gt;) -&gt; Self::Output;
+    fn <a href='#tymethod.view_column' class='fnname'>view_column</a>(self, idx: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; Self::Item;
 }</pre><div class='docblock'><p>Trait representing a matrix that can be iterated over in
 a column-wise fashion.</p>
 </div>
             <h2 id='associated-types'>Associated Types</h2>
             <div class='methods'>
-        <h3 id='associatedtype.Item' class='method stab '><code>type Item: <a class='trait' href='../../../rustlearn/array/traits/trait.NonzeroIterable.html' title='rustlearn::array::traits::NonzeroIterable'>NonzeroIterable</a></code></h3><h3 id='associatedtype.Output' class='method stab '><code>type Output: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/trait.Iterator.html' title='core::iter::Iterator'>Iterator</a>&lt;Item=Self::<a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>Item</a>&gt;</code></h3></div>
+        <h3 id='associatedtype.Item' class='method stab '><code>type <a href='#associatedtype.Item' class='type'>Item</a>: <a class='trait' href='../../../rustlearn/array/traits/trait.NonzeroIterable.html' title='rustlearn::array::traits::NonzeroIterable'>NonzeroIterable</a></code></h3><h3 id='associatedtype.Output' class='method stab '><code>type <a href='#associatedtype.Output' class='type'>Output</a>: <a class='trait' href='https://doc.rust-lang.org/nightly/core/iter/iterator/trait.Iterator.html' title='core::iter::iterator::Iterator'>Iterator</a>&lt;Item=Self::Item&gt;</code></h3></div>
             <h2 id='required-methods'>Required Methods</h2>
             <div class='methods'>
-        <h3 id='tymethod.iter_columns' class='method stab '><code>fn <a href='#tymethod.iter_columns' class='fnname'>iter_columns</a>(self) -&gt; Self::<a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>Output</a></code></h3><div class='docblock'><p>Iterate over columns of a the matrix.</p>
-</div><h3 id='tymethod.view_column' class='method stab '><code>fn <a href='#tymethod.view_column' class='fnname'>view_column</a>(self, idx: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; Self::<a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>Item</a></code></h3><div class='docblock'><p>View a column of the matrix.</p>
+        <h3 id='tymethod.iter_columns' class='method stab '><code>fn <a href='#tymethod.iter_columns' class='fnname'>iter_columns</a>(self) -&gt; Self::Output</code></h3><div class='docblock'><p>Iterate over columns of a the matrix.</p>
+</div><h3 id='tymethod.iter_columns_range' class='method stab '><code>fn <a href='#tymethod.iter_columns_range' class='fnname'>iter_columns_range</a>(self, range: <a class='struct' href='https://doc.rust-lang.org/nightly/core/ops/struct.Range.html' title='core::ops::Range'>Range</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>&gt;) -&gt; Self::Output</code></h3><div class='docblock'><p>Iterate over a subset of columns of the matrix.</p>
+</div><h3 id='tymethod.view_column' class='method stab '><code>fn <a href='#tymethod.view_column' class='fnname'>view_column</a>(self, idx: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; Self::Item</code></h3><div class='docblock'><p>View a column of the matrix.</p>
 </div></div>
         <h2 id='implementors'>Implementors</h2>
         <ul class='item-list' id='implementors-list'>
-    <li><code>impl&lt;'a&gt; <a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>ColumnIterable</a> for &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></li>
-<li><code>impl&lt;'a&gt; <a class='trait' href='../../../rustlearn/array/traits/trait.ColumnIterable.html' title='rustlearn::array::traits::ColumnIterable'>ColumnIterable</a> for &amp;'a <a class='struct' href='../../../rustlearn/array/sparse/struct.SparseColumnArray.html' title='rustlearn::array::sparse::SparseColumnArray'>SparseColumnArray</a></code></li>
+    <li><code>impl&lt;'a&gt; ColumnIterable for &amp;'a <a class='struct' href='../../../rustlearn/array/dense/struct.Array.html' title='rustlearn::array::dense::Array'>Array</a></code></li>
+<li><code>impl&lt;'a&gt; ColumnIterable for &amp;'a <a class='struct' href='../../../rustlearn/array/sparse/struct.SparseColumnArray.html' title='rustlearn::array::sparse::SparseColumnArray'>SparseColumnArray</a></code></li>
 </ul><script type="text/javascript" async
-                              src="../../../implementors/rustlearn/array/traits/trait.ColumnIterable.js">
-                      </script></section>
+                         src="../../../implementors/rustlearn/array/traits/trait.ColumnIterable.js">
+                 </script></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -92,6 +95,8 @@ a column-wise fashion.</p>
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 
@@ -112,7 +117,7 @@ a column-wise fashion.</p>
 
                 <p>
                     Search functions by type signature (e.g.
-                    <code>vec -> usize</code>)
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
                 </p>
             </div>
         </div>

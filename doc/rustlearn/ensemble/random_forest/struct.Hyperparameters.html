@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../main.css">
+    
 
     
     
@@ -43,23 +44,26 @@
 
     <section id='main' class="content struct">
 <h1 class='fqn'><span class='in-band'>Struct <a href='../../index.html'>rustlearn</a>::<wbr><a href='../index.html'>ensemble</a>::<wbr><a href='index.html'>random_forest</a>::<wbr><a class='struct' href=''>Hyperparameters</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-1028' class='srclink' href='../../../src/rustlearn/ensemble/random_forest.rs.html#48-52' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-976' class='srclink' href='../../../src/rustlearn/src/ensemble/random_forest.rs.html#48-52' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct Hyperparameters {
     // some fields omitted
-}</pre><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../../rustlearn/ensemble/random_forest/struct.Hyperparameters.html' title='rustlearn::ensemble::random_forest::Hyperparameters'>Hyperparameters</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(tree_hyperparameters: <a class='struct' href='../../../rustlearn/trees/decision_tree/struct.Hyperparameters.html' title='rustlearn::trees::decision_tree::Hyperparameters'>Hyperparameters</a>, num_trees: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../../rustlearn/ensemble/random_forest/struct.Hyperparameters.html' title='rustlearn::ensemble::random_forest::Hyperparameters'>Hyperparameters</a></code></h4>
+}</pre><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../../../rustlearn/ensemble/random_forest/struct.Hyperparameters.html' title='rustlearn::ensemble::random_forest::Hyperparameters'>Hyperparameters</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-980' class='srclink' href='../../../src/rustlearn/src/ensemble/random_forest.rs.html#55-107' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(tree_hyperparameters: <a class='struct' href='../../../rustlearn/trees/decision_tree/struct.Hyperparameters.html' title='rustlearn::trees::decision_tree::Hyperparameters'>Hyperparameters</a>, num_trees: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../../../rustlearn/ensemble/random_forest/struct.Hyperparameters.html' title='rustlearn::ensemble::random_forest::Hyperparameters'>Hyperparameters</a></code></h4>
 <div class='docblock'><p>Create a new instance of Hyperparameters, using the Hyperparameters
 for a <code>DecisionTree</code> and the number of trees to build.</p>
-</div><h4 id='method.rng' class='method'><code>fn <a href='#method.rng' class='fnname'>rng</a>(&amp;mut self, rng: <a class='struct' href='https://doc.rust-lang.org/rand/rand/struct.StdRng.html' title='rand::StdRng'>StdRng</a>) -&gt; &amp;mut <a class='struct' href='../../../rustlearn/ensemble/random_forest/struct.Hyperparameters.html' title='rustlearn::ensemble::random_forest::Hyperparameters'>Hyperparameters</a></code></h4>
+</div><h4 id='method.rng' class='method'><code>fn <a href='#method.rng' class='fnname'>rng</a>(&amp;mut self, rng: <a class='struct' href='../../../rand/struct.StdRng.html' title='rand::StdRng'>StdRng</a>) -&gt; &amp;mut <a class='struct' href='../../../rustlearn/ensemble/random_forest/struct.Hyperparameters.html' title='rustlearn::ensemble::random_forest::Hyperparameters'>Hyperparameters</a></code></h4>
 <div class='docblock'><p>Set the random number generator.</p>
 </div><h4 id='method.build' class='method'><code>fn <a href='#method.build' class='fnname'>build</a>(&amp;self) -&gt; <a class='struct' href='../../../rustlearn/ensemble/random_forest/struct.RandomForest.html' title='rustlearn::ensemble::random_forest::RandomForest'>RandomForest</a></code></h4>
 <div class='docblock'><p>Build the random forest model.</p>
 </div><h4 id='method.one_vs_rest' class='method'><code>fn <a href='#method.one_vs_rest' class='fnname'>one_vs_rest</a>(&amp;mut self) -&gt; <a class='struct' href='../../../rustlearn/multiclass/struct.OneVsRestWrapper.html' title='rustlearn::multiclass::OneVsRestWrapper'>OneVsRestWrapper</a>&lt;<a class='struct' href='../../../rustlearn/ensemble/random_forest/struct.RandomForest.html' title='rustlearn::ensemble::random_forest::RandomForest'>RandomForest</a>&gt;</code></h4>
 <div class='docblock'><p>Build a one-vs-rest multiclass random forest.</p>
-</div></div><h2 id='implementations'>Trait Implementations</h2><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Decodable.html' title='rustc_serialize::serialize::Decodable'>Decodable</a> for <a class='struct' href='../../../rustlearn/ensemble/random_forest/struct.Hyperparameters.html' title='rustlearn::ensemble::random_forest::Hyperparameters'>Hyperparameters</a></code></h3><div class='impl-items'><h4 id='method.decode' class='method'><code>fn <a href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Decodable.html#method.decode' class='fnname'>decode</a>&lt;__D: <a class='trait' href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Decoder.html' title='rustc_serialize::serialize::Decoder'>Decoder</a>&gt;(__arg_0: &amp;mut __D) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../../../rustlearn/ensemble/random_forest/struct.Hyperparameters.html' title='rustlearn::ensemble::random_forest::Hyperparameters'>Hyperparameters</a>, __D::Error&gt;</code></h4>
-</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Encodable.html' title='rustc_serialize::serialize::Encodable'>Encodable</a> for <a class='struct' href='../../../rustlearn/ensemble/random_forest/struct.Hyperparameters.html' title='rustlearn::ensemble::random_forest::Hyperparameters'>Hyperparameters</a></code></h3><div class='impl-items'><h4 id='method.encode' class='method'><code>fn <a href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Encodable.html#method.encode' class='fnname'>encode</a>&lt;__S: <a class='trait' href='http://doc.rust-lang.org/rustc-serialize/rustc_serialize/serialize/trait.Encoder.html' title='rustc_serialize::serialize::Encoder'>Encoder</a>&gt;(&amp;self, __arg_0: &amp;mut __S) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, __S::Error&gt;</code></h4>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='../../../rustc_serialize/serialize/trait.Decodable.html' title='rustc_serialize::serialize::Decodable'>Decodable</a> for <a class='struct' href='../../../rustlearn/ensemble/random_forest/struct.Hyperparameters.html' title='rustlearn::ensemble::random_forest::Hyperparameters'>Hyperparameters</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-944' class='srclink' href='../../../src/rustlearn/src/ensemble/random_forest.rs.html#47' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.decode' class='method'><code>fn <a href='../../../rustc_serialize/serialize/trait.Decodable.html#tymethod.decode' class='fnname'>decode</a>&lt;__D:&nbsp;<a class='trait' href='../../../rustc_serialize/serialize/trait.Decoder.html' title='rustc_serialize::serialize::Decoder'>Decoder</a>&gt;(__arg_0: &amp;mut __D) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../../../rustlearn/ensemble/random_forest/struct.Hyperparameters.html' title='rustlearn::ensemble::random_forest::Hyperparameters'>Hyperparameters</a>,&nbsp;__D::Error&gt;</code></h4>
+</div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='../../../rustc_serialize/serialize/trait.Encodable.html' title='rustc_serialize::serialize::Encodable'>Encodable</a> for <a class='struct' href='../../../rustlearn/ensemble/random_forest/struct.Hyperparameters.html' title='rustlearn::ensemble::random_forest::Hyperparameters'>Hyperparameters</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-956' class='srclink' href='../../../src/rustlearn/src/ensemble/random_forest.rs.html#47' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.encode' class='method'><code>fn <a href='../../../rustc_serialize/serialize/trait.Encodable.html#tymethod.encode' class='fnname'>encode</a>&lt;__S:&nbsp;<a class='trait' href='../../../rustc_serialize/serialize/trait.Encoder.html' title='rustc_serialize::serialize::Encoder'>Encoder</a>&gt;(&amp;self, __arg_0: &amp;mut __S) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>,&nbsp;__S::Error&gt;</code></h4>
 </div></section>
     <section id='search' class="content hidden"></section>
 
@@ -83,6 +87,8 @@ for a <code>DecisionTree</code> and the number of trees to build.</p>
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 
@@ -103,7 +109,7 @@ for a <code>DecisionTree</code> and the number of trees to build.</p>
 
                 <p>
                     Search functions by type signature (e.g.
-                    <code>vec -> usize</code>)
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
                 </p>
             </div>
         </div>

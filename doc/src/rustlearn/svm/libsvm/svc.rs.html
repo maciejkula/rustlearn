@@ -640,7 +640,7 @@
             <span class='ident'>model</span>.<span class='ident'>fit</span>(<span class='kw-2'>&amp;</span><span class='ident'>x_train</span>, <span class='kw-2'>&amp;</span><span class='ident'>y_train</span>).<span class='ident'>unwrap</span>();
 
             <span class='kw'>let</span> <span class='ident'>encoded</span> <span class='op'>=</span> <span class='ident'>bincode</span>::<span class='ident'>rustc_serialize</span>::<span class='ident'>encode</span>(<span class='kw-2'>&amp;</span><span class='ident'>model</span>, <span class='ident'>bincode</span>::<span class='ident'>SizeLimit</span>::<span class='ident'>Infinite</span>)
-                              .<span class='ident'>unwrap</span>();
+                .<span class='ident'>unwrap</span>();
             <span class='kw'>let</span> <span class='ident'>decoded</span>: <span class='ident'>SVC</span> <span class='op'>=</span> <span class='ident'>bincode</span>::<span class='ident'>rustc_serialize</span>::<span class='ident'>decode</span>(<span class='kw-2'>&amp;</span><span class='ident'>encoded</span>).<span class='ident'>unwrap</span>();
 
             <span class='kw'>let</span> <span class='ident'>y_hat</span> <span class='op'>=</span> <span class='ident'>decoded</span>.<span class='ident'>predict</span>(<span class='kw-2'>&amp;</span><span class='ident'>x_test</span>).<span class='ident'>unwrap</span>();

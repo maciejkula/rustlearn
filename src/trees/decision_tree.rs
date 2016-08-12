@@ -49,6 +49,7 @@ fn sample_without_replacement<T: Copy, R: Rng>(from: &mut [T],
                                                to: &mut Vec<T>,
                                                number: usize,
                                                rng: &mut R) {
+
     // A partial Fisher-Yates shuffle for sampling without
     // replacement
     for num_sampled in 0..number {
@@ -340,7 +341,9 @@ impl<'a> SupervisedModel<&'a Array> for DecisionTree {
                                          &mut feature_indices,
                                          &mut candidate_features,
                                          0,
-                                         &mut feature_values));
+                                         &mut feature_values,
+                                         &DecisionTree::get_values,
+                                         &DecisionTree::split_indices));
 
         Ok(())
     }
@@ -376,13 +379,15 @@ impl<'a> SupervisedModel<&'a SparseColumnArray> for DecisionTree {
         let mut feature_indices = FeatureIndices::new(self.get_nonconstant_feature_indices());
         let mut candidate_features = Vec::with_capacity(self.max_features);
 
-        self.root = Some(self.build_tree_sparse(X,
-                                                y,
-                                                &mut (0..X.rows()).collect::<Vec<usize>>()[..],
-                                                &mut feature_indices,
-                                                &mut candidate_features,
-                                                0,
-                                                &mut feature_values));
+        self.root = Some(self.build_tree(X,
+                                         y,
+                                         &mut (0..X.rows()).collect::<Vec<usize>>()[..],
+                                         &mut feature_indices,
+                                         &mut candidate_features,
+                                         0,
+                                         &mut feature_values,
+                                         &DecisionTree::get_values_sparse,
+                                         &DecisionTree::split_indices_sparse));
 
         Ok(())
     }
@@ -400,106 +405,6 @@ impl<'a> SupervisedModel<&'a SparseColumnArray> for DecisionTree {
                 Ok(Array::from(data))
             }
             None => Err("Tree must be built before predicting"),
-        }
-    }
-}
-
-
-/// Macro for generating the dense and sparse versions
-/// of `build_tree`.
-macro_rules! build_tree {
-    ($fn_name:ident, $x_type:ty,
-     $get_values:ident, $split_indices:ident) => {
-
-        fn $fn_name(&mut self, X: &$x_type, y: &Array,
-                    indices: &mut [usize],
-                    feature_indices: &mut FeatureIndices,
-                    candidate_features: &mut Vec<usize>,
-                    depth: usize,
-                    feature_values: &mut FeatureValues) -> Node {
-
-            let num_positives = DecisionTree::count_positives(y, indices);
-            let probability = num_positives as f32 / indices.len() as f32;
-
-            if probability == 0.0
-                || probability == 1.0
-                || depth > self.max_depth
-                || indices.len() < self.min_samples_split {
-                    return Node::Leaf{probability: probability};
-                }
-
-// Multiple attemps to perform a split.
-            for _ in 0..10 {
-
-                feature_indices.sample_indices(candidate_features,
-                                               self.max_features,
-                                               &mut self.rng.rng);
-
-                let mut best_feature_position = 0;
-                let mut best_feature_idx = 0;
-                let mut best_feature_threshold = 0.0;
-                let mut best_impurity = f32::INFINITY;
-
-                for (feature_position, &feature_idx) in candidate_features.iter().enumerate() {
-                    DecisionTree::$get_values(X, y, num_positives,
-                                              feature_idx,
-                                              indices,
-                                              feature_values);
-
-                    if let FeatureType::Constant = feature_values.feature_type() {
-                        feature_indices.mark_as_used(feature_position);
-                        continue
-                    }
-
-                    let (threshold, impurity) = DecisionTree::calculate_split(feature_values);
-
-                    if impurity < best_impurity {
-                        best_feature_position = feature_position;
-                        best_feature_idx = feature_idx;
-                        best_feature_threshold = threshold;
-                        best_impurity = impurity;
-                    }
-                }
-
-                let (left_indices, right_indices) =
-                    DecisionTree::$split_indices(X,
-                                                 indices,
-                                                 best_feature_idx,
-                                                 best_feature_threshold);
-
-                if left_indices.len() > 0 && right_indices.len() > 0 {
-
-// Cannot split on binary feature more than one time
-                    if let FeatureType::Binary = self.feature_types[best_feature_idx] {
-                            feature_indices.mark_as_used(best_feature_position);
-                    }
-
-                    let num_used_features = feature_indices.num_used;
-
-                    let left = self.$fn_name(X, y,
-                                             left_indices,
-                                             feature_indices,
-                                             candidate_features,
-                                             depth + 1,
-                                             feature_values);
-
-                    feature_indices.num_used = num_used_features;
-
-                    let right = self.$fn_name(X, y,
-                                              right_indices,
-                                              feature_indices,
-                                              candidate_features,
-                                              depth + 1,
-                                              feature_values);
-
-                    return Node::Interior {feature: best_feature_idx,
-                                           threshold: best_feature_threshold,
-                                           children: Box::new((left,
-                                                               right))}
-                }
-            }
-
-            Node::Leaf {probability: probability}
         }
     }
 }
@@ -582,14 +487,104 @@ impl DecisionTree {
         count
     }
 
-    /// Builds the tree on dense data.
-    build_tree!(build_tree, Array, get_values, split_indices);
+    fn build_tree<T, F, G>(&mut self,
+                           X: T,
+                           y: &Array,
+                           indices: &mut [usize],
+                           feature_indices: &mut FeatureIndices,
+                           candidate_features: &mut Vec<usize>,
+                           depth: usize,
+                           feature_values: &mut FeatureValues,
+                           get_values: &F,
+                           split_indices: &G)
+                           -> Node
+        where T: Copy,
+              F: Fn(T, &Array, usize, usize, &[usize], &mut FeatureValues) -> (),
+              G: Fn(T, &mut [usize], usize, f32) -> (&mut [usize], &mut [usize])
+    {
 
-    /// Builds the tree on sparse data.
-    build_tree!(build_tree_sparse,
-                SparseColumnArray,
-                get_values_sparse,
-                split_indices_sparse);
+        let num_positives = DecisionTree::count_positives(y, indices);
+        let probability = num_positives as f32 / indices.len() as f32;
+
+        if probability == 0.0 || probability == 1.0 || depth > self.max_depth ||
+           indices.len() < self.min_samples_split {
+            return Node::Leaf { probability: probability };
+        }
+
+        // Multiple attemps to perform a split.
+        for _ in 0..10 {
+
+            feature_indices.sample_indices(candidate_features,
+                                           self.max_features,
+                                           &mut self.rng.rng);
+
+            let mut best_feature_position = 0;
+            let mut best_feature_idx = 0;
+            let mut best_feature_threshold = 0.0;
+            let mut best_impurity = f32::INFINITY;
+
+            for (feature_position, &feature_idx) in candidate_features.iter().enumerate() {
+                get_values(X, y, num_positives, feature_idx, indices, feature_values);
+
+                if let FeatureType::Constant = feature_values.feature_type() {
+                    feature_indices.mark_as_used(feature_position);
+                    continue;
+                }
+
+                let (threshold, impurity) = DecisionTree::calculate_split(feature_values);
+
+                if impurity < best_impurity {
+                    best_feature_position = feature_position;
+                    best_feature_idx = feature_idx;
+                    best_feature_threshold = threshold;
+                    best_impurity = impurity;
+                }
+            }
+
+            let (left_indices, right_indices) =
+                split_indices(X, indices, best_feature_idx, best_feature_threshold);
+
+            if left_indices.len() > 0 && right_indices.len() > 0 {
+
+                // Cannot split on binary feature more than one time
+                if let FeatureType::Binary = self.feature_types[best_feature_idx] {
+                    feature_indices.mark_as_used(best_feature_position);
+                }
+
+                let num_used_features = feature_indices.num_used;
+
+                let left = self.build_tree(X,
+                                           y,
+                                           left_indices,
+                                           feature_indices,
+                                           candidate_features,
+                                           depth + 1,
+                                           feature_values,
+                                           get_values,
+                                           split_indices);
+
+                feature_indices.num_used = num_used_features;
+
+                let right = self.build_tree(X,
+                                            y,
+                                            right_indices,
+                                            feature_indices,
+                                            candidate_features,
+                                            depth + 1,
+                                            feature_values,
+                                            get_values,
+                                            split_indices);
+
+                return Node::Interior {
+                    feature: best_feature_idx,
+                    threshold: best_feature_threshold,
+                    children: Box::new((left, right)),
+                };
+            }
+        }
+
+        Node::Leaf { probability: probability }
+    }
 
     fn split_indices<'a>(X: &Array,
                          indices: &'a mut [usize],
@@ -761,7 +756,7 @@ impl DecisionTree {
                          y: &Array,
                          num_positives: usize,
                          feature_idx: usize,
-                         indices: &mut [usize],
+                         indices: &[usize],
                          values: &mut FeatureValues) {
 
         let x = x.view_column(feature_idx);
@@ -782,7 +777,7 @@ impl DecisionTree {
     fn get_values_sparse_by_iteration(x: SparseArrayView,
                                       y: &Array,
                                       num_positives: usize,
-                                      indices: &mut [usize],
+                                      indices: &[usize],
                                       values: &mut FeatureValues) {
 
         let mut indices_iter = indices.iter();
@@ -825,7 +820,7 @@ impl DecisionTree {
     fn get_values_sparse_by_search(x: SparseArrayView,
                                    y: &Array,
                                    num_positives: usize,
-                                   indices: &mut [usize],
+                                   indices: &[usize],
                                    values: &mut FeatureValues) {
 
         let y = y.data();

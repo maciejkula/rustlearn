@@ -81,3 +81,96 @@ pub fn check_matched_dimensions<T: IndexableMatrix>(X: &T, y: &Array) -> Result<
         Err("Data matrix and target array do not have the same number of rows")
     }
 }
+
+
+pub struct RunningVarianceEstimator {
+    num_observations: usize,
+    mean: f32,
+    variance: f32
+}
+
+
+impl RunningVarianceEstimator {
+    pub fn new() -> RunningVarianceEstimator {
+        RunningVarianceEstimator { num_observations: 0,
+                                   mean: 0.0,
+                                   variance: 0.0 }
+    }
+
+    pub fn add_observation(&mut self, x: f32) {
+        self.num_observations += 1;
+
+        if self.num_observations == 1 {
+            self.mean = x;
+            self.variance = 0.0;
+            return;
+        }
+
+        let new_mean = self.mean + (x - self.mean) / self.num_observations as f32;
+        let new_var = self.variance + (x - self.mean) * (x - new_mean);
+
+        self.mean = new_mean;
+        self.variance = new_var;
+    }
+
+    pub fn remove_observation(&mut self, x: f32) {
+        if self.num_observations <= 1 {
+            self.mean = 0.0;
+            self.num_observations -= 1;
+            return
+        }
+
+        let new_mean = (self.mean * self.num_observations as f32 - x)
+            / (self.num_observations as f32 - 1.0);
+        let new_var = self.variance - (x - new_mean) * (x - self.mean);
+
+        self.num_observations -= 1;
+
+        self.mean = new_mean;
+        self.variance = new_var;
+    }
+
+    pub fn get_variance(&self) -> Option<f32> {
+        match self.num_observations {
+            0 => None,
+            1 => Some(0.0),
+            _ => Some(self.variance / (self.num_observations as f32 - 1.0))
+        }
+    }
+
+    pub fn get_mean(&self) -> Option<f32> {
+        match self.num_observations {
+            0 => None,
+            _ => Some(self.mean)
+        }
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+
+    use super::RunningVarianceEstimator;
+
+    #[test]
+    fn test_variance_estimator() {
+        let data = vec![0.13023152, -1.09808877, -0.26505087, 0.70939795];
+
+        let mut model = RunningVarianceEstimator::new();
+
+        for datum in &data {
+            model.add_observation(*datum);
+        }
+
+        assert!(model.get_mean().unwrap() == -0.13087755);
+        assert!(model.get_variance().unwrap() == 0.5759136);
+
+        for datum in &data[..2] {
+            model.remove_observation(*datum);
+            println!("removing {}", *datum);
+        }
+
+        assert!(model.get_mean().unwrap() == 0.22217351);
+        assert!(model.get_variance().unwrap() == 0.4747753);
+    }
+}

@@ -45,76 +45,65 @@ use rand::{Rng, StdRng};
 use rand::distributions::{IndependentSample, Range};
 
 
-fn sample_without_replacement<T: Copy, R: Rng>(from: &mut [T],
-                                               to: &mut Vec<T>,
-                                               number: usize,
-                                               rng: &mut R) {
-
-    // A partial Fisher-Yates shuffle for sampling without
-    // replacement
-    for num_sampled in 0..number {
-        let idx = Range::new(num_sampled, from.len()).ind_sample(rng);
-
-        let sampled = from[idx];
-        to.push(sampled);
-
-        from.swap(idx, num_sampled);
-    }
-}
-
-
 struct FeatureIndices {
     num_used: usize,
     candidate_indices: Vec<usize>,
-    to_mark_as_constant: Vec<usize>,
+    feature_to_position: Vec<usize>,
 }
 
 
 impl FeatureIndices {
     fn new(candidate_indices: Vec<usize>) -> FeatureIndices {
+
+        let mut feature_to_position = vec![0; *candidate_indices.iter().max().unwrap() + 1];
+
+        for (i, &feature_idx) in candidate_indices.iter().enumerate() {
+            feature_to_position[feature_idx] = i;
+        }
+
         FeatureIndices {
             num_used: 0,
             candidate_indices: candidate_indices,
-            to_mark_as_constant: Vec::with_capacity(10),
+            feature_to_position: feature_to_position,
         }
     }
 
+    /// Sample indices into the provided buffer.
     fn sample_indices(&mut self, to: &mut Vec<usize>, number: usize, rng: &mut StdRng) {
-
         to.clear();
-
         let number = min(number, self.candidate_indices.len() - self.num_used);
-
-        sample_without_replacement(&mut self.candidate_indices[self.num_used..],
-                                   to,
-                                   number,
-                                   rng);
+        self.sample_without_replacement(to, number, rng);
     }
 
-    fn mark_as_used(&mut self, feature_idx: usize) {
-        self.to_mark_as_constant.push(feature_idx)
-    }
+    fn sample_without_replacement(&mut self, to: &mut Vec<usize>, number: usize, rng: &mut StdRng) {
 
-    fn apply_used_status(&mut self) {
+        let from = &mut self.candidate_indices[self.num_used..];
 
-        self.to_mark_as_constant.sort();
-        // Relies on the fact that that features are
-        // tested in the same order they are organised
-        // in self.candidate_indices (due to the sampling
-        // process).
-        for (i, &feature_idx) in self.to_mark_as_constant.iter().enumerate() {
-            let indices = &mut self.candidate_indices[self.num_used..];
+        for num_sampled in 0..number {
+            let idx = Range::new(num_sampled, from.len()).ind_sample(rng);
 
-            // Swap current feature with an unused feature
-            // at the beginning of the vector
-            // and advance the used features marker.
-            // We need to offset the feature_idx because the
-            // start of the slice keeps moving right.
-            indices.swap(0, feature_idx - i);
-            self.num_used += 1;
+            let sampled_feature = from[idx];
+            let swapped_feature = from[num_sampled];
+            to.push(sampled_feature);
+
+            from.swap(idx, num_sampled);
+            self.feature_to_position.swap(sampled_feature,
+                                          swapped_feature);
         }
+    }
 
-        self.to_mark_as_constant.clear();
+    /// Prevent feature from being sampled again.
+    fn mark_as_used(&mut self, feature_index: usize) {
+        // Swap feature from sampling array with the first unused
+        // feature and advance the used index. Update the feature
+        // to position mapping to keep track.
+        let marked_position = self.feature_to_position[feature_index];
+        let swapped_feature = self.candidate_indices[self.num_used];
+
+        self.candidate_indices.swap(self.num_used, marked_position);
+        self.feature_to_position.swap(feature_index, swapped_feature);
+
+        self.num_used += 1;
     }
 }
 
@@ -534,23 +523,21 @@ impl DecisionTree {
                                            self.max_features,
                                            &mut self.rng.rng);
 
-            let mut best_feature_position = 0;
             let mut best_feature_idx = 0;
             let mut best_feature_threshold = 0.0;
             let mut best_impurity = f32::INFINITY;
 
-            for (feature_position, &feature_idx) in candidate_features.iter().enumerate() {
+            for &feature_idx in candidate_features.iter() {
                 get_values(X, y, num_positives, feature_idx, indices, feature_values);
 
                 if let FeatureType::Constant = feature_values.feature_type() {
-                    feature_indices.mark_as_used(feature_position);
+                    feature_indices.mark_as_used(feature_idx);
                     continue;
                 }
 
                 let (threshold, impurity) = DecisionTree::calculate_split(feature_values);
 
                 if impurity < best_impurity {
-                    best_feature_position = feature_position;
                     best_feature_idx = feature_idx;
                     best_feature_threshold = threshold;
                     best_impurity = impurity;
@@ -564,10 +551,8 @@ impl DecisionTree {
 
                 // Cannot split on binary feature more than one time
                 if let FeatureType::Binary = self.feature_types[best_feature_idx] {
-                    feature_indices.mark_as_used(best_feature_position);
+                    feature_indices.mark_as_used(best_feature_idx);
                 }
-
-                feature_indices.apply_used_status();
 
                 let num_used_features = feature_indices.num_used;
 

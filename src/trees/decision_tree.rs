@@ -66,6 +66,7 @@ fn sample_without_replacement<T: Copy, R: Rng>(from: &mut [T],
 struct FeatureIndices {
     num_used: usize,
     candidate_indices: Vec<usize>,
+    to_mark_as_constant: Vec<usize>,
 }
 
 
@@ -74,6 +75,7 @@ impl FeatureIndices {
         FeatureIndices {
             num_used: 0,
             candidate_indices: candidate_indices,
+            to_mark_as_constant: Vec::with_capacity(10),
         }
     }
 
@@ -90,19 +92,29 @@ impl FeatureIndices {
     }
 
     fn mark_as_used(&mut self, feature_idx: usize) {
+        self.to_mark_as_constant.push(feature_idx)
+    }
 
+    fn apply_used_status(&mut self) {
+
+        self.to_mark_as_constant.sort();
         // Relies on the fact that that features are
         // tested in the same order they are organised
         // in self.candidate_indices (due to the sampling
         // process).
+        for (i, &feature_idx) in self.to_mark_as_constant.iter().enumerate() {
+            let indices = &mut self.candidate_indices[self.num_used..];
 
-        let indices = &mut self.candidate_indices[self.num_used..];
+            // Swap current feature with an unused feature
+            // at the beginning of the vector
+            // and advance the used features marker.
+            // We need to offset the feature_idx because the
+            // start of the slice keeps moving right.
+            indices.swap(0, feature_idx - i);
+            self.num_used += 1;
+        }
 
-        // Swap current feature with an unused feature
-        // at the beginning of the vector
-        // and advance the used features marker
-        indices.swap(0, feature_idx);
-        self.num_used += 1;
+        self.to_mark_as_constant.clear();
     }
 }
 
@@ -177,10 +189,14 @@ impl FeatureValues {
     }
 
     fn feature_type(&self) -> FeatureType {
-        match self.xy_pairs.len() {
-            1 => FeatureType::Constant,
-            2 => FeatureType::Binary,
-            _ => FeatureType::Continuous,
+        let (min_x, max_x) = self.value_bounds();
+
+        if min_x == max_x {
+            FeatureType::Constant
+        } else if min_x == 0.0 && max_x == 1.0 {
+            FeatureType::Binary
+        } else {
+            FeatureType::Continuous
         }
     }
 
@@ -196,7 +212,7 @@ impl FeatureValues {
 }
 
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[derive(RustcEncodable, RustcDecodable)]
 enum FeatureType {
     Constant,
@@ -550,6 +566,8 @@ impl DecisionTree {
                 if let FeatureType::Binary = self.feature_types[best_feature_idx] {
                     feature_indices.mark_as_used(best_feature_position);
                 }
+
+                feature_indices.apply_used_status();
 
                 let num_used_features = feature_indices.num_used;
 
@@ -1048,6 +1066,61 @@ mod tests {
         println!("Accuracy {}", test_accuracy);
 
         assert!(test_accuracy > 0.96);
+    }
+
+    #[test]
+    /// Reproduces https://github.com/maciejkula/rustlearn/issues/28
+    fn test_decision_tree_iris_constant_features() {
+        let (data, target) = load_data();
+
+        // Add a couple of extra constant-valued columns
+        let extra_columns = 50;
+        let mut iris_data = Array::zeros(data.rows(), data.cols() + extra_columns);
+
+        for (row_num, row) in data.iter_rows().enumerate() {
+            for (col_num, value) in row.iter_nonzero() {
+                iris_data.set(row_num, extra_columns + col_num, value);
+            }
+
+            for _ in 0..extra_columns {
+                iris_data.set(row_num, row_num % 2, target.get(row_num, 0));
+            }
+        }
+
+        let data = iris_data;
+
+        let mut test_accuracy = 0.0;
+
+        let no_splits = 10;
+
+        let mut cv = CrossValidation::new(data.rows(), no_splits);
+        cv.set_rng(StdRng::from_seed(&[100]));
+
+        for (train_idx, test_idx) in cv {
+
+            let x_train = data.get_rows(&train_idx);
+            let x_test = data.get_rows(&test_idx);
+
+            let y_train = target.get_rows(&train_idx);
+
+            let mut model = Hyperparameters::new(data.cols())
+                .min_samples_split(2)
+                .max_features(40)
+                .rng(StdRng::from_seed(&[101]))
+                .one_vs_rest();
+
+            model.fit(&x_train, &y_train).unwrap();
+
+            let test_prediction = model.predict(&x_test).unwrap();
+
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &test_prediction);
+        }
+
+        test_accuracy /= no_splits as f32;
+
+        println!("Accuracy {}", test_accuracy);
+
+        assert!(test_accuracy > 0.95);
     }
 
     #[test]

@@ -1,6 +1,10 @@
 # Changelog
 
-## [0.4.1][unreleased]
+## [0.4.2][unreleased]
+### Fixed
+- fixed EncodableRng dummy serialization implementation
+
+## [0.4.1][2016-08-26]
 ### Fixed
 - panic when removing constant features when splitting
   a decision tree

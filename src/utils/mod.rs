@@ -12,6 +12,7 @@ use prelude::*;
 /// Wrapper for making random number generators serializable.
 /// Does no actual encoding, and merely creates a new
 /// generator on decoding.
+/// This is because rand generators do not expose internal state.
 #[derive(Clone)]
 pub struct EncodableRng {
     pub rng: StdRng,
@@ -33,14 +34,16 @@ impl Default for EncodableRng {
 
 
 impl Encodable for EncodableRng {
-    fn encode<S: Encoder>(&self, _: &mut S) -> Result<(), S::Error> {
+    fn encode<S: Encoder>(&self, s: &mut S) -> Result<(), S::Error> {
+        try!(s.emit_struct("EncodableRng", 0, |_| { Ok(()) }));
         Ok(())
     }
 }
 
 
 impl Decodable for EncodableRng {
-    fn decode<D: Decoder>(_: &mut D) -> Result<Self, D::Error> {
+    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
+        try!(d.read_struct("", 0, |_| { Ok(()) }));
         Ok((EncodableRng::new()))
     }
 }
@@ -79,5 +82,21 @@ pub fn check_matched_dimensions<T: IndexableMatrix>(X: &T, y: &Array) -> Result<
         Ok(())
     } else {
         Err("Data matrix and target array do not have the same number of rows")
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::EncodableRng;
+
+    use rustc_serialize::json;
+
+    #[test]
+    fn test_encodable_rng_serialization() {
+        let rng = EncodableRng::new();
+
+        let serialized = json::encode(&rng).unwrap();
+        let _: EncodableRng = json::decode(&serialized).unwrap();
     }
 }

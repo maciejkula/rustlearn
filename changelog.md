@@ -1,6 +1,11 @@
 # Changelog
 
-## [unreleased][unreleased]
+## [0.4.1][unreleased]
+### Fixed
+- panic when removing constant features when splitting
+  a decision tree
+
+## [0.4.0][2016-08-08]
 ### Added
 - factorization machines
 - parallel fitting and prediction for one-vs-rest models

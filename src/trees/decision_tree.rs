@@ -45,63 +45,64 @@ use rand::{Rng, StdRng};
 use rand::distributions::{IndependentSample, Range};
 
 
-fn sample_without_replacement<T: Copy, R: Rng>(from: &mut [T],
-                                               to: &mut Vec<T>,
-                                               number: usize,
-                                               rng: &mut R) {
-
-    // A partial Fisher-Yates shuffle for sampling without
-    // replacement
-    for num_sampled in 0..number {
-        let idx = Range::new(num_sampled, from.len()).ind_sample(rng);
-
-        let sampled = from[idx];
-        to.push(sampled);
-
-        from.swap(idx, num_sampled);
-    }
-}
-
-
 struct FeatureIndices {
     num_used: usize,
     candidate_indices: Vec<usize>,
+    feature_to_position: Vec<usize>,
 }
 
 
 impl FeatureIndices {
     fn new(candidate_indices: Vec<usize>) -> FeatureIndices {
+
+        let mut feature_to_position = vec![0; *candidate_indices.iter().max().unwrap() + 1];
+
+        for (i, &feature_idx) in candidate_indices.iter().enumerate() {
+            feature_to_position[feature_idx] = i;
+        }
+
         FeatureIndices {
             num_used: 0,
             candidate_indices: candidate_indices,
+            feature_to_position: feature_to_position,
         }
     }
 
+    /// Sample indices into the provided buffer.
     fn sample_indices(&mut self, to: &mut Vec<usize>, number: usize, rng: &mut StdRng) {
-
         to.clear();
-
         let number = min(number, self.candidate_indices.len() - self.num_used);
-
-        sample_without_replacement(&mut self.candidate_indices[self.num_used..],
-                                   to,
-                                   number,
-                                   rng);
+        self.sample_without_replacement(to, number, rng);
     }
 
-    fn mark_as_used(&mut self, feature_idx: usize) {
+    fn sample_without_replacement(&mut self, to: &mut Vec<usize>, number: usize, rng: &mut StdRng) {
 
-        // Relies on the fact that that features are
-        // tested in the same order they are organised
-        // in self.candidate_indices (due to the sampling
-        // process).
+        let from = &mut self.candidate_indices[self.num_used..];
 
-        let indices = &mut self.candidate_indices[self.num_used..];
+        for num_sampled in 0..number {
+            let idx = Range::new(num_sampled, from.len()).ind_sample(rng);
 
-        // Swap current feature with an unused feature
-        // at the beginning of the vector
-        // and advance the used features marker
-        indices.swap(0, feature_idx);
+            let sampled_feature = from[idx];
+            let swapped_feature = from[num_sampled];
+            to.push(sampled_feature);
+
+            from.swap(idx, num_sampled);
+            self.feature_to_position.swap(sampled_feature,
+                                          swapped_feature);
+        }
+    }
+
+    /// Prevent feature from being sampled again.
+    fn mark_as_used(&mut self, feature_index: usize) {
+        // Swap feature from sampling array with the first unused
+        // feature and advance the used index. Update the feature
+        // to position mapping to keep track.
+        let marked_position = self.feature_to_position[feature_index];
+        let swapped_feature = self.candidate_indices[self.num_used];
+
+        self.candidate_indices.swap(self.num_used, marked_position);
+        self.feature_to_position.swap(feature_index, swapped_feature);
+
         self.num_used += 1;
     }
 }
@@ -177,10 +178,14 @@ impl FeatureValues {
     }
 
     fn feature_type(&self) -> FeatureType {
-        match self.xy_pairs.len() {
-            1 => FeatureType::Constant,
-            2 => FeatureType::Binary,
-            _ => FeatureType::Continuous,
+        let (min_x, max_x) = self.value_bounds();
+
+        if min_x == max_x {
+            FeatureType::Constant
+        } else if min_x == 0.0 && max_x == 1.0 {
+            FeatureType::Binary
+        } else {
+            FeatureType::Continuous
         }
     }
 
@@ -196,7 +201,7 @@ impl FeatureValues {
 }
 
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[derive(RustcEncodable, RustcDecodable)]
 enum FeatureType {
     Constant,
@@ -518,23 +523,21 @@ impl DecisionTree {
                                            self.max_features,
                                            &mut self.rng.rng);
 
-            let mut best_feature_position = 0;
             let mut best_feature_idx = 0;
             let mut best_feature_threshold = 0.0;
             let mut best_impurity = f32::INFINITY;
 
-            for (feature_position, &feature_idx) in candidate_features.iter().enumerate() {
+            for &feature_idx in candidate_features.iter() {
                 get_values(X, y, num_positives, feature_idx, indices, feature_values);
 
                 if let FeatureType::Constant = feature_values.feature_type() {
-                    feature_indices.mark_as_used(feature_position);
+                    feature_indices.mark_as_used(feature_idx);
                     continue;
                 }
 
                 let (threshold, impurity) = DecisionTree::calculate_split(feature_values);
 
                 if impurity < best_impurity {
-                    best_feature_position = feature_position;
                     best_feature_idx = feature_idx;
                     best_feature_threshold = threshold;
                     best_impurity = impurity;
@@ -548,7 +551,7 @@ impl DecisionTree {
 
                 // Cannot split on binary feature more than one time
                 if let FeatureType::Binary = self.feature_types[best_feature_idx] {
-                    feature_indices.mark_as_used(best_feature_position);
+                    feature_indices.mark_as_used(best_feature_idx);
                 }
 
                 let num_used_features = feature_indices.num_used;
@@ -1048,6 +1051,61 @@ mod tests {
         println!("Accuracy {}", test_accuracy);
 
         assert!(test_accuracy > 0.96);
+    }
+
+    #[test]
+    /// Reproduces https://github.com/maciejkula/rustlearn/issues/28
+    fn test_decision_tree_iris_constant_features() {
+        let (data, target) = load_data();
+
+        // Add a couple of extra constant-valued columns
+        let extra_columns = 50;
+        let mut iris_data = Array::zeros(data.rows(), data.cols() + extra_columns);
+
+        for (row_num, row) in data.iter_rows().enumerate() {
+            for (col_num, value) in row.iter_nonzero() {
+                iris_data.set(row_num, extra_columns + col_num, value);
+            }
+
+            for _ in 0..extra_columns {
+                iris_data.set(row_num, row_num % 2, target.get(row_num, 0));
+            }
+        }
+
+        let data = iris_data;
+
+        let mut test_accuracy = 0.0;
+
+        let no_splits = 10;
+
+        let mut cv = CrossValidation::new(data.rows(), no_splits);
+        cv.set_rng(StdRng::from_seed(&[100]));
+
+        for (train_idx, test_idx) in cv {
+
+            let x_train = data.get_rows(&train_idx);
+            let x_test = data.get_rows(&test_idx);
+
+            let y_train = target.get_rows(&train_idx);
+
+            let mut model = Hyperparameters::new(data.cols())
+                .min_samples_split(2)
+                .max_features(40)
+                .rng(StdRng::from_seed(&[101]))
+                .one_vs_rest();
+
+            model.fit(&x_train, &y_train).unwrap();
+
+            let test_prediction = model.predict(&x_test).unwrap();
+
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &test_prediction);
+        }
+
+        test_accuracy /= no_splits as f32;
+
+        println!("Accuracy {}", test_accuracy);
+
+        assert!(test_accuracy > 0.95);
     }
 
     #[test]

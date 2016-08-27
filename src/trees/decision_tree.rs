@@ -883,6 +883,8 @@ mod tests {
 
     use rand::{StdRng, SeedableRng};
 
+    use rustc_serialize::json;
+
     use bincode;
 
     #[cfg(feature = "all_tests")]
@@ -1174,10 +1176,20 @@ mod tests {
 
             model.fit(&x_train, &y_train).unwrap();
 
+            // Binary encoding
             let encoded = bincode::rustc_serialize::encode(&model, bincode::SizeLimit::Infinite)
                 .unwrap();
             let decoded: OneVsRestWrapper<DecisionTree> =
                 bincode::rustc_serialize::decode(&encoded).unwrap();
+
+            let test_prediction = decoded.predict(&x_test).unwrap();
+
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &test_prediction);
+
+            // JSON encoding
+            let encoded = json::encode(&model).unwrap();
+            let decoded: OneVsRestWrapper<DecisionTree> =
+                json::decode(&encoded).unwrap();
 
             let test_prediction = decoded.predict(&x_test).unwrap();
 

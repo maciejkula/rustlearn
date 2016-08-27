@@ -41,7 +41,7 @@ use multiclass::OneVsRestWrapper;
 use utils::{check_data_dimensionality, check_matched_dimensions, check_valid_labels, EncodableRng};
 
 use rand;
-use rand::{Rng, StdRng};
+use rand::StdRng;
 use rand::distributions::{IndependentSample, Range};
 
 
@@ -75,7 +75,10 @@ impl FeatureIndices {
         self.sample_without_replacement(to, number, rng);
     }
 
-    fn sample_without_replacement(&mut self, to: &mut Vec<usize>, number: usize, rng: &mut StdRng) {
+    fn sample_without_replacement(&mut self,
+                                  to: &mut Vec<usize>,
+                                  number: usize,
+                                  rng: &mut StdRng) {
 
         let from = &mut self.candidate_indices[self.num_used..];
 
@@ -87,8 +90,7 @@ impl FeatureIndices {
             to.push(sampled_feature);
 
             from.swap(idx, num_sampled);
-            self.feature_to_position.swap(sampled_feature,
-                                          swapped_feature);
+            self.feature_to_position.swap(sampled_feature, swapped_feature);
         }
     }
 

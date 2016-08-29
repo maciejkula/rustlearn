@@ -207,6 +207,7 @@ mod tests {
     use rand::{StdRng, SeedableRng};
 
     use bincode;
+    use rustc_serialize::json;
 
     #[cfg(feature = "all_tests")]
     use datasets::newsgroups;
@@ -418,9 +419,18 @@ mod tests {
             let decoded: OneVsRestWrapper<RandomForest> =
                 bincode::rustc_serialize::decode(&encoded).unwrap();
 
-            let test_prediction = decoded.predict(&x_test).unwrap();
+            let bincode_prediction = decoded.predict(&x_test).unwrap();
 
-            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &test_prediction);
+            // JSON encoding
+            let encoded = json::encode(&model).unwrap();
+            let decoded: OneVsRestWrapper<RandomForest> =
+                json::decode(&encoded).unwrap();
+
+            let json_prediction = decoded.predict(&x_test).unwrap();
+
+            assert!(allclose(&json_prediction, &bincode_prediction));
+
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &json_prediction);
         }
 
         test_accuracy /= no_splits as f32;

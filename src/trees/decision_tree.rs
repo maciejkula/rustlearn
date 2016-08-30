@@ -1182,18 +1182,18 @@ mod tests {
             let decoded: OneVsRestWrapper<DecisionTree> =
                 bincode::rustc_serialize::decode(&encoded).unwrap();
 
-            let test_prediction = decoded.predict(&x_test).unwrap();
-
-            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &test_prediction);
+            let bincode_prediction = decoded.predict(&x_test).unwrap();
 
             // JSON encoding
             let encoded = json::encode(&model).unwrap();
             let decoded: OneVsRestWrapper<DecisionTree> =
                 json::decode(&encoded).unwrap();
 
-            let test_prediction = decoded.predict(&x_test).unwrap();
+            let json_prediction = decoded.predict(&x_test).unwrap();
 
-            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &test_prediction);
+            assert!(allclose(&json_prediction, &bincode_prediction));
+
+            test_accuracy += accuracy_score(&target.get_rows(&test_idx), &json_prediction);
         }
 
         test_accuracy /= no_splits as f32;

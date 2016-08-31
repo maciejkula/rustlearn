@@ -1,6 +1,23 @@
 //! Support Vector Classifier using the `libsvm` library.
 //!
 //! Both dense and sparse models are supported.
+//!
+//! # Examples
+//!
+//! ```
+//! use rustlearn::prelude::*; use rustlearn::datasets::iris;
+//! use rustlearn::svm::libsvm::svc::{Hyperparameters, KernelType};
+//!
+//! let (X, y) = iris::load_data();
+//!
+//! let mut model = Hyperparameters::new(4, KernelType::Linear, 4)
+//!     .C(0.3)
+//!     .build();
+//!
+//! model.fit(&X, &y).unwrap();
+//!
+//! let prediction = model.predict(&X).unwrap();
+//! ```
 
 use prelude::*;
 

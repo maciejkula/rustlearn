@@ -3,6 +3,27 @@
 #[cfg(test)]
 #[allow(unused_imports)]
 
+mod tests {
+    use metrics::ranking::*;
+    use prelude::*;
+    use super::*;
+
+    #[test]
+    fn roc_auc_test_corner_cases() {
+        let tests = vec![
+            (vec![0.0, 1.0, 0.0], vec![1.0, 2.0, 2.0], 0.75),
+            (vec![0.0, 0.0, 1.0], vec![1.0, 2.0, 2.0], 0.75),
+            (vec![0.0, 0.0, 1.0, 1.0], vec![1.0, 2.0, 2.0, 3.0], 0.875),
+            (vec![0.0, 1.0, 0.0, 1.0], vec![1.0, 2.0, 2.0, 3.0], 0.875),
+            (vec![0.0, 0.0, 1.0, 0.0], vec![2.0, 1.0, 1.0, 0.0], 0.5),
+            (vec![0.0, 0.0, 1.0], vec![2.0, 1.0, 1.0], 0.25),
+        ];
+        for test in tests {
+            assert_eq!(roc_auc_score(&test.0.into(), &test.1.into()), Ok(test.2));
+        }
+    }
+}
+
 mod generated_tests {
     use metrics::ranking::*;
     use prelude::*;

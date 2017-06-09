@@ -12,23 +12,26 @@ fn counts_at_score(y_true: &[f32], y_hat: &[f32]) -> (Vec<f32>, Vec<f32>) {
     // vector of pairs (score, label) - the order is switched with respect to function arguments
     let mut pairs: Vec<_> = y_hat.iter().cloned().zip(y_true.iter().cloned()).collect();
 
+    // Sort by scores in a descending order
     pairs.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(Ordering::Equal));
 
+    let mut score_prev = ::std::f32::NAN;
     // tp .. true positives, fp .. false positives
-    let mut s0 = ::std::f32::NAN;
     let (mut tp, mut fp) = (0.0f32, 0.0f32);
     let (mut tps, mut fps) = (vec![], vec![]);
-    for &(s, t) in pairs.iter() {
-        if s != s0 {
+    for (score, label) in pairs {
+        // `tp` and `fp` from the previous iteration are pushed onto the ROC curve only if
+        // the `score` changed. This avoids errors due to arbitrary classification of points with
+        // identical scores
+        if score != score_prev {
             tps.push(tp);
             fps.push(fp);
-            s0 = s;
+            score_prev = score;
         }
-        match t == 1.0 {
-            false => fp += 1.0,
-            true =>  tp += 1.0,
-        }
+        tp += label;
+        fp += 1.0 - label;
     }
+    // Push the final point corresponding to the (1,1) ROC coordinates
     tps.push(tp);
     fps.push(fp);
 

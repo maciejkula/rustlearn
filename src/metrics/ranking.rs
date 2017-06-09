@@ -9,39 +9,33 @@ use array::prelude::*;
 /// Return (nondecreasing) counts of true positives and false positives.
 fn counts_at_score(y_true: &[f32], y_hat: &[f32]) -> (Vec<f32>, Vec<f32>) {
 
-    // Sort scores and labels in a descending manner
-    let mut pairs = Vec::with_capacity(y_true.len());
+    // vector of pairs (score, label) - the order is switched with respect to function arguments
+    let mut pairs: Vec<_> = y_hat.iter().cloned().zip(y_true.iter().cloned()).collect();
 
-    for (&yt, &yh) in y_true.iter().zip(y_hat.iter()) {
-        pairs.push((yh, yt));
-    }
-
+    // Sort by scores in a descending order
     pairs.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(Ordering::Equal));
 
-    // Move down the scores; scores greater than the threshold are positives.
-    let mut true_positives = Vec::with_capacity(y_true.len());
-    let mut false_positives = Vec::with_capacity(y_true.len());
-    let mut positive_counter = 0.0;
-
-    let mut scores = Vec::new();
-
-    let mut prev_score = f32::INFINITY;
-
-    for (i, &(score, label)) in pairs.iter().enumerate() {
-
-        positive_counter += label;
-
-        if close(score, prev_score) {
-            continue;
+    let mut score_prev = ::std::f32::NAN;
+    // tp .. true positives, fp .. false positives
+    let (mut tp, mut fp) = (0.0f32, 0.0f32);
+    let (mut tps, mut fps) = (vec![], vec![]);
+    for (score, label) in pairs {
+        // `tp` and `fp` from the previous iteration are pushed onto the ROC curve only if
+        // the `score` changed. This avoids errors due to arbitrary classification of points with
+        // identical scores
+        if score != score_prev {
+            tps.push(tp);
+            fps.push(fp);
+            score_prev = score;
         }
-
-        scores.push(score);
-        true_positives.push(positive_counter);
-        false_positives.push((i as f32) + 1.0 - positive_counter);
-        prev_score = score;
+        tp += label;
+        fp += 1.0 - label;
     }
+    // Push the final point corresponding to the (1,1) ROC coordinates
+    tps.push(tp);
+    fps.push(fp);
 
-    (true_positives, false_positives)
+    (tps, fps)
 }
 
 
@@ -154,8 +148,8 @@ mod tests {
 
         let (x, y) = counts_at_score(&y_true, &y_hat);
 
-        let x_expected: Vec<f32> = vec![1.0, 1.0, 2.0, 2.0];
-        let y_expected: Vec<f32> = vec![0.0, 1.0, 1.0, 2.0];
+        let x_expected: Vec<f32> = vec![0.0, 1.0, 1.0, 2.0, 2.0];
+        let y_expected: Vec<f32> = vec![0.0, 0.0, 1.0, 1.0, 2.0];
 
         assert!(allclose(&Array::from(x), &Array::from(x_expected)));
         assert!(allclose(&Array::from(y), &Array::from(y_expected)));

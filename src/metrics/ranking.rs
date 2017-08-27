@@ -1,10 +1,40 @@
 //! Ranking accuracy metrics.
 
 use std::f32;
-use std::cmp::Ordering;
+use std::cmp::{min, Ordering};
 
 use array::prelude::*;
 
+
+/// Discounted Cumulative Gain
+///
+/// # Panics
+/// Will panic if inputs are of unequal length.
+pub fn dcg_score(y_true: &Array, y_hat: &Array, k: i32) -> f32 {
+    assert!(y_true.rows() == y_hat.rows());
+    let mut pairs: Vec<_> = y_hat.data().iter().enumerate().collect();
+    pairs.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(Ordering::Equal));
+    let mut out: f32 = 0.0;
+    let last = min(k as usize, y_true.rows());
+    for i in 0..last {
+        let (orig_idx, _) = pairs[i];
+        let gain = 2f32.powf(y_true.data()[orig_idx]);
+        let discount = ((i as f32) + 2.0).log2();
+        out += gain / discount;
+    }
+    out
+}
+
+/// Normalized Discounted Cumulative Gain
+///
+/// # Panics
+/// Will panic if inputs are of unequal length.
+pub fn ndcg_score(y_true: &Array, y_hat: &Array, k: i32) -> f32 {
+    assert!(y_true.rows() == y_hat.rows());
+    let best = dcg_score(y_true, y_hat, k);
+    let actual = dcg_score(y_true, y_hat, k);
+    actual / best
+}
 
 /// Return (nondecreasing) counts of true positives and false positives.
 fn counts_at_score(y_true: &[f32], y_hat: &[f32]) -> (Vec<f32>, Vec<f32>) {
@@ -139,7 +169,7 @@ mod tests {
 
     use prelude::*;
 
-    use super::{counts_at_score, roc_auc_score};
+    use super::{counts_at_score, roc_auc_score, dcg_score, ndcg_score};
 
     #[test]
     fn basic() {
@@ -156,6 +186,38 @@ mod tests {
 
         assert!(close(0.75,
                       roc_auc_score(&Array::from(y_true), &Array::from(y_hat)).unwrap()));
+    }
+
+    #[test]
+    fn test_dcg_basic() {
+        // From: https://gist.github.com/mblondel/7337391#file-letor_metrics-py-L211
+        let winner_1 = &Array::from(vec![5.0, 3.0, 2.0]);
+        let winner_2 = &Array::from(vec![4.0, 3.0, 2.0]);
+        let loser = &Array::from(vec![2.0, 1.0, 0.0]);
+        let score_1 = dcg_score(winner_1, loser, 10);
+        let score_2 = dcg_score(winner_2, loser, 10);
+        assert!(score_1 > score_2);
+        assert!(dcg_score(winner_1, loser, 2) > dcg_score(winner_2, loser, 2));
+    }
+
+    #[test]
+    fn test_dcg_sample_order() {
+        let r1 = &Array::from(vec![5.0, 3.0, 2.0]);
+        let r2 = &Array::from(vec![2.0, 1.0, 0.0]);
+        let r3 = &Array::from(vec![2.0, 3.0, 5.0]);
+        let r4 = &Array::from(vec![0.0, 1.0, 2.0]);
+        assert!(dcg_score(r1, r2, 10) == dcg_score(r3, r4, 10));
+    }
+
+    #[test]
+    fn test_ndcg_ideal() {
+        let r1 = &Array::from(vec![5.0, 3.0, 2.0]);
+        let r2 = &Array::from(vec![2.0, 1.0, 0.0]);
+        let r3 = &Array::from(vec![2.0, 3.0, 5.0]);
+        let r4 = &Array::from(vec![0.0, 1.0, 2.0]);
+
+        assert!(close(1.0, ndcg_score(r1, r1, 10)));
+        assert!(close(1.0, ndcg_score(r3, r4, 10)));
     }
 
     #[test]

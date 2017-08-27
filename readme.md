@@ -42,6 +42,10 @@ should be roughly competitive with Python `sklearn` implementations, both in acc
 
 - [accuracy](https://maciejkula.github.io/rustlearn/doc/rustlearn/metrics/fn.accuracy_score.html)
 - [ROC AUC score](https://maciejkula.github.io/rustlearn/doc/rustlearn/metrics/ranking/fn.roc_auc_score.html)
+- [dcg_score](https://maciejkula.github.io/rustlearn/doc/rustlearn/metrics/ranking/fn.dcg_score.html)
+- [ndcg_score](https://maciejkula.github.io/rustlearn/doc/rustlearn/metrics/ranking/fn.ndcg_score.html)
+- [mean absolute error](https://maciejkula.github.io/rustlearn/doc/rustlearn/metrics/ranking/fn.mean_absolute_error.html)
+- [mean squared error](https://maciejkula.github.io/rustlearn/doc/rustlearn/metrics/ranking/fn.mean_squared_error.html)
 
 ## Parallelization
 

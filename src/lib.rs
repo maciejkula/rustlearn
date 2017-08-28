@@ -35,7 +35,11 @@
 //! ## Metrics
 //!
 //! - [accuracy](metrics/fn.accuracy_score.html)
+//! - [mean_absolute_error](metrics/fn.mean_absolute_error.html)
+//! - [mean_squared_error](metrics/fn.mean_squared_error.html)
 //! - [ROC AUC score](metrics/ranking/fn.roc_auc_score.html)
+//! - [dcg_score](metrics/ranking/fn.dcg_score.html)
+//! - [ndcg_score](metrics/ranking/fn.ndcg_score.html)
 //!
 //! ## Parallelization
 //!

@@ -8,6 +8,7 @@
 
 use std::slice;
 use std::ffi::CStr;
+use std::os::raw::c_char;
 
 use prelude::*;
 
@@ -389,7 +390,7 @@ extern "C" {
     fn svm_free_and_destroy_model(svm_model: *const *const LibsvmModel);
     fn svm_check_parameter(problem: *const LibsvmProblem,
                            param: *const LibsvmParameter)
-                           -> *const i8;
+                           -> *const c_char;
 }
 
 

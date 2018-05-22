@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.3][2018-05-22]
+### Fixed
+- c_char instead of i8 in libsvm bindings
+
+## [0.4.2][unreleased]
+### Fixed
+- fixed EncodableRng dummy serialization implementation
+
 ## [0.4.2][unreleased]
 ### Fixed
 - fixed EncodableRng dummy serialization implementation

@@ -53,7 +53,7 @@ A number of models support both parallel model fitting and prediction.
 
 ### Model serialization
 
-Model serialization is supported via `rustc_serialize`. This will probably change to `serde` once compiler plugins land in stable.
+Model serialization is supported via `serde`.
 
 ## Using `rustlearn`
 Usage should be straightforward.
@@ -139,9 +139,8 @@ model.fit(&data, &target).unwrap();
 
 // Optionally serialize and deserialize the model
 
-// let encoded = bincode::rustc_serialize::encode(&model,
-//                                                bincode::SizeLimit::Infinite).unwrap();
-// let decoded: OneVsRestWrapper<RandomForest> = bincode::rustc_serialize::decode(&encoded).unwrap();
+// let encoded = bincode::serialize(&model).unwrap();
+// let decoded: OneVsRestWrapper<RandomForest> = bincode::deserialize(&encoded).unwrap();
 
 let prediction = model.predict(&data).unwrap();
 ```

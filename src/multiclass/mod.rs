@@ -1,7 +1,7 @@
 //! Utilities for mutliclass classifiers.
 
-use std::f32;
 use std::cmp::{Ordering, PartialOrd};
+use std::f32;
 use std::iter::Iterator;
 
 use array::dense::*;
@@ -12,17 +12,14 @@ use traits::*;
 
 use crossbeam;
 
-
 pub struct OneVsRest<'a> {
     y: &'a Array,
     classes: Vec<f32>,
     iter: usize,
 }
 
-
 impl<'a> OneVsRest<'a> {
     pub fn split(y: &'a Array) -> OneVsRest {
-
         let mut classes = y.data().clone();
         classes.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
         classes.dedup();
@@ -35,7 +32,6 @@ impl<'a> OneVsRest<'a> {
     }
 
     pub fn merge(class_labels: &[f32], predictions: &[Array]) -> Array {
-
         assert!(class_labels.len() > 0);
         assert!(class_labels.len() == predictions.len());
 
@@ -44,11 +40,9 @@ impl<'a> OneVsRest<'a> {
         let mut prediction = Array::zeros(no_rows, 1);
 
         for i in 0..no_rows {
-
             let mut decision_func_val = 0.0;
 
-            for (&label, prediction_arr) in class_labels.iter()
-                .zip(predictions.iter()) {
+            for (&label, prediction_arr) in class_labels.iter().zip(predictions.iter()) {
                 if prediction_arr.get(i, 0) > decision_func_val {
                     *prediction.get_mut(i, 0) = label;
                     decision_func_val = prediction_arr.get(i, 0);
@@ -60,24 +54,18 @@ impl<'a> OneVsRest<'a> {
     }
 }
 
-
 impl<'a> Iterator for OneVsRest<'a> {
     type Item = (f32, Array);
     fn next(&mut self) -> Option<(f32, Array)> {
-
         let ret = if self.iter < self.classes.len() {
             let target_class = self.classes[self.iter];
-            let binary_target = Array::from(self.y
-                .data()
-                .iter()
-                .map(|&v| {
-                    if v == target_class {
-                        1.0
-                    } else {
-                        0.0
-                    }
-                })
-                .collect::<Vec<_>>());
+            let binary_target = Array::from(
+                self.y
+                    .data()
+                    .iter()
+                    .map(|&v| if v == target_class { 1.0 } else { 0.0 })
+                    .collect::<Vec<_>>(),
+            );
             Some((target_class, binary_target))
         } else {
             None
@@ -88,15 +76,13 @@ impl<'a> Iterator for OneVsRest<'a> {
     }
 }
 
-
 /// Wraps simple two-class classifiers to implement one-vs-rest strategies.
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize)]
 pub struct OneVsRestWrapper<T> {
     base_model: T,
     models: Vec<T>,
     class_labels: Vec<f32>,
 }
-
 
 impl<T: Clone> OneVsRestWrapper<T> {
     pub fn new(base_model: T) -> OneVsRestWrapper<T> {
@@ -121,7 +107,6 @@ impl<T: Clone> OneVsRestWrapper<T> {
     }
 
     fn extract_model(&mut self, class_label: f32) -> T {
-
         let mut model_idx = None;
 
         for (idx, label) in self.class_labels.iter().enumerate() {
@@ -147,14 +132,13 @@ impl<T: Clone> OneVsRestWrapper<T> {
     }
 }
 
-
 macro_rules! impl_multiclass_supervised_model {
     ($t:ty) => {
-        impl<'a, T: SupervisedModel<&'a $t> + Clone> SupervisedModel<&'a $t> for OneVsRestWrapper<T> {
+        impl<'a, T: SupervisedModel<&'a $t> + Clone> SupervisedModel<&'a $t>
+            for OneVsRestWrapper<T>
+        {
             fn fit(&mut self, X: &'a $t, y: &Array) -> Result<(), &'static str> {
-
                 for (class_label, binary_target) in OneVsRest::split(y) {
-
                     let model = self.get_model(class_label);
                     try!(model.fit(X, &binary_target));
                 }
@@ -162,7 +146,6 @@ macro_rules! impl_multiclass_supervised_model {
             }
 
             fn decision_function(&self, X: &'a $t) -> Result<Array, &'static str> {
-
                 let mut out = Array::zeros(X.rows(), self.class_labels.len());
 
                 for (col_idx, model) in self.models.iter().enumerate() {
@@ -176,12 +159,10 @@ macro_rules! impl_multiclass_supervised_model {
             }
 
             fn predict(&self, X: &'a $t) -> Result<Array, &'static str> {
-
                 let decision = try!(self.decision_function(X));
                 let mut predictions = Vec::with_capacity(X.rows());
 
                 for row in decision.iter_rows() {
-
                     let mut max_value = f32::NEG_INFINITY;
                     let mut max_class = 0;
 
@@ -201,26 +182,26 @@ macro_rules! impl_multiclass_supervised_model {
     };
 }
 
-
 macro_rules! impl_multiclass_parallel_predict {
     ($t:ty) => {
-        impl<'a, T: SupervisedModel<&'a $t> + Clone + Sync> ParallelPredict<&'a $t> for OneVsRestWrapper<T> {
-            fn decision_function_parallel(&self, X: &'a $t, num_threads: usize)
-                                          -> Result<Array, &'static str> {
-
+        impl<'a, T: SupervisedModel<&'a $t> + Clone + Sync> ParallelPredict<&'a $t>
+            for OneVsRestWrapper<T>
+        {
+            fn decision_function_parallel(
+                &self,
+                X: &'a $t,
+                num_threads: usize,
+            ) -> Result<Array, &'static str> {
                 let mut out = Array::zeros(X.rows(), self.class_labels.len());
 
                 let numbered_models = self.models.iter().enumerate().collect::<Vec<_>>();
 
                 for slc in numbered_models.chunks(num_threads) {
-
                     let mut guards = Vec::new();
 
                     crossbeam::scope(|scope| {
                         for &(col_idx, model) in slc {
-                            guards.push(scope.spawn(move || {
-                                (col_idx, model.decision_function(X))
-                            }));
+                            guards.push(scope.spawn(move || (col_idx, model.decision_function(X))));
                         }
                     });
 
@@ -239,13 +220,15 @@ macro_rules! impl_multiclass_parallel_predict {
                 Ok(out)
             }
 
-            fn predict_parallel(&self, X: &'a $t, num_threads: usize) -> Result<Array, &'static str> {
-
+            fn predict_parallel(
+                &self,
+                X: &'a $t,
+                num_threads: usize,
+            ) -> Result<Array, &'static str> {
                 let decision = try!(self.decision_function_parallel(X, num_threads));
                 let mut predictions = Vec::with_capacity(X.rows());
 
                 for row in decision.iter_rows() {
-
                     let mut max_value = f32::NEG_INFINITY;
                     let mut max_class = 0;
 
@@ -265,12 +248,17 @@ macro_rules! impl_multiclass_parallel_predict {
     };
 }
 
-
 macro_rules! impl_multiclass_parallel_supervised {
     ($t:ty) => {
-        impl<'a, T: SupervisedModel<&'a $t> + Clone + Sync + Send> ParallelSupervisedModel<&'a $t> for OneVsRestWrapper<T> {
-            fn fit_parallel(&mut self, X: &'a $t, y: &Array, num_threads: usize) -> Result<(), &'static str> {
-
+        impl<'a, T: SupervisedModel<&'a $t> + Clone + Sync + Send> ParallelSupervisedModel<&'a $t>
+            for OneVsRestWrapper<T>
+        {
+            fn fit_parallel(
+                &mut self,
+                X: &'a $t,
+                y: &Array,
+                num_threads: usize,
+            ) -> Result<(), &'static str> {
                 let mut ovr = OneVsRest::split(y);
 
                 loop {
@@ -307,9 +295,8 @@ macro_rules! impl_multiclass_parallel_supervised {
                 Ok(())
             }
         }
-    }
+    };
 }
-
 
 impl_multiclass_supervised_model!(Array);
 impl_multiclass_supervised_model!(SparseRowArray);

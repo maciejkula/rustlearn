@@ -64,9 +64,8 @@ use prelude::*;
 use multiclass::OneVsRestWrapper;
 use utils::{check_data_dimensionality, check_matched_dimensions, check_valid_labels};
 
-
 /// Hyperparameters for a `SGDClassifier` model.
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize)]
 pub struct Hyperparameters {
     dim: usize,
 
@@ -74,7 +73,6 @@ pub struct Hyperparameters {
     l2_penalty: f32,
     l1_penalty: f32,
 }
-
 
 impl Hyperparameters {
     /// Creates new Hyperparameters.
@@ -150,8 +148,7 @@ impl Hyperparameters {
 }
 
 /// A two-class linear regression classifier implemented using stochastic gradient descent.
-#[derive(RustcEncodable, RustcDecodable)]
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct SGDClassifier {
     dim: usize,
 
@@ -167,43 +164,45 @@ pub struct SGDClassifier {
     accumulated_l2: f32,
 }
 
-
 fn sigmoid(x: f32) -> f32 {
     1.0 / (1.0 + (-x).exp())
 }
-
 
 fn logistic_loss(y: f32, y_hat: f32) -> f32 {
     y_hat - y
 }
 
-
 macro_rules! adagrad_updates {
     ($coefficients:expr, $x:expr, $gradsq:expr) => {{
-        $coefficients.iter_mut()
+        $coefficients
+            .iter_mut()
             .zip($x.iter())
             .zip(($gradsq.iter_mut()))
-        }}
+    }};
 }
-
 
 macro_rules! max {
     ($x:expr, $y:expr) => {{
-        if $x > $y { $x } else { $y }
-    }}
+        if $x > $y {
+            $x
+        } else {
+            $y
+        }
+    }};
 }
-
 
 macro_rules! min {
     ($x:expr, $y:expr) => {{
-        if $x < $y { $x } else { $y }
-    }}
+        if $x < $y {
+            $x
+        } else {
+            $y
+        }
+    }};
 }
-
 
 impl<'a> SupervisedModel<&'a Array> for SGDClassifier {
     fn fit(&mut self, X: &Array, y: &Array) -> Result<(), &'static str> {
-
         try!(check_data_dimensionality(self.dim, X));
         try!(check_matched_dimensions(X, y));
         try!(check_valid_labels(y));
@@ -222,7 +221,6 @@ impl<'a> SupervisedModel<&'a Array> for SGDClassifier {
     }
 
     fn decision_function(&self, X: &Array) -> Result<Array, &'static str> {
-
         try!(check_data_dimensionality(self.dim, X));
 
         let mut data = Vec::with_capacity(X.rows());
@@ -235,18 +233,17 @@ impl<'a> SupervisedModel<&'a Array> for SGDClassifier {
     }
 }
 
-
 impl<'a> ParallelPredict<&'a Array> for SGDClassifier {
-    fn decision_function_parallel(&self,
-                                  X: &Array,
-                                  num_threads: usize)
-                                  -> Result<Array, &'static str> {
+    fn decision_function_parallel(
+        &self,
+        X: &Array,
+        num_threads: usize,
+    ) -> Result<Array, &'static str> {
         try!(check_data_dimensionality(self.dim, X));
 
         let mut data = Vec::with_capacity(X.rows());
 
         crossbeam::scope(|scope| {
-
             let data_chunks = data.chunks_mut(num_threads).collect::<Vec<_>>();
             let mut row_bounds = Vec::new();
 
@@ -270,10 +267,8 @@ impl<'a> ParallelPredict<&'a Array> for SGDClassifier {
     }
 }
 
-
 impl<'a> SupervisedModel<&'a SparseRowArray> for SGDClassifier {
     fn fit(&mut self, X: &SparseRowArray, y: &Array) -> Result<(), &'static str> {
-
         try!(check_data_dimensionality(self.dim, X));
         try!(check_matched_dimensions(X, y));
         try!(check_valid_labels(y));
@@ -292,7 +287,6 @@ impl<'a> SupervisedModel<&'a SparseRowArray> for SGDClassifier {
     }
 
     fn decision_function(&self, X: &SparseRowArray) -> Result<Array, &'static str> {
-
         try!(check_data_dimensionality(self.dim, X));
 
         let mut data = Vec::with_capacity(X.rows());
@@ -305,7 +299,6 @@ impl<'a> SupervisedModel<&'a SparseRowArray> for SGDClassifier {
     }
 }
 
-
 impl SGDClassifier {
     /// Returns a reference to the estimated coefficients vector.
     pub fn get_coefficients(&self) -> &Array {
@@ -313,7 +306,6 @@ impl SGDClassifier {
     }
 
     fn update_at_idx(&mut self, idx: usize, update: f32) {
-
         let gradsq = self.gradsq.get(idx, 0);
 
         let local_learning_rate = self.learning_rate / gradsq.sqrt();
@@ -323,9 +315,7 @@ impl SGDClassifier {
     }
 
     fn update<T: NonzeroIterable>(&mut self, x: &T, loss: f32) {
-
         for (idx, gradient) in x.iter_nonzero() {
-
             self.update_at_idx(idx, loss * gradient);
             self.apply_regularization(idx);
         }
@@ -339,7 +329,6 @@ impl SGDClassifier {
     }
 
     fn apply_regularization(&mut self, coefficient_index: usize) {
-
         let idx = coefficient_index;
         let coefficient = self.coefficients.get_mut(idx, 0);
         let applied_l2 = self.applied_l2.get_mut(idx, 0);
@@ -355,11 +344,15 @@ impl SGDClassifier {
         let l1_potential_update = self.accumulated_l1 - *applied_l1;
 
         if *coefficient > 0.0 {
-            *coefficient = max!(0.0,
-                                *coefficient - local_learning_rate * l1_potential_update);
+            *coefficient = max!(
+                0.0,
+                *coefficient - local_learning_rate * l1_potential_update
+            );
         } else {
-            *coefficient = min!(0.0,
-                                *coefficient + local_learning_rate * l1_potential_update)
+            *coefficient = min!(
+                0.0,
+                *coefficient + local_learning_rate * l1_potential_update
+            )
         };
 
         let l1_actual_update = (pre_update_coeff - *coefficient).abs();
@@ -367,7 +360,6 @@ impl SGDClassifier {
     }
 
     fn compute_prediction<T: NonzeroIterable>(&self, row: &T) -> f32 {
-
         let mut prediction = 0.0;
 
         for (idx, value) in row.iter_nonzero() {
@@ -378,10 +370,9 @@ impl SGDClassifier {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use rand::{StdRng, SeedableRng};
+    use rand::{SeedableRng, StdRng};
 
     use prelude::*;
 
@@ -399,7 +390,6 @@ mod tests {
 
     #[test]
     fn basic_updating() {
-
         let mut model = Hyperparameters::new(2)
             .learning_rate(0.01)
             .l2_penalty(0.0)
@@ -506,7 +496,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = data.get_rows(&train_idx);
             let x_test = data.get_rows(&test_idx);
 
@@ -546,7 +535,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = data.get_rows(&train_idx);
             let x_test = data.get_rows(&test_idx);
 
@@ -562,10 +550,8 @@ mod tests {
                 model.fit(&x_train, &y_train).unwrap();
             }
 
-            let encoded = bincode::rustc_serialize::encode(&model, bincode::SizeLimit::Infinite)
-                .unwrap();
-            let decoded: OneVsRestWrapper<SGDClassifier> =
-                bincode::rustc_serialize::decode(&encoded).unwrap();
+            let encoded = bincode::serialize(&model).unwrap();
+            let decoded: OneVsRestWrapper<SGDClassifier> = bincode::deserialize(&encoded).unwrap();
 
             let y_hat = decoded.predict(&x_test).unwrap();
 
@@ -592,7 +578,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = data.get_rows(&train_idx);
             let x_test = data.get_rows(&test_idx);
 
@@ -623,7 +608,6 @@ mod tests {
     #[test]
     #[cfg(feature = "all_tests")]
     fn test_sgdclassifier_newsgroups() {
-
         let (X, target) = newsgroups::load_data();
 
         let no_splits = 2;
@@ -634,7 +618,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = X.get_rows(&train_idx);
             let x_test = X.get_rows(&test_idx);
 

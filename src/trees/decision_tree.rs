@@ -38,12 +38,13 @@ use std::usize;
 use prelude::*;
 
 use multiclass::OneVsRestWrapper;
-use utils::{check_data_dimensionality, check_matched_dimensions, check_valid_labels, EncodableRng};
+use utils::{
+    check_data_dimensionality, check_matched_dimensions, check_valid_labels, EncodableRng,
+};
 
 use rand;
-use rand::StdRng;
 use rand::distributions::{IndependentSample, Range};
-
+use rand::StdRng;
 
 struct FeatureIndices {
     num_used: usize,
@@ -51,10 +52,8 @@ struct FeatureIndices {
     feature_to_position: Vec<usize>,
 }
 
-
 impl FeatureIndices {
     fn new(candidate_indices: Vec<usize>) -> FeatureIndices {
-
         let mut feature_to_position = vec![0; *candidate_indices.iter().max().unwrap() + 1];
 
         for (i, &feature_idx) in candidate_indices.iter().enumerate() {
@@ -75,11 +74,7 @@ impl FeatureIndices {
         self.sample_without_replacement(to, number, rng);
     }
 
-    fn sample_without_replacement(&mut self,
-                                  to: &mut Vec<usize>,
-                                  number: usize,
-                                  rng: &mut StdRng) {
-
+    fn sample_without_replacement(&mut self, to: &mut Vec<usize>, number: usize, rng: &mut StdRng) {
         let from = &mut self.candidate_indices[self.num_used..];
 
         for num_sampled in 0..number {
@@ -90,7 +85,8 @@ impl FeatureIndices {
             to.push(sampled_feature);
 
             from.swap(idx, num_sampled);
-            self.feature_to_position.swap(sampled_feature, swapped_feature);
+            self.feature_to_position
+                .swap(sampled_feature, swapped_feature);
         }
     }
 
@@ -103,12 +99,12 @@ impl FeatureIndices {
         let swapped_feature = self.candidate_indices[self.num_used];
 
         self.candidate_indices.swap(self.num_used, marked_position);
-        self.feature_to_position.swap(feature_index, swapped_feature);
+        self.feature_to_position
+            .swap(feature_index, swapped_feature);
 
         self.num_used += 1;
     }
 }
-
 
 #[derive(Debug)]
 struct FeatureValues {
@@ -118,7 +114,6 @@ struct FeatureValues {
     count: usize,
     total_y: f32,
 }
-
 
 impl FeatureValues {
     fn with_capacity(capacity: usize) -> FeatureValues {
@@ -132,12 +127,10 @@ impl FeatureValues {
     }
 
     fn push(&mut self, x: f32, y: f32) {
-
         self.count += 1;
         self.total_y += y;
 
         if x == 0.0 {
-
             // We need that one zero value
             // for later finding the optimal split
             if self.zero_count == 0 {
@@ -152,7 +145,6 @@ impl FeatureValues {
     }
 
     fn fill_remaining_zeros(&mut self, remaining_zero_count: usize, remaining_positives: f32) {
-
         if self.zero_count == 0 {
             self.xy_pairs.push((0.0, 0.0));
         }
@@ -165,11 +157,8 @@ impl FeatureValues {
     }
 
     fn sort(&mut self) {
-        self.xy_pairs.sort_by(|a, b| {
-            a.0
-                .partial_cmp(&b.0)
-                .unwrap_or(Ordering::Equal)
-        });
+        self.xy_pairs
+            .sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(Ordering::Equal));
     }
 
     fn value_bounds(&self) -> (f32, f32) {
@@ -202,19 +191,15 @@ impl FeatureValues {
     }
 }
 
-
-#[derive(Clone, Debug)]
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 enum FeatureType {
     Constant,
     Binary,
     Continuous,
 }
 
-
 /// Hyperparameters for a `DecisionTree` model.
-#[derive(RustcEncodable, RustcDecodable)]
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Hyperparameters {
     dim: usize,
 
@@ -224,7 +209,6 @@ pub struct Hyperparameters {
 
     rng: EncodableRng,
 }
-
 
 impl Hyperparameters {
     /// Creates new Hyperparameters
@@ -298,9 +282,7 @@ impl Hyperparameters {
     }
 }
 
-
-#[derive(RustcEncodable, RustcDecodable)]
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 enum Node {
     Interior {
         feature: usize,
@@ -312,10 +294,8 @@ enum Node {
     },
 }
 
-
 /// A two-class decision tree.
-#[derive(RustcEncodable, RustcDecodable)]
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct DecisionTree {
     dim: usize,
 
@@ -328,10 +308,8 @@ pub struct DecisionTree {
     rng: EncodableRng,
 }
 
-
 impl<'a> SupervisedModel<&'a Array> for DecisionTree {
     fn fit(&mut self, X: &Array, y: &Array) -> Result<(), &'static str> {
-
         try!(check_data_dimensionality(self.dim, X));
         try!(check_matched_dimensions(X, y));
         try!(check_valid_labels(y));
@@ -342,21 +320,22 @@ impl<'a> SupervisedModel<&'a Array> for DecisionTree {
         let mut feature_indices = FeatureIndices::new(self.get_nonconstant_feature_indices());
         let mut candidate_features = Vec::with_capacity(self.max_features);
 
-        self.root = Some(self.build_tree(X,
-                                         y,
-                                         &mut (0..X.rows()).collect::<Vec<usize>>()[..],
-                                         &mut feature_indices,
-                                         &mut candidate_features,
-                                         0,
-                                         &mut feature_values,
-                                         &DecisionTree::get_values,
-                                         &DecisionTree::split_indices));
+        self.root = Some(self.build_tree(
+            X,
+            y,
+            &mut (0..X.rows()).collect::<Vec<usize>>()[..],
+            &mut feature_indices,
+            &mut candidate_features,
+            0,
+            &mut feature_values,
+            &DecisionTree::get_values,
+            &DecisionTree::split_indices,
+        ));
 
         Ok(())
     }
 
     fn decision_function(&self, X: &Array) -> Result<Array, &'static str> {
-
         try!(check_data_dimensionality(self.dim, X));
 
         match self.root {
@@ -372,10 +351,8 @@ impl<'a> SupervisedModel<&'a Array> for DecisionTree {
     }
 }
 
-
 impl<'a> SupervisedModel<&'a SparseColumnArray> for DecisionTree {
     fn fit(&mut self, X: &SparseColumnArray, y: &Array) -> Result<(), &'static str> {
-
         try!(check_data_dimensionality(self.dim, X));
         try!(check_matched_dimensions(X, y));
         try!(check_valid_labels(y));
@@ -386,21 +363,22 @@ impl<'a> SupervisedModel<&'a SparseColumnArray> for DecisionTree {
         let mut feature_indices = FeatureIndices::new(self.get_nonconstant_feature_indices());
         let mut candidate_features = Vec::with_capacity(self.max_features);
 
-        self.root = Some(self.build_tree(X,
-                                         y,
-                                         &mut (0..X.rows()).collect::<Vec<usize>>()[..],
-                                         &mut feature_indices,
-                                         &mut candidate_features,
-                                         0,
-                                         &mut feature_values,
-                                         &DecisionTree::get_values_sparse,
-                                         &DecisionTree::split_indices_sparse));
+        self.root = Some(self.build_tree(
+            X,
+            y,
+            &mut (0..X.rows()).collect::<Vec<usize>>()[..],
+            &mut feature_indices,
+            &mut candidate_features,
+            0,
+            &mut feature_values,
+            &DecisionTree::get_values_sparse,
+            &DecisionTree::split_indices_sparse,
+        ));
 
         Ok(())
     }
 
     fn decision_function(&self, X: &SparseColumnArray) -> Result<Array, &'static str> {
-
         try!(check_data_dimensionality(self.dim, X));
 
         match self.root {
@@ -416,10 +394,8 @@ impl<'a> SupervisedModel<&'a SparseColumnArray> for DecisionTree {
     }
 }
 
-
 impl DecisionTree {
     fn analyze_features(X: &Array) -> Vec<FeatureType> {
-
         let mut features = Vec::with_capacity(X.cols());
 
         for col in X.iter_columns() {
@@ -438,14 +414,10 @@ impl DecisionTree {
     }
 
     fn analyze_features_sparse(X: &SparseColumnArray) -> Vec<FeatureType> {
-
         let mut features = Vec::with_capacity(X.cols());
 
         for col in X.iter_columns() {
-
-            let mut values = col.iter_nonzero()
-                .map(|(_, val)| val)
-                .collect::<Vec<_>>();
+            let mut values = col.iter_nonzero().map(|(_, val)| val).collect::<Vec<_>>();
 
             // Add zero as a distrinct value
             if values.len() < X.rows() {
@@ -469,18 +441,15 @@ impl DecisionTree {
         self.feature_types
             .iter()
             .enumerate()
-            .filter(|&(_, feature_type)| {
-                match *feature_type {
-                    FeatureType::Constant => false,
-                    _ => true,
-                }
+            .filter(|&(_, feature_type)| match *feature_type {
+                FeatureType::Constant => false,
+                _ => true,
             })
             .map(|(i, _)| i)
             .collect::<Vec<_>>()
     }
 
     fn count_positives(y: &Array, indices: &mut [usize]) -> usize {
-
         let mut count = 0;
 
         let data = y.data();
@@ -494,36 +463,43 @@ impl DecisionTree {
         count
     }
 
-    fn build_tree<T, F, G>(&mut self,
-                           X: T,
-                           y: &Array,
-                           indices: &mut [usize],
-                           feature_indices: &mut FeatureIndices,
-                           candidate_features: &mut Vec<usize>,
-                           depth: usize,
-                           feature_values: &mut FeatureValues,
-                           get_values: &F,
-                           split_indices: &G)
-                           -> Node
-        where T: Copy,
-              F: Fn(T, &Array, usize, usize, &[usize], &mut FeatureValues) -> (),
-              G: Fn(T, &mut [usize], usize, f32) -> (&mut [usize], &mut [usize])
+    fn build_tree<T, F, G>(
+        &mut self,
+        X: T,
+        y: &Array,
+        indices: &mut [usize],
+        feature_indices: &mut FeatureIndices,
+        candidate_features: &mut Vec<usize>,
+        depth: usize,
+        feature_values: &mut FeatureValues,
+        get_values: &F,
+        split_indices: &G,
+    ) -> Node
+    where
+        T: Copy,
+        F: Fn(T, &Array, usize, usize, &[usize], &mut FeatureValues) -> (),
+        G: Fn(T, &mut [usize], usize, f32) -> (&mut [usize], &mut [usize]),
     {
-
         let num_positives = DecisionTree::count_positives(y, indices);
         let probability = num_positives as f32 / indices.len() as f32;
 
-        if probability == 0.0 || probability == 1.0 || depth > self.max_depth ||
-           indices.len() < self.min_samples_split {
-            return Node::Leaf { probability: probability };
+        if probability == 0.0
+            || probability == 1.0
+            || depth > self.max_depth
+            || indices.len() < self.min_samples_split
+        {
+            return Node::Leaf {
+                probability: probability,
+            };
         }
 
         // Multiple attemps to perform a split.
         for _ in 0..10 {
-
-            feature_indices.sample_indices(candidate_features,
-                                           self.max_features,
-                                           &mut self.rng.rng);
+            feature_indices.sample_indices(
+                candidate_features,
+                self.max_features,
+                &mut self.rng.rng,
+            );
 
             let mut best_feature_idx = 0;
             let mut best_feature_threshold = 0.0;
@@ -550,7 +526,6 @@ impl DecisionTree {
                 split_indices(X, indices, best_feature_idx, best_feature_threshold);
 
             if left_indices.len() > 0 && right_indices.len() > 0 {
-
                 // Cannot split on binary feature more than one time
                 if let FeatureType::Binary = self.feature_types[best_feature_idx] {
                     feature_indices.mark_as_used(best_feature_idx);
@@ -558,27 +533,31 @@ impl DecisionTree {
 
                 let num_used_features = feature_indices.num_used;
 
-                let left = self.build_tree(X,
-                                           y,
-                                           left_indices,
-                                           feature_indices,
-                                           candidate_features,
-                                           depth + 1,
-                                           feature_values,
-                                           get_values,
-                                           split_indices);
+                let left = self.build_tree(
+                    X,
+                    y,
+                    left_indices,
+                    feature_indices,
+                    candidate_features,
+                    depth + 1,
+                    feature_values,
+                    get_values,
+                    split_indices,
+                );
 
                 feature_indices.num_used = num_used_features;
 
-                let right = self.build_tree(X,
-                                            y,
-                                            right_indices,
-                                            feature_indices,
-                                            candidate_features,
-                                            depth + 1,
-                                            feature_values,
-                                            get_values,
-                                            split_indices);
+                let right = self.build_tree(
+                    X,
+                    y,
+                    right_indices,
+                    feature_indices,
+                    candidate_features,
+                    depth + 1,
+                    feature_values,
+                    get_values,
+                    split_indices,
+                );
 
                 return Node::Interior {
                     feature: best_feature_idx,
@@ -588,19 +567,20 @@ impl DecisionTree {
             }
         }
 
-        Node::Leaf { probability: probability }
+        Node::Leaf {
+            probability: probability,
+        }
     }
 
-    fn split_indices<'a>(X: &Array,
-                         indices: &'a mut [usize],
-                         feature_idx: usize,
-                         threshold: f32)
-                         -> (&'a mut [usize], &'a mut [usize]) {
-
+    fn split_indices<'a>(
+        X: &Array,
+        indices: &'a mut [usize],
+        feature_idx: usize,
+        threshold: f32,
+    ) -> (&'a mut [usize], &'a mut [usize]) {
         let mut num_left = 0;
 
         for i in 0..indices.len() {
-
             let row_idx = indices[i];
 
             if X.get(row_idx, feature_idx) <= threshold {
@@ -617,12 +597,12 @@ impl DecisionTree {
         (left, right)
     }
 
-    fn split_indices_sparse<'a>(x: &SparseColumnArray,
-                                indices: &'a mut [usize],
-                                feature_idx: usize,
-                                threshold: f32)
-                                -> (&'a mut [usize], &'a mut [usize]) {
-
+    fn split_indices_sparse<'a>(
+        x: &SparseColumnArray,
+        indices: &'a mut [usize],
+        feature_idx: usize,
+        threshold: f32,
+    ) -> (&'a mut [usize], &'a mut [usize]) {
         let mut num_left = 0;
         let indices_len = indices.len();
 
@@ -635,7 +615,7 @@ impl DecisionTree {
                     indices[num_left] = $row_idx;
                     num_left += 1;
                 }
-            }}
+            }};
         }
 
         let mut nonzero_iter = x.iter_nonzero();
@@ -644,7 +624,6 @@ impl DecisionTree {
         let mut i = 0;
 
         while i < indices_len {
-
             let indices_idx = indices[i];
 
             if let Some((nonzero_idx, nonzero_value)) = nonzero_option {
@@ -691,7 +670,6 @@ impl DecisionTree {
         let mut cumulative_y = 0.0;
 
         for &(x, y) in &values.xy_pairs {
-
             if x == 0.0 {
                 cumulative_count += values.zero_count as f32;
                 cumulative_y += values.zero_y;
@@ -706,12 +684,14 @@ impl DecisionTree {
 
             let left_child_proportion = cumulative_count / total_count;
             let left_child_positive_probability = cumulative_y / cumulative_count;
-            let right_child_positive_probability = (total_y - cumulative_y) /
-                                                   (total_count - cumulative_count);
+            let right_child_positive_probability =
+                (total_y - cumulative_y) / (total_count - cumulative_count);
 
-            let impurity = DecisionTree::proxy_gini_impurity(left_child_proportion,
-                                                             left_child_positive_probability,
-                                                             right_child_positive_probability);
+            let impurity = DecisionTree::proxy_gini_impurity(
+                left_child_proportion,
+                left_child_positive_probability,
+                right_child_positive_probability,
+            );
 
             // It's important that this is less than or equal rather
             // than less than: subject to no decrease in impurity
@@ -725,29 +705,30 @@ impl DecisionTree {
         (split_x, split_impurity)
     }
 
-    fn proxy_gini_impurity(left_child_proportion: f32,
-                           left_child_probability: f32,
-                           right_child_probability: f32)
-                           -> f32 {
-
+    fn proxy_gini_impurity(
+        left_child_proportion: f32,
+        left_child_probability: f32,
+        right_child_probability: f32,
+    ) -> f32 {
         let right_child_proportion = 1.0 - left_child_proportion;
 
-        let left_impurity = 1.0 - left_child_probability.powi(2) -
-                            (1.0 - left_child_probability).powi(2);
-        let right_impurity = 1.0 - right_child_probability.powi(2) -
-                             (1.0 - right_child_probability).powi(2);
+        let left_impurity =
+            1.0 - left_child_probability.powi(2) - (1.0 - left_child_probability).powi(2);
+        let right_impurity =
+            1.0 - right_child_probability.powi(2) - (1.0 - right_child_probability).powi(2);
 
         left_child_proportion * left_impurity + right_child_proportion * right_impurity
     }
 
     #[allow(unused_variables)]
-    fn get_values(X: &Array,
-                  y: &Array,
-                  num_positives: usize,
-                  feature_idx: usize,
-                  indices: &[usize],
-                  values: &mut FeatureValues) {
-
+    fn get_values(
+        X: &Array,
+        y: &Array,
+        num_positives: usize,
+        feature_idx: usize,
+        indices: &[usize],
+        values: &mut FeatureValues,
+    ) {
         values.clear();
 
         for &row_idx in indices.iter() {
@@ -757,13 +738,14 @@ impl DecisionTree {
         values.sort();
     }
 
-    fn get_values_sparse(x: &SparseColumnArray,
-                         y: &Array,
-                         num_positives: usize,
-                         feature_idx: usize,
-                         indices: &[usize],
-                         values: &mut FeatureValues) {
-
+    fn get_values_sparse(
+        x: &SparseColumnArray,
+        y: &Array,
+        num_positives: usize,
+        feature_idx: usize,
+        indices: &[usize],
+        values: &mut FeatureValues,
+    ) {
         let x = x.view_column(feature_idx);
 
         values.clear();
@@ -779,12 +761,13 @@ impl DecisionTree {
         values.sort();
     }
 
-    fn get_values_sparse_by_iteration(x: SparseArrayView,
-                                      y: &Array,
-                                      num_positives: usize,
-                                      indices: &[usize],
-                                      values: &mut FeatureValues) {
-
+    fn get_values_sparse_by_iteration(
+        x: SparseArrayView,
+        y: &Array,
+        num_positives: usize,
+        indices: &[usize],
+        values: &mut FeatureValues,
+    ) {
         let mut indices_iter = indices.iter();
         let mut nonzero_iter = x.iter_nonzero();
 
@@ -811,7 +794,6 @@ impl DecisionTree {
                     }
                 }
             } else {
-
                 // We've exhausted all nonzero indices
                 let remaining_zeros = indices.len() - values.count;
                 let remaining_positives = num_positives as f32 - values.total_y;
@@ -822,12 +804,13 @@ impl DecisionTree {
         }
     }
 
-    fn get_values_sparse_by_search(x: SparseArrayView,
-                                   y: &Array,
-                                   num_positives: usize,
-                                   indices: &[usize],
-                                   values: &mut FeatureValues) {
-
+    fn get_values_sparse_by_search(
+        x: SparseArrayView,
+        y: &Array,
+        num_positives: usize,
+        indices: &[usize],
+        values: &mut FeatureValues,
+    ) {
         let y = y.data();
 
         for (row_idx, value) in x.iter_nonzero() {
@@ -844,7 +827,11 @@ impl DecisionTree {
 
     fn query_tree(&self, node: &Node, x: &Array, row_idx: usize) -> f32 {
         match *node {
-            Node::Interior { feature, threshold, ref children } => {
+            Node::Interior {
+                feature,
+                threshold,
+                ref children,
+            } => {
                 if x.get(row_idx, feature) <= threshold {
                     self.query_tree(&children.0, x, row_idx)
                 } else {
@@ -857,7 +844,11 @@ impl DecisionTree {
 
     fn query_tree_sparse(&self, node: &Node, x: &SparseColumnArray, row_idx: usize) -> f32 {
         match *node {
-            Node::Interior { feature, threshold, ref children } => {
+            Node::Interior {
+                feature,
+                threshold,
+                ref children,
+            } => {
                 if x.get(row_idx, feature) <= threshold {
                     self.query_tree_sparse(&children.0, x, row_idx)
                 } else {
@@ -869,21 +860,18 @@ impl DecisionTree {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use prelude::*;
-
+    use super::FeatureValues;
+    use super::*;
     use cross_validation::cross_validation::CrossValidation;
     use datasets::iris::load_data;
     use metrics::accuracy_score;
     use multiclass::OneVsRestWrapper;
-    use super::*;
-    use super::FeatureValues;
 
-    use rand::{StdRng, SeedableRng};
+    use rand::{SeedableRng, StdRng};
 
-    use rustc_serialize::json;
+    use serde_json;
 
     use bincode;
 
@@ -909,10 +897,15 @@ mod tests {
 
     #[test]
     fn calculate_split_1() {
-
-        let x = SparseColumnArray::from(&Array::from(&vec![vec![-1.0], vec![-0.5], vec![0.0],
-                                                           vec![0.0], vec![0.0], vec![0.5],
-                                                           vec![1.0]]));
+        let x = SparseColumnArray::from(&Array::from(&vec![
+            vec![-1.0],
+            vec![-0.5],
+            vec![0.0],
+            vec![0.0],
+            vec![0.0],
+            vec![0.5],
+            vec![1.0],
+        ]));
         let y = Array::from(vec![1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]);
         let mut values = FeatureValues::with_capacity(y.rows());
         let mut indices = (0..y.rows()).collect::<Vec<_>>();
@@ -927,10 +920,15 @@ mod tests {
 
     #[test]
     fn calculate_split_2() {
-
-        let x = SparseColumnArray::from(&Array::from(&vec![vec![-1.0], vec![-0.5], vec![0.0],
-                                                           vec![0.0], vec![0.0], vec![0.5],
-                                                           vec![1.0]]));
+        let x = SparseColumnArray::from(&Array::from(&vec![
+            vec![-1.0],
+            vec![-0.5],
+            vec![0.0],
+            vec![0.0],
+            vec![0.0],
+            vec![0.5],
+            vec![1.0],
+        ]));
         let y = Array::from(vec![1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0]);
         let mut values = FeatureValues::with_capacity(y.rows());
         let mut indices = (0..y.rows()).collect::<Vec<_>>();
@@ -945,8 +943,12 @@ mod tests {
 
     #[test]
     fn test_indices_split() {
-        let x =
-            Array::from(&vec![vec![-1.0, 1.0], vec![-0.5, 1.0], vec![0.5, 0.0], vec![1.0, 0.0]]);
+        let x = Array::from(&vec![
+            vec![-1.0, 1.0],
+            vec![-0.5, 1.0],
+            vec![0.5, 0.0],
+            vec![1.0, 0.0],
+        ]);
         let mut indices = vec![0, 1, 2, 3];
         let (left, right) = DecisionTree::split_indices(&x, &mut indices[..], 0, -0.5);
         assert!(left.to_owned() == vec![0, 1]);
@@ -955,11 +957,13 @@ mod tests {
 
     #[test]
     fn test_indices_split_sparse() {
-        let x = SparseColumnArray::from(&Array::from(&vec![vec![-1.0, 1.0],
-                                                           vec![0.0, 2.0],
-                                                           vec![0.0, 3.0],
-                                                           vec![1.0, 0.0],
-                                                           vec![0.0, 0.0]]));
+        let x = SparseColumnArray::from(&Array::from(&vec![
+            vec![-1.0, 1.0],
+            vec![0.0, 2.0],
+            vec![0.0, 3.0],
+            vec![1.0, 0.0],
+            vec![0.0, 0.0],
+        ]));
         let mut indices = (0..5).collect::<Vec<_>>();
         let ind_bor = &mut indices[..];
 
@@ -977,14 +981,15 @@ mod tests {
         assert!(right.to_owned() == vec![0, 1, 2]);
     }
 
-
     #[test]
     fn test_get_values_sparse() {
-        let x = SparseColumnArray::from(&Array::from(&vec![vec![-1.0, 1.0],
-                                                           vec![0.0, 2.0],
-                                                           vec![0.0, 3.0],
-                                                           vec![1.0, 0.0],
-                                                           vec![0.0, 0.0]]));
+        let x = SparseColumnArray::from(&Array::from(&vec![
+            vec![-1.0, 1.0],
+            vec![0.0, 2.0],
+            vec![0.0, 3.0],
+            vec![1.0, 0.0],
+            vec![0.0, 0.0],
+        ]));
         let y = Array::from(vec![0.0, 1.0, 0.0, 1.0, 1.0]);
         let mut values = FeatureValues::with_capacity(5);
         let mut indices = (0..5).collect::<Vec<_>>();
@@ -1031,7 +1036,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = data.get_rows(&train_idx);
             let x_test = data.get_rows(&test_idx);
 
@@ -1086,7 +1090,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = data.get_rows(&train_idx);
             let x_test = data.get_rows(&test_idx);
 
@@ -1124,7 +1127,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = SparseColumnArray::from(&data.get_rows(&train_idx));
             let x_test = SparseColumnArray::from(&data.get_rows(&test_idx));
 
@@ -1162,7 +1164,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = data.get_rows(&train_idx);
             let x_test = data.get_rows(&test_idx);
 
@@ -1177,17 +1178,14 @@ mod tests {
             model.fit(&x_train, &y_train).unwrap();
 
             // Binary encoding
-            let encoded = bincode::rustc_serialize::encode(&model, bincode::SizeLimit::Infinite)
-                .unwrap();
-            let decoded: OneVsRestWrapper<DecisionTree> =
-                bincode::rustc_serialize::decode(&encoded).unwrap();
+            let encoded = bincode::serialize(&model).unwrap();
+            let decoded: OneVsRestWrapper<DecisionTree> = bincode::deserialize(&encoded).unwrap();
 
             let bincode_prediction = decoded.predict(&x_test).unwrap();
 
             // JSON encoding
-            let encoded = json::encode(&model).unwrap();
-            let decoded: OneVsRestWrapper<DecisionTree> =
-                json::decode(&encoded).unwrap();
+            let encoded = serde_json::to_string(&model).unwrap();
+            let decoded: OneVsRestWrapper<DecisionTree> = serde_json::from_str(&encoded).unwrap();
 
             let json_prediction = decoded.predict(&x_test).unwrap();
 
@@ -1206,7 +1204,6 @@ mod tests {
     #[test]
     #[cfg(feature = "all_tests")]
     fn test_decision_tree_newsgroups() {
-
         let (X, target) = newsgroups::load_data();
 
         let no_splits = 2;
@@ -1218,7 +1215,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = SparseColumnArray::from(&X.get_rows(&train_idx));
 
             let x_test = SparseColumnArray::from(&X.get_rows(&test_idx));
@@ -1252,7 +1248,6 @@ mod tests {
     #[test]
     #[cfg(feature = "all_tests")]
     fn test_decision_tree_newsgroups_parallel() {
-
         let (X, target) = newsgroups::load_data();
 
         let no_splits = 2;
@@ -1264,7 +1259,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = SparseColumnArray::from(&X.get_rows(&train_idx));
 
             let x_test = SparseColumnArray::from(&X.get_rows(&test_idx));
@@ -1298,37 +1292,39 @@ mod tests {
     }
 }
 
-
 #[cfg(feature = "bench")]
 #[allow(unused_imports)]
 mod bench {
 
     use prelude::*;
 
+    use super::Hyperparameters;
     use datasets::iris::load_data;
     use datasets::newsgroups;
-    use super::Hyperparameters;
 
-    use rand::{Rng, StdRng, SeedableRng};
+    use rand::{Rng, SeedableRng, StdRng};
 
     use test::Bencher;
 
     #[bench]
     fn bench_wide(b: &mut Bencher) {
-
         let rows = 100;
         let cols = 5000;
 
         let mut rng = StdRng::new().unwrap();
 
-        let mut X = Array::from((0..(rows * cols))
-            .map(|_| rng.next_f32())
-            .collect::<Vec<_>>());
+        let mut X = Array::from(
+            (0..(rows * cols))
+                .map(|_| rng.next_f32())
+                .collect::<Vec<_>>(),
+        );
         X.reshape(rows, cols);
 
-        let y = Array::from((0..rows)
-            .map(|_| *rng.choose(&vec![0.0, 1.0][..]).unwrap())
-            .collect::<Vec<_>>());
+        let y = Array::from(
+            (0..rows)
+                .map(|_| *rng.choose(&vec![0.0, 1.0][..]).unwrap())
+                .collect::<Vec<_>>(),
+        );
 
         let mut model = Hyperparameters::new(cols)
             .min_samples_split(5)
@@ -1342,21 +1338,23 @@ mod bench {
 
     #[bench]
     fn bench_tall(b: &mut Bencher) {
-
         let rows = 5000;
         let cols = 10;
 
         let mut rng = StdRng::new().unwrap();
 
-        let mut X = Array::from((0..(rows * cols))
-            .map(|_| rng.next_f32())
-            .collect::<Vec<_>>());
+        let mut X = Array::from(
+            (0..(rows * cols))
+                .map(|_| rng.next_f32())
+                .collect::<Vec<_>>(),
+        );
         X.reshape(rows, cols);
 
-        let y = Array::from((0..rows)
-            .map(|_| *rng.choose(&vec![0.0, 1.0][..]).unwrap())
-            .collect::<Vec<_>>());
-
+        let y = Array::from(
+            (0..rows)
+                .map(|_| *rng.choose(&vec![0.0, 1.0][..]).unwrap())
+                .collect::<Vec<_>>(),
+        );
 
         let mut model = Hyperparameters::new(cols)
             .min_samples_split(5)
@@ -1370,27 +1368,28 @@ mod bench {
 
     #[bench]
     fn bench_wide_sparse(b: &mut Bencher) {
-
         let rows = 100;
         let cols = 5000;
 
         let mut rng = StdRng::new().unwrap();
 
-        let mut X = Array::from((0..(rows * cols))
-            .map(|_| {
-                match rng.gen_weighted_bool(4) {
+        let mut X = Array::from(
+            (0..(rows * cols))
+                .map(|_| match rng.gen_weighted_bool(4) {
                     true => rng.next_f32(),
                     false => 0.0,
-                }
-            })
-            .collect::<Vec<_>>());
+                })
+                .collect::<Vec<_>>(),
+        );
         X.reshape(rows, cols);
 
         let X = SparseColumnArray::from(&X);
 
-        let y = Array::from((0..rows)
-            .map(|_| *rng.choose(&vec![0.0, 1.0][..]).unwrap())
-            .collect::<Vec<_>>());
+        let y = Array::from(
+            (0..rows)
+                .map(|_| *rng.choose(&vec![0.0, 1.0][..]).unwrap())
+                .collect::<Vec<_>>(),
+        );
 
         let mut model = Hyperparameters::new(cols)
             .min_samples_split(5)
@@ -1404,27 +1403,28 @@ mod bench {
 
     #[bench]
     fn bench_tall_sparse(b: &mut Bencher) {
-
         let rows = 5000;
         let cols = 100;
 
         let mut rng = StdRng::new().unwrap();
 
-        let mut X = Array::from((0..(rows * cols))
-            .map(|_| {
-                match rng.gen_weighted_bool(4) {
+        let mut X = Array::from(
+            (0..(rows * cols))
+                .map(|_| match rng.gen_weighted_bool(4) {
                     true => rng.next_f32(),
                     false => 0.0,
-                }
-            })
-            .collect::<Vec<_>>());
+                })
+                .collect::<Vec<_>>(),
+        );
         X.reshape(rows, cols);
 
         let X = SparseColumnArray::from(&X);
 
-        let y = Array::from((0..rows)
-            .map(|_| *rng.choose(&vec![0.0, 1.0][..]).unwrap())
-            .collect::<Vec<_>>());
+        let y = Array::from(
+            (0..rows)
+                .map(|_| *rng.choose(&vec![0.0, 1.0][..]).unwrap())
+                .collect::<Vec<_>>(),
+        );
 
         let mut model = Hyperparameters::new(cols)
             .min_samples_split(5)
@@ -1453,7 +1453,6 @@ mod bench {
 
     #[bench]
     fn bench_decision_tree_newsgroups(b: &mut Bencher) {
-
         let (X, target) = newsgroups::load_data();
 
         let x_train = SparseColumnArray::from(&X.get_rows(&(..500)));
@@ -1471,7 +1470,6 @@ mod bench {
 
     #[bench]
     fn bench_decision_tree_newsgroups_parallel(b: &mut Bencher) {
-
         let (X, target) = newsgroups::load_data();
 
         let x_train = SparseColumnArray::from(&X.get_rows(&(..500)));

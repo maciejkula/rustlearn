@@ -38,23 +38,22 @@ use std::cmp;
 use prelude::*;
 
 use multiclass::OneVsRestWrapper;
-use utils::{check_data_dimensionality, check_matched_dimensions, check_valid_labels, EncodableRng};
+use utils::{
+    check_data_dimensionality, check_matched_dimensions, check_valid_labels, EncodableRng,
+};
 
 use rand;
 use rand::distributions::IndependentSample;
 
 use crossbeam;
 
-
 fn sigmoid(x: f32) -> f32 {
     1.0 / (1.0 + (-x).exp())
 }
 
-
 fn logistic_loss(y: f32, y_hat: f32) -> f32 {
     y_hat - y
 }
-
 
 macro_rules! max {
     ($x:expr, $y:expr) => {{
@@ -62,9 +61,8 @@ macro_rules! max {
             true => $x,
             false => $y,
         }
-    }}
+    }};
 }
-
 
 macro_rules! min {
     ($x:expr, $y:expr) => {{
@@ -72,12 +70,11 @@ macro_rules! min {
             true => $x,
             false => $y,
         }
-    }}
+    }};
 }
 
-
 /// Hyperparameters for a FactorizationMachine
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize)]
 pub struct Hyperparameters {
     dim: usize,
     num_components: usize,
@@ -87,7 +84,6 @@ pub struct Hyperparameters {
     l1_penalty: f32,
     rng: EncodableRng,
 }
-
 
 impl Hyperparameters {
     /// Creates new Hyperparameters.
@@ -134,7 +130,6 @@ impl Hyperparameters {
 
     /// Build a two-class model.
     pub fn build(&self) -> FactorizationMachine {
-
         let mut rng = self.rng.clone();
 
         FactorizationMachine {
@@ -162,11 +157,10 @@ impl Hyperparameters {
 
     /// Initialize the latent factors.
     fn init_latent_factors_array(&self, rng: &mut EncodableRng) -> Array {
-
         let mut data = Vec::with_capacity(self.dim * self.num_components);
         // let normal = rand::distributions::normal::Normal::new(0.0, 0.1 / ((self.dim * self.num_components) as f64).sqrt());
-        let normal = rand::distributions::normal::Normal::new(0.0,
-                                                              1.0 / self.num_components as f64);
+        let normal =
+            rand::distributions::normal::Normal::new(0.0, 1.0 / self.num_components as f64);
 
         for _ in 0..(self.dim * self.num_components) {
             data.push(normal.ind_sample(&mut rng.rng) as f32)
@@ -186,9 +180,8 @@ impl Hyperparameters {
     }
 }
 
-
 /// A two-class factorization machine implemented using stochastic gradient descent.
-#[derive(Clone, RustcEncodable, RustcDecodable)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct FactorizationMachine {
     dim: usize,
     num_components: usize,
@@ -211,10 +204,8 @@ pub struct FactorizationMachine {
     rng: EncodableRng,
 }
 
-
 impl FactorizationMachine {
     fn compute_prediction<T: NonzeroIterable>(&self, row: &T, component_sum: &mut [f32]) -> f32 {
-
         let mut result = 0.0;
 
         for (feature_idx, feature_value) in row.iter_nonzero() {
@@ -222,7 +213,6 @@ impl FactorizationMachine {
         }
 
         for component_idx in 0..self.num_components {
-
             let mut component_sum_elem = 0.0;
             let mut component_sum_sq_elem = 0.0;
 
@@ -240,12 +230,14 @@ impl FactorizationMachine {
         result
     }
 
-    fn apply_regularization(parameter_value: &mut f32,
-                            applied_l2: &mut f32,
-                            applied_l1: &mut f32,
-                            local_learning_rate: f32,
-                            accumulated_l2: f32,
-                            accumulated_l1: f32) {
+    fn apply_regularization(
+        parameter_value: &mut f32,
+        applied_l2: &mut f32,
+        applied_l1: &mut f32,
+        local_learning_rate: f32,
+        accumulated_l2: f32,
+        accumulated_l1: f32,
+    ) {
         let l2_update = accumulated_l2 / *applied_l2;
 
         *parameter_value *= 1.0 - (1.0 - l2_update) * local_learning_rate;
@@ -255,11 +247,15 @@ impl FactorizationMachine {
         let pre_update_coeff = parameter_value.clone();
 
         if *parameter_value > 0.0 {
-            *parameter_value = max!(0.0,
-                                    *parameter_value - l1_potential_update * local_learning_rate);
+            *parameter_value = max!(
+                0.0,
+                *parameter_value - l1_potential_update * local_learning_rate
+            );
         } else {
-            *parameter_value = min!(0.0,
-                                    *parameter_value + l1_potential_update * local_learning_rate);
+            *parameter_value = min!(
+                0.0,
+                *parameter_value + l1_potential_update * local_learning_rate
+            );
         }
 
         let l1_actual_update = (pre_update_coeff - *parameter_value).abs();
@@ -267,9 +263,7 @@ impl FactorizationMachine {
     }
 
     fn update<T: NonzeroIterable>(&mut self, row: T, loss: f32, component_sum: &[f32]) {
-
         for (feature_idx, feature_value) in (&row).iter_nonzero() {
-
             // Update coefficients
             let gradsq = self.gradsq.get_mut(feature_idx, 0);
             let local_learning_rate = self.learning_rate / gradsq.sqrt();
@@ -283,43 +277,50 @@ impl FactorizationMachine {
             *coefficient_value -= local_learning_rate * gradient;
             *gradsq += gradient.powi(2);
 
-            FactorizationMachine::apply_regularization(coefficient_value,
-                                                       applied_l2,
-                                                       applied_l1,
-                                                       local_learning_rate,
-                                                       self.accumulated_l2,
-                                                       self.accumulated_l1);
+            FactorizationMachine::apply_regularization(
+                coefficient_value,
+                applied_l2,
+                applied_l1,
+                local_learning_rate,
+                self.accumulated_l2,
+                self.accumulated_l1,
+            );
 
             // Update latent factors
             let slice_start = feature_idx * self.num_components;
             let slice_stop = slice_start + self.num_components;
 
-            let mut component_row = &mut self.latent_factors
-                .as_mut_slice()[slice_start..slice_stop];
+            let mut component_row =
+                &mut self.latent_factors.as_mut_slice()[slice_start..slice_stop];
             let mut gradsq_row = &mut self.latent_gradsq.as_mut_slice()[slice_start..slice_stop];
-            let mut applied_l2_row = &mut self.latent_applied_l2
-                .as_mut_slice()[slice_start..slice_stop];
-            let mut applied_l1_row = &mut self.latent_applied_l1
-                .as_mut_slice()[slice_start..slice_stop];
+            let mut applied_l2_row =
+                &mut self.latent_applied_l2.as_mut_slice()[slice_start..slice_stop];
+            let mut applied_l1_row =
+                &mut self.latent_applied_l1.as_mut_slice()[slice_start..slice_stop];
 
             for (component_value, (gradsq, (applied_l2, (applied_l1, component_sum_value)))) in
-                component_row.iter_mut().zip(gradsq_row.iter_mut().zip(applied_l2_row.iter_mut()
-                .zip(applied_l1_row.iter_mut().zip(component_sum.iter())))) {
-
+                component_row.iter_mut().zip(
+                    gradsq_row.iter_mut().zip(
+                        applied_l2_row
+                            .iter_mut()
+                            .zip(applied_l1_row.iter_mut().zip(component_sum.iter())),
+                    ),
+                ) {
                 let local_learning_rate = self.learning_rate / gradsq.sqrt();
-                let update = loss *
-                             ((component_sum_value * feature_value) -
-                              (*component_value * feature_value.powi(2)));
+                let update = loss * ((component_sum_value * feature_value)
+                    - (*component_value * feature_value.powi(2)));
 
                 *component_value -= local_learning_rate * update;
                 *gradsq += update.powi(2);
 
-                FactorizationMachine::apply_regularization(component_value,
-                                                           applied_l2,
-                                                           applied_l1,
-                                                           local_learning_rate,
-                                                           self.accumulated_l2,
-                                                           self.accumulated_l1);
+                FactorizationMachine::apply_regularization(
+                    component_value,
+                    applied_l2,
+                    applied_l1,
+                    local_learning_rate,
+                    self.accumulated_l2,
+                    self.accumulated_l1,
+                );
             }
         }
     }
@@ -330,10 +331,10 @@ impl FactorizationMachine {
     }
 
     fn fit_sigmoid<'a, T>(&mut self, X: &'a T, y: &Array) -> Result<(), &'static str>
-        where T: IndexableMatrix,
-              &'a T: RowIterable
+    where
+        T: IndexableMatrix,
+        &'a T: RowIterable,
     {
-
         let mut component_sum = &mut vec![0.0; self.num_components][..];
 
         for (row, &true_y) in X.iter_rows().zip(y.data().iter()) {
@@ -353,7 +354,6 @@ impl FactorizationMachine {
 
     /// Perform a dummy update pass over all features to force regularization to be applied.
     fn regularize_all(&mut self) {
-
         if self.l1_penalty == 0.0 && self.l2_penalty == 0.0 {
             return;
         }
@@ -361,9 +361,11 @@ impl FactorizationMachine {
         let array = Array::ones(1, self.dim);
         let num_components = self.num_components;
 
-        self.update(&array.view_row(0),
-                    0.0,
-                    &vec![0.0; num_components.clone()][..]);
+        self.update(
+            &array.view_row(0),
+            0.0,
+            &vec![0.0; num_components.clone()][..],
+        );
 
         self.accumulated_l2 = 1.0;
         self.accumulated_l1 = 0.0;
@@ -378,13 +380,12 @@ impl FactorizationMachine {
     }
 }
 
-
 impl<'a, T> SupervisedModel<&'a T> for FactorizationMachine
-    where &'a T: RowIterable,
-          T: IndexableMatrix
+where
+    &'a T: RowIterable,
+    T: IndexableMatrix,
 {
     fn fit(&mut self, X: &'a T, y: &Array) -> Result<(), &'static str> {
-
         try!(check_data_dimensionality(self.dim, X));
         try!(check_matched_dimensions(X, y));
         try!(check_valid_labels(y));
@@ -393,7 +394,6 @@ impl<'a, T> SupervisedModel<&'a T> for FactorizationMachine
     }
 
     fn decision_function(&self, X: &'a T) -> Result<Array, &'static str> {
-
         try!(check_data_dimensionality(self.dim, X));
 
         let mut data = Vec::with_capacity(X.rows());
@@ -409,17 +409,17 @@ impl<'a, T> SupervisedModel<&'a T> for FactorizationMachine
     }
 }
 
-
 impl<'a, T> ParallelSupervisedModel<&'a T> for FactorizationMachine
-    where &'a T: RowIterable,
-          T: IndexableMatrix + Sync
+where
+    &'a T: RowIterable,
+    T: IndexableMatrix + Sync,
 {
-    fn fit_parallel(&mut self,
-                    X: &'a T,
-                    y: &Array,
-                    num_threads: usize)
-                    -> Result<(), &'static str> {
-
+    fn fit_parallel(
+        &mut self,
+        X: &'a T,
+        y: &Array,
+        num_threads: usize,
+    ) -> Result<(), &'static str> {
         try!(check_data_dimensionality(self.dim, X));
         try!(check_matched_dimensions(X, y));
         try!(check_valid_labels(y));
@@ -432,7 +432,6 @@ impl<'a, T> ParallelSupervisedModel<&'a T> for FactorizationMachine
         crossbeam::scope(|scope| {
             for thread_num in 0..num_threads {
                 scope.spawn(move || {
-
                     let start = thread_num * rows_per_thread;
                     let stop = cmp::min((thread_num + 1) * rows_per_thread, X.rows());
 
@@ -440,11 +439,13 @@ impl<'a, T> ParallelSupervisedModel<&'a T> for FactorizationMachine
 
                     let model = unsafe {
                         &mut *(model_ptr as *const FactorizationMachine
-                                                as *mut FactorizationMachine)
+                            as *mut FactorizationMachine)
                     };
 
-                    for (row, &true_y) in X.iter_rows_range(start..stop)
-                        .zip(y.data()[start..stop].iter()) {
+                    for (row, &true_y) in X
+                        .iter_rows_range(start..stop)
+                        .zip(y.data()[start..stop].iter())
+                    {
                         let y_hat = sigmoid(model.compute_prediction(&row, &mut component_sum[..]));
                         let loss = logistic_loss(true_y, y_hat);
                         model.update(row, loss, &mut component_sum[..]);
@@ -460,10 +461,9 @@ impl<'a, T> ParallelSupervisedModel<&'a T> for FactorizationMachine
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use rand::{StdRng, SeedableRng};
+    use rand::{SeedableRng, StdRng};
 
     use prelude::*;
 
@@ -479,7 +479,6 @@ mod tests {
 
     #[test]
     fn basic_updating() {
-
         let mut model = Hyperparameters::new(2, 2)
             .learning_rate(0.01)
             .l2_penalty(0.0)
@@ -555,7 +554,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = data.get_rows(&train_idx);
             let x_test = data.get_rows(&test_idx);
 
@@ -605,7 +603,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = data.get_rows(&train_idx);
             let x_test = data.get_rows(&test_idx);
 
@@ -640,7 +637,6 @@ mod tests {
     #[test]
     #[cfg(feature = "all_tests")]
     fn test_fm_newsgroups() {
-
         let (X, target) = newsgroups::load_data();
 
         let no_splits = 2;
@@ -652,7 +648,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = X.get_rows(&train_idx);
 
             let x_test = X.get_rows(&test_idx);
@@ -686,11 +681,10 @@ mod tests {
     }
 }
 
-
 #[cfg(feature = "bench")]
 #[allow(unused_imports)]
 mod bench {
-    use rand::{StdRng, SeedableRng};
+    use rand::{SeedableRng, StdRng};
 
     use test::Bencher;
 
@@ -706,7 +700,6 @@ mod bench {
 
     #[bench]
     fn bench_iris_sparse(b: &mut Bencher) {
-
         let (data, target) = load_data();
 
         let sparse_data = SparseRowArray::from(&data);
@@ -724,7 +717,6 @@ mod bench {
 
     #[bench]
     fn bench_fm_newsgroups(b: &mut Bencher) {
-
         let (X, target) = newsgroups::load_data();
         let (_, target) = OneVsRest::split(&target).next().unwrap();
 
@@ -742,7 +734,6 @@ mod bench {
 
     #[bench]
     fn bench_fm_newsgroups_parallel(b: &mut Bencher) {
-
         let (X, target) = newsgroups::load_data();
         let (_, target) = OneVsRest::split(&target).next().unwrap();
 

@@ -47,8 +47,7 @@
 //!
 //! ## Model serialization
 //!
-//! Model serialization is supported via `rustc_serialize`. This will probably change to `serde` once
-//! compiler plugins land in stable.
+//! Model serialization is supported via `serde`.
 //!
 //! # Using `rustlearn`
 //! Usage should be straightforward.
@@ -134,16 +133,14 @@
 //!
 //! // Optionally serialize and deserialize the model
 //!
-//! // let encoded = bincode::rustc_serialize::encode(&model,
-//! //                                               bincode::SizeLimit::Infinite).unwrap();
-//! // let decoded: OneVsRestWrapper<RandomForest> = bincode::rustc_serialize::decode(&encoded).unwrap();
+//! // let encoded = bincode::serialize(&model).unwrap();
+//! // let decoded: OneVsRestWrapper<RandomForest> = bincode::deserialize(&encoded).unwrap();
 //!
 //! let prediction = model.predict(&data).unwrap();
 //! ```
 
-
 // Only use unstable features when we are benchmarking
-#![cfg_attr(feature="bench", feature(test))]
+#![cfg_attr(feature = "bench", feature(test))]
 // Allow conventional capital X for feature arrays.
 #![allow(non_snake_case)]
 
@@ -156,25 +153,28 @@ extern crate bincode;
 #[cfg(test)]
 extern crate csv;
 
-extern crate rand;
-extern crate rustc_serialize;
-extern crate crossbeam;
+#[cfg(test)]
+extern crate serde_json;
 
+extern crate crossbeam;
+extern crate rand;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 
 pub mod array;
 pub mod cross_validation;
 pub mod datasets;
 pub mod ensemble;
+pub mod factorization;
+pub mod feature_extraction;
 pub mod linear_models;
 pub mod metrics;
 pub mod multiclass;
-pub mod feature_extraction;
-pub mod factorization;
-pub mod trees;
-pub mod traits;
 pub mod svm;
+pub mod traits;
+pub mod trees;
 pub mod utils;
-
 
 #[allow(unused_imports)]
 pub mod prelude {

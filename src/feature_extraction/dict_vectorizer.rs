@@ -27,13 +27,11 @@ use std::collections::HashMap;
 
 use prelude::*;
 
-
-#[derive(RustcEncodable, RustcDecodable, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct DictVectorizer {
     dictionary: HashMap<String, (usize, usize)>,
     data: Vec<(usize, usize, f32)>,
 }
-
 
 impl DictVectorizer {
     /// Create a new `DictVectorizer`.
@@ -46,7 +44,6 @@ impl DictVectorizer {
 
     /// Set the feature value of a named feature in a given row.
     pub fn partial_fit(&mut self, row: usize, name: &str, value: f32) {
-
         // All of the below is due to the borrow checker's insanity
         // in match statements.
         let mut insert = false;

@@ -19,16 +19,18 @@ build = "build.rs"
 
 [dependencies]
 rand = "0.3"
-rustc-serialize = "0.3.16"
 crossbeam = "0.2.9"
+serde = "1.0"
+serde_derive = "1.0"
 
 [build-dependencies]
 gcc = "0.3"
 
 [dev-dependencies]
-bincode = "0.6.0"
+bincode = "1.0"
 csv = "0.14"
 hyper = "0.7.0"
+serde_json = "1.0"
 time = "0.1"
 
 [features]

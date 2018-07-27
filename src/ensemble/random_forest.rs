@@ -29,7 +29,6 @@
 //! let prediction = model.predict(&data).unwrap();
 //! ```
 
-
 use std::usize;
 
 use prelude::*;
@@ -40,25 +39,23 @@ use multiclass::OneVsRestWrapper;
 use utils::EncodableRng;
 
 use rand;
-use rand::SeedableRng;
 use rand::distributions::{IndependentSample, Range};
+use rand::SeedableRng;
 
-
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Serialize, Deserialize)]
 pub struct Hyperparameters {
     tree_hyperparameters: decision_tree::Hyperparameters,
     num_trees: usize,
     rng: EncodableRng,
 }
 
-
 impl Hyperparameters {
     /// Create a new instance of Hyperparameters, using the Hyperparameters
     /// for a `DecisionTree` and the number of trees to build.
-    pub fn new(tree_hyperparameters: decision_tree::Hyperparameters,
-               num_trees: usize)
-               -> Hyperparameters {
-
+    pub fn new(
+        tree_hyperparameters: decision_tree::Hyperparameters,
+        num_trees: usize,
+    ) -> Hyperparameters {
         Hyperparameters {
             tree_hyperparameters: tree_hyperparameters,
             num_trees: num_trees,
@@ -79,15 +76,16 @@ impl Hyperparameters {
         let mut rng = self.rng.clone();
 
         for _ in 0..self.num_trees {
-
             // Reseed trees to introduce randomness,
             // without this they are just copies of each other
             let range = Range::new(0, usize::MAX);
 
             let mut hyperparams = self.tree_hyperparameters.clone();
-            hyperparams.rng(SeedableRng::from_seed(&(0..10)
-                .map(|_| range.ind_sample(&mut rng.rng))
-                .collect::<Vec<_>>()[..]));
+            hyperparams.rng(SeedableRng::from_seed(
+                &(0..10)
+                    .map(|_| range.ind_sample(&mut rng.rng))
+                    .collect::<Vec<_>>()[..],
+            ));
 
             trees.push(hyperparams.build());
         }
@@ -106,17 +104,14 @@ impl Hyperparameters {
     }
 }
 
-
-#[derive(RustcEncodable, RustcDecodable, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct RandomForest {
     trees: Vec<decision_tree::DecisionTree>,
     rng: EncodableRng,
 }
 
-
 impl<'a> SupervisedModel<&'a Array> for RandomForest {
     fn fit(&mut self, X: &Array, y: &Array) -> Result<(), &'static str> {
-
         let mut rng = self.rng.clone();
 
         for tree in &mut self.trees {
@@ -130,7 +125,6 @@ impl<'a> SupervisedModel<&'a Array> for RandomForest {
     }
 
     fn decision_function(&self, X: &Array) -> Result<Array, &'static str> {
-
         let mut df = Array::zeros(X.rows(), 1);
 
         for tree in &self.trees {
@@ -143,10 +137,8 @@ impl<'a> SupervisedModel<&'a Array> for RandomForest {
     }
 }
 
-
 impl<'a> SupervisedModel<&'a SparseRowArray> for RandomForest {
     fn fit(&mut self, X: &SparseRowArray, y: &Array) -> Result<(), &'static str> {
-
         let mut rng = self.rng.clone();
 
         for tree in &mut self.trees {
@@ -161,7 +153,6 @@ impl<'a> SupervisedModel<&'a SparseRowArray> for RandomForest {
     }
 
     fn decision_function(&self, X: &SparseRowArray) -> Result<Array, &'static str> {
-
         let mut df = Array::zeros(X.rows(), 1);
 
         let x = SparseColumnArray::from(X);
@@ -175,7 +166,6 @@ impl<'a> SupervisedModel<&'a SparseRowArray> for RandomForest {
         Ok(df)
     }
 }
-
 
 impl RandomForest {
     /// Return a reference to the consituent trees vector.
@@ -192,22 +182,20 @@ impl RandomForest {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use prelude::*;
     use trees::decision_tree;
 
+    use super::*;
     use cross_validation::cross_validation::CrossValidation;
     use datasets::iris::load_data;
     use metrics::accuracy_score;
     use multiclass::OneVsRestWrapper;
-    use super::*;
 
-    use rand::{StdRng, SeedableRng};
+    use rand::{SeedableRng, StdRng};
 
     use bincode;
-    use rustc_serialize::json;
+    use serde_json;
 
     #[cfg(feature = "all_tests")]
     use datasets::newsgroups;
@@ -224,14 +212,14 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = data.get_rows(&train_idx);
             let x_test = data.get_rows(&test_idx);
 
             let y_train = target.get_rows(&train_idx);
 
             let mut tree_params = decision_tree::Hyperparameters::new(data.cols());
-            tree_params.min_samples_split(10)
+            tree_params
+                .min_samples_split(10)
                 .max_features(4)
                 .rng(StdRng::from_seed(&[100]));
 
@@ -265,14 +253,14 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = data.get_rows(&train_idx);
             let x_test = data.get_rows(&test_idx);
 
             let y_train = target.get_rows(&train_idx);
 
             let mut tree_params = decision_tree::Hyperparameters::new(data.cols());
-            tree_params.min_samples_split(10)
+            tree_params
+                .min_samples_split(10)
                 .max_features(4)
                 .rng(StdRng::from_seed(&[100]));
 
@@ -306,14 +294,14 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = SparseRowArray::from(&data.get_rows(&train_idx));
             let x_test = SparseRowArray::from(&data.get_rows(&test_idx));
 
             let y_train = target.get_rows(&train_idx);
 
             let mut tree_params = decision_tree::Hyperparameters::new(data.cols());
-            tree_params.min_samples_split(10)
+            tree_params
+                .min_samples_split(10)
                 .max_features(4)
                 .rng(StdRng::from_seed(&[100]));
 
@@ -338,7 +326,6 @@ mod tests {
     #[test]
     #[cfg(feature = "all_tests")]
     fn test_random_forest_newsgroups() {
-
         extern crate time;
 
         let (X, target) = newsgroups::load_data();
@@ -352,14 +339,14 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = X.get_rows(&train_idx);
             let x_test = X.get_rows(&test_idx);
 
             let y_train = target.get_rows(&train_idx);
 
             let mut tree_params = decision_tree::Hyperparameters::new(X.cols());
-            tree_params.min_samples_split(5)
+            tree_params
+                .min_samples_split(5)
                 .rng(StdRng::from_seed(&[100]));
 
             let mut model = Hyperparameters::new(tree_params, 20).one_vs_rest();
@@ -397,14 +384,14 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = data.get_rows(&train_idx);
             let x_test = data.get_rows(&test_idx);
 
             let y_train = target.get_rows(&train_idx);
 
             let mut tree_params = decision_tree::Hyperparameters::new(data.cols());
-            tree_params.min_samples_split(10)
+            tree_params
+                .min_samples_split(10)
                 .max_features(4)
                 .rng(StdRng::from_seed(&[100]));
 
@@ -414,17 +401,14 @@ mod tests {
 
             model.fit(&x_train, &y_train).unwrap();
 
-            let encoded = bincode::rustc_serialize::encode(&model, bincode::SizeLimit::Infinite)
-                .unwrap();
-            let decoded: OneVsRestWrapper<RandomForest> =
-                bincode::rustc_serialize::decode(&encoded).unwrap();
+            let encoded = bincode::serialize(&model).unwrap();
+            let decoded: OneVsRestWrapper<RandomForest> = bincode::deserialize(&encoded).unwrap();
 
             let bincode_prediction = decoded.predict(&x_test).unwrap();
 
             // JSON encoding
-            let encoded = json::encode(&model).unwrap();
-            let decoded: OneVsRestWrapper<RandomForest> =
-                json::decode(&encoded).unwrap();
+            let encoded = serde_json::to_string(&model).unwrap();
+            let decoded: OneVsRestWrapper<RandomForest> = serde_json::from_str(&encoded).unwrap();
 
             let json_prediction = decoded.predict(&x_test).unwrap();
 

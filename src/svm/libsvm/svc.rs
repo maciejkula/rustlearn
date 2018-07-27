@@ -26,16 +26,13 @@ pub use super::ffi::KernelType;
 
 use utils::{check_data_dimensionality, check_matched_dimensions};
 
-
-#[derive(Clone)]
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Clone, Serialize, Deserialize)]
 /// Hyperparameters for the SVC model.
 pub struct Hyperparameters {
     dim: usize,
     num_classes: usize,
     svm_parameter: ffi::SvmParameter,
 }
-
 
 impl Hyperparameters {
     pub fn new(dim: usize, kernel: KernelType, num_classes: usize) -> Hyperparameters {
@@ -99,20 +96,17 @@ impl Hyperparameters {
 }
 
 /// Support Vector Classifier provided by the `libsvm` library.
-#[derive(Clone)]
-#[derive(RustcEncodable, RustcDecodable)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct SVC {
     dim: usize,
     hyperparams: Hyperparameters,
     model: Option<ffi::SvmModel>,
 }
 
-
 macro_rules! impl_supervised_model {
     ($x_type:ty) => {
         impl<'a> SupervisedModel<&'a $x_type> for SVC {
             fn fit(&mut self, X: &$x_type, y: &Array) -> Result<(), &'static str> {
-
                 try!(check_data_dimensionality(self.dim, X));
                 try!(check_matched_dimensions(X, y));
 
@@ -124,44 +118,38 @@ macro_rules! impl_supervised_model {
             }
 
             fn decision_function(&self, X: &$x_type) -> Result<Array, &'static str> {
-
                 try!(check_data_dimensionality(self.dim, X));
 
                 match self.model {
                     Some(ref model) => {
-                        let (decision_function, _)
-                            = ffi::predict(model, X);
+                        let (decision_function, _) = ffi::predict(model, X);
                         Ok(decision_function)
-                    },
-                    None => Err("Model must be fit before predicting.")
+                    }
+                    None => Err("Model must be fit before predicting."),
                 }
             }
 
             fn predict(&self, X: &$x_type) -> Result<Array, &'static str> {
-
                 match self.model {
                     Some(ref model) => {
-                        let (_, predicted_class)
-                            = ffi::predict(model, X);
+                        let (_, predicted_class) = ffi::predict(model, X);
                         Ok(predicted_class)
-                    },
-                    None => Err("Model must be fit before predicting.")
+                    }
+                    None => Err("Model must be fit before predicting."),
                 }
             }
         }
-    }
+    };
 }
-
 
 impl_supervised_model!(Array);
 impl_supervised_model!(SparseRowArray);
-
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    use rand::{StdRng, SeedableRng};
+    use rand::{SeedableRng, StdRng};
 
     use prelude::*;
 
@@ -185,30 +173,23 @@ mod tests {
 
                 let no_splits = 10;
 
-                let mut cv = CrossValidation::new(data.rows(),
-                                                  no_splits);
+                let mut cv = CrossValidation::new(data.rows(), no_splits);
                 cv.set_rng(StdRng::from_seed(&[100]));
 
                 for (train_idx, test_idx) in cv {
-
                     let x_train = data.get_rows(&train_idx);
                     let x_test = data.get_rows(&test_idx);
 
                     let y_train = target.get_rows(&train_idx);
 
-                    let mut model = Hyperparameters::new(data.cols(), $kernel, 3)
-                        .build();
+                    let mut model = Hyperparameters::new(data.cols(), $kernel, 3).build();
 
                     model.fit(&x_train, &y_train).unwrap();
 
                     let y_hat = model.predict(&x_test).unwrap();
 
-                    test_accuracy += accuracy_score(
-                        &target.get_rows(&test_idx),
-                        &y_hat);
-                    train_accuracy += accuracy_score(
-                        &y_train,
-                        &model.predict(&x_train).unwrap());
+                    test_accuracy += accuracy_score(&target.get_rows(&test_idx), &y_hat);
+                    train_accuracy += accuracy_score(&y_train, &model.predict(&x_train).unwrap());
                 }
 
                 test_accuracy /= no_splits as f32;
@@ -218,7 +199,7 @@ mod tests {
                 println!("Train accuracy {}", train_accuracy);
                 assert!(test_accuracy > 0.97);
             }
-        }
+        };
     }
 
     test_iris_kernel!(KernelType::Linear, test_iris_linear);
@@ -239,7 +220,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = data.get_rows(&train_idx);
             let x_test = data.get_rows(&test_idx);
 
@@ -276,7 +256,6 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = data.get_rows(&train_idx);
             let x_test = data.get_rows(&test_idx);
 
@@ -286,9 +265,8 @@ mod tests {
 
             model.fit(&x_train, &y_train).unwrap();
 
-            let encoded = bincode::rustc_serialize::encode(&model, bincode::SizeLimit::Infinite)
-                .unwrap();
-            let decoded: SVC = bincode::rustc_serialize::decode(&encoded).unwrap();
+            let encoded = bincode::serialize(&model).unwrap();
+            let decoded: SVC = bincode::deserialize(&encoded).unwrap();
 
             let y_hat = decoded.predict(&x_test).unwrap();
 
@@ -307,7 +285,6 @@ mod tests {
     #[test]
     #[cfg(feature = "all_tests")]
     fn test_newsgroups() {
-
         let (X, target) = newsgroups::load_data();
 
         let no_splits = 2;
@@ -317,14 +294,12 @@ mod tests {
         cv.set_rng(StdRng::from_seed(&[100]));
 
         for (train_idx, test_idx) in cv {
-
             let x_train = X.get_rows(&train_idx);
             let x_test = X.get_rows(&test_idx);
 
             let y_train = target.get_rows(&train_idx);
 
             let mut model = Hyperparameters::new(X.cols(), KernelType::Linear, 20).build();
-
 
             model.fit(&x_train, &y_train).unwrap();
 

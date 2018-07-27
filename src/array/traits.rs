@@ -1,15 +1,12 @@
 //! Basic traits applying to all types of matrices.
 
-use std::ops::{Range, RangeFrom, RangeTo, RangeFull};
+use std::ops::{Range, RangeFrom, RangeFull, RangeTo};
 
-
-#[derive(RustcEncodable, RustcDecodable)]
-#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum MatrixOrder {
     RowMajor,
     ColumnMajor,
 }
-
 
 /// Trait representing a shaped matrix whose entries can be accessed
 /// at will using their row and column position.
@@ -68,7 +65,6 @@ pub trait IndexableMatrix {
     }
 }
 
-
 /// Trait representing a matrix that can be iterated over in
 /// a row-wise fashion.
 pub trait RowIterable {
@@ -81,7 +77,6 @@ pub trait RowIterable {
     /// View a row of the matrix.
     fn view_row(self, idx: usize) -> Self::Item;
 }
-
 
 /// Trait representing a matrix that can be iterated over in
 /// a column-wise fashion.
@@ -96,14 +91,12 @@ pub trait ColumnIterable {
     fn view_column(self, idx: usize) -> Self::Item;
 }
 
-
 /// Trait representing an object whose non-zero
 /// entries can be iterated over.
 pub trait NonzeroIterable {
     type Output: Iterator<Item = (usize, f32)>;
     fn iter_nonzero(&self) -> Self::Output;
 }
-
 
 /// Trait representing a matrix whose rows can be selected
 /// to create a new matrix containing those rows.
@@ -112,9 +105,9 @@ pub trait RowIndex<Rhs> {
     fn get_rows(&self, index: &Rhs) -> Self::Output;
 }
 
-
 impl<T> RowIndex<usize> for T
-    where T: RowIndex<Vec<usize>>
+where
+    T: RowIndex<Vec<usize>>,
 {
     type Output = T::Output;
     fn get_rows(&self, index: &usize) -> Self::Output {
@@ -122,9 +115,9 @@ impl<T> RowIndex<usize> for T
     }
 }
 
-
 impl<T> RowIndex<Range<usize>> for T
-    where T: RowIndex<Vec<usize>>
+where
+    T: RowIndex<Vec<usize>>,
 {
     type Output = T::Output;
     fn get_rows(&self, index: &Range<usize>) -> Self::Output {
@@ -132,9 +125,9 @@ impl<T> RowIndex<Range<usize>> for T
     }
 }
 
-
 impl<T> RowIndex<RangeFrom<usize>> for T
-    where T: RowIndex<Range<usize>> + IndexableMatrix
+where
+    T: RowIndex<Range<usize>> + IndexableMatrix,
 {
     type Output = T::Output;
     fn get_rows(&self, index: &RangeFrom<usize>) -> Self::Output {
@@ -142,9 +135,9 @@ impl<T> RowIndex<RangeFrom<usize>> for T
     }
 }
 
-
 impl<T> RowIndex<RangeTo<usize>> for T
-    where T: RowIndex<Range<usize>> + IndexableMatrix
+where
+    T: RowIndex<Range<usize>> + IndexableMatrix,
 {
     type Output = T::Output;
     fn get_rows(&self, index: &RangeTo<usize>) -> Self::Output {
@@ -152,16 +145,15 @@ impl<T> RowIndex<RangeTo<usize>> for T
     }
 }
 
-
 impl<T> RowIndex<RangeFull> for T
-    where T: RowIndex<Range<usize>> + IndexableMatrix
+where
+    T: RowIndex<Range<usize>> + IndexableMatrix,
 {
     type Output = T::Output;
     fn get_rows(&self, _: &RangeFull) -> Self::Output {
         self.get_rows(&(0..self.rows()))
     }
 }
-
 
 /// Elementwise array operations trait.
 pub trait ElementwiseArrayOps<Rhs> {

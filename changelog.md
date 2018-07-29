@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.0][2018-07-29]
+### Changed
+- use serde instead of rustc_serialize
+
 ## [0.4.3][2018-05-22]
 ### Fixed
 - c_char instead of i8 in libsvm bindings

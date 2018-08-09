@@ -2,11 +2,10 @@
 
 // Bring in a dependency on an externally maintained `gcc` package which manages
 // invoking the C compiler.
-extern crate gcc;
-
+extern crate cc;
 
 fn main() {
-    gcc::Config::new()
+    cc::Build::new()
         .cpp(true) // Switch to C++ library compilation.
         .file("dependencies/libsvm/svm.cpp")
         .compile("libsvm.a");

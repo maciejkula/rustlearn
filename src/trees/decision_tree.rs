@@ -315,9 +315,12 @@ impl<'a> SupervisedModel<&'a Array> for DecisionTree {
         try!(check_valid_labels(y));
 
         self.feature_types = DecisionTree::analyze_features(X);
-
+        let nc_feature_indices = self.get_nonconstant_feature_indices();
+        if nc_feature_indices.is_empty() {
+            return Err("No feature was found");
+        }
         let mut feature_values = FeatureValues::with_capacity(X.rows());
-        let mut feature_indices = FeatureIndices::new(self.get_nonconstant_feature_indices());
+        let mut feature_indices = FeatureIndices::new(nc_feature_indices);
         let mut candidate_features = Vec::with_capacity(self.max_features);
 
         self.root = Some(self.build_tree(

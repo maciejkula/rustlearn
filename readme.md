@@ -58,7 +58,7 @@ Model serialization is supported via `serde`.
 ## Using `rustlearn`
 Usage should be straightforward.
 
-- import the prelude for alll the linear algebra primitives and common traits:
+- import the prelude for all the linear algebra primitives and common traits:
 
 ```rust
 use rustlearn::prelude::*;
